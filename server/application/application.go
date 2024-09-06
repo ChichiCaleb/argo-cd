@@ -77,6 +77,8 @@ var (
 
 // Server provides an Application service
 type Server struct {
+	application.UnimplementedApplicationServiceServer
+
 	ns                string
 	kubeclientset     kubernetes.Interface
 	appclientset      appclientset.Interface
@@ -720,25 +722,25 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 	if q.Refresh == "" { // Check for empty string instead of nil
 		return a, nil
 	}
-	
+
 	refreshType := appv1.RefreshTypeNormal
 	if q.Refresh == string(appv1.RefreshTypeHard) { // No need to dereference
 		refreshType = appv1.RefreshTypeHard
 	}
 	appIf := s.appclientset.ArgoprojV1alpha1().Applications(appNs)
-	
+
 	// subscribe early with buffered channel to ensure we don't miss events
 	events := make(chan *appv1.ApplicationWatchEvent, watchAPIBufferSize)
 	unsubscribe := s.appBroadcaster.Subscribe(events, func(event *appv1.ApplicationWatchEvent) bool {
 		return event.Application.Name == appName && event.Application.Namespace == appNs
 	})
 	defer unsubscribe()
-	
+
 	app, err := argoutil.RefreshApp(appIf, appName, refreshType)
 	if err != nil {
 		return nil, fmt.Errorf("error refreshing the app: %w", err)
 	}
-	
+
 	if refreshType == appv1.RefreshTypeHard {
 		// force refresh cached application details
 		if err := s.queryRepoServer(ctx, proj, func(
@@ -777,7 +779,7 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 			log.Warnf("Failed to force refresh application details: %v", err)
 		}
 	}
-	
+
 
 	minVersion := 0
 	if minVersion, err = strconv.Atoi(app.ResourceVersion); err != nil {
@@ -863,8 +865,11 @@ func (s *Server) ListResourceEvents(ctx context.Context, q *application.Applicat
 	if err != nil {
 		return nil, fmt.Errorf("error listing resource events: %w", err)
 	}
-	return list, nil
+
+	// Wrap the list in EventListWrapper
+	return &application.EventListWrapper{EventList: list}, nil
 }
+
 
 // validateAndUpdateApp validates and updates the application. currentProject is the name of the project the app
 // currently is under. If not specified, we assume that the app is under the project specified in the app spec.
@@ -2294,7 +2299,7 @@ func (s *Server) TerminateOperation(ctx context.Context, termOpReq *application.
 		}
 		log.Warnf("failed to set operation for app %q due to update conflict. retrying again...", termOpReq.Name)
 
-		
+
 		time.Sleep(100 * time.Millisecond)
 		a, err = s.appclientset.ArgoprojV1alpha1().Applications(appNs).Get(ctx, appName, metav1.GetOptions{})
 		if err != nil {

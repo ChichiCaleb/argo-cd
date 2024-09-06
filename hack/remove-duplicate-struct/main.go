@@ -164,6 +164,13 @@ func removeDuplicateStructs(filePath string, structPattern *regexp.Regexp, struc
 		return err
 	}
 
+	// Write remaining comments if any
+	if len(commentBuffer) > 0 {
+		for _, comment := range commentBuffer {
+			_, _ = writer.WriteString(comment + "\n")
+		}
+	}
+
 	writer.Flush()
 
 	// Replace the original file with the modified temporary file
@@ -173,6 +180,7 @@ func removeDuplicateStructs(filePath string, structPattern *regexp.Regexp, struc
 
 	return nil
 }
+
 
 
 
