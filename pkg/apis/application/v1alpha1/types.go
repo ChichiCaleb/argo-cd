@@ -1333,9 +1333,7 @@ type ManagedNamespaceMetadata struct {
 	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	
 	Labels      map[string]string `json:"labels,omitempty" protobuf:"bytes,1,opt,name=labels"`
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,2,opt,name=annotations"`
 }

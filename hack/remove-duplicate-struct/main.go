@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"io"
 )
 
 func main() {
@@ -21,55 +21,57 @@ func main() {
 	// Define the directory to scan for Go files
 	dir := filepath.Join(projectRoot, "pkg", "apis", "application", "v1alpha1")
 
-	// Define regex patterns to match struct definitions
+	// Define regex patterns to match struct and function definitions
 	structPattern := regexp.MustCompile(`type\s+(\w+)\s+struct\s*{`)
+	funcPattern := regexp.MustCompile(`func\s+\((\w+)\s+\*?(\w+)\)\s+(\w+)\(`)
 
-	// Maps to store struct names found in *.pb.go files
-	structsInPb := make(map[string]bool)
-	// List to keep track of Go files to process
-	files := make([]string, 0)
+	// Maps to store struct and function names found in other Go files
+	structsInOtherFiles := make(map[string]bool)
+	functionsInOtherFiles := make(map[string]bool)
 
-	// First pass: Gather struct names from *.pb.go files
+	// First pass: Gather struct and function names from non-pb.go files
 	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if info.IsDir() || !strings.HasSuffix(path, ".go") {
+		if info.IsDir() || strings.HasSuffix(path, ".pb.go") || !strings.HasSuffix(path, ".go") {
 			return nil
 		}
 
-		// Add file to the list of files to process
-		files = append(files, path)
-
-		// Process only *.pb.go files to gather struct names
-		if strings.HasSuffix(path, ".pb.go") {
-			return processPbFile(path, structPattern, structsInPb)
-		}
-
-		return nil
+		// Process non-pb.go files
+		return collectStructAndFunctionNames(path, structPattern, funcPattern, structsInOtherFiles, functionsInOtherFiles)
 	})
 
 	if err != nil {
-		fmt.Println("Error walking through directory:", err)
+		fmt.Println("Error collecting structs and functions from non-pb.go files:", err)
 		return
 	}
 
-	// Second pass: Remove duplicate structs from *.pb.go files
-	for _, filePath := range files {
-		if strings.HasSuffix(filePath, ".pb.go") {
-			err = removeDuplicateStructs(filePath, structPattern, structsInPb)
-			if err != nil {
-				fmt.Printf("Error processing file %s: %v\n", filePath, err)
-			}
+	// Second pass: Process *.pb.go files and remove duplicates
+	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
+
+		if info.IsDir() || !strings.HasSuffix(path, ".pb.go") {
+			return nil
+		}
+
+		// Process pb.go files and remove duplicates
+		return removeDuplicateStructsAndFunctions(path, structPattern, funcPattern, structsInOtherFiles, functionsInOtherFiles)
+	})
+
+	if err != nil {
+		fmt.Println("Error processing pb.go files:", err)
+		return
 	}
 
-	fmt.Println("Processing completed. Duplicate structs have been removed.")
+	fmt.Println("Processing completed. Duplicate structs and functions have been removed.")
 }
 
-// processPbFile extracts struct names from *.pb.go files and stores them in a map
-func processPbFile(filePath string, structPattern *regexp.Regexp, structsInPb map[string]bool) error {
+// collectStructAndFunctionNames gathers struct and function names from non-pb.go files
+func collectStructAndFunctionNames(filePath string, structPattern, funcPattern *regexp.Regexp, structsInOtherFiles, functionsInOtherFiles map[string]bool) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -85,7 +87,17 @@ func processPbFile(filePath string, structPattern *regexp.Regexp, structsInPb ma
 		if structPattern.MatchString(line) {
 			matches := structPattern.FindStringSubmatch(line)
 			structName := matches[1]
-			structsInPb[structName] = true
+			structsInOtherFiles[structName] = true
+		}
+
+		// Check for function definitions
+		if funcPattern.MatchString(line) {
+			matches := funcPattern.FindStringSubmatch(line)
+			receiver := matches[1]
+			receiverType := matches[2]
+			funcName := matches[3]
+			functionsInOtherFiles[receiver+"."+funcName] = true
+			functionsInOtherFiles[receiverType+"."+funcName] = true // Also consider receiver type
 		}
 	}
 
@@ -96,8 +108,8 @@ func processPbFile(filePath string, structPattern *regexp.Regexp, structsInPb ma
 	return nil
 }
 
-// removeDuplicateStructs removes structs and their preceding comments that are duplicated in the package from *.pb.go files
-func removeDuplicateStructs(filePath string, structPattern *regexp.Regexp, structsInPb map[string]bool) error {
+// removeDuplicateStructsAndFunctions removes duplicates from pb.go files
+func removeDuplicateStructsAndFunctions(filePath string, structPattern, funcPattern *regexp.Regexp, structsInOtherFiles, functionsInOtherFiles map[string]bool) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -115,59 +127,57 @@ func removeDuplicateStructs(filePath string, structPattern *regexp.Regexp, struc
 	writer := bufio.NewWriter(tempFile)
 
 	inStruct := false
-	structName := ""
-	commentBuffer := []string{}
+	inFunc := false
+	bracesCount := 0 // Track the number of braces to handle nested curly braces
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		// Check for struct definitions
-		if structPattern.MatchString(line) {
+		if structPattern.MatchString(line) && !inStruct && !inFunc {
 			matches := structPattern.FindStringSubmatch(line)
-			structName = matches[1]
+			structName := matches[1]
 
-			if structsInPb[structName] {
+			if structsInOtherFiles[structName] {
+				// Skip the entire struct block
 				inStruct = true
-				commentBuffer = nil // Clear any comments preceding this struct
-				// Skip the struct block to remove it from the file
+				bracesCount = 1
 				continue
 			}
 		}
 
-		if inStruct {
-			if strings.HasSuffix(line, "}") {
-				inStruct = false
-				// Skip the closing brace of the struct
+		// Check for function definitions
+		if funcPattern.MatchString(line) && !inStruct && !inFunc {
+			matches := funcPattern.FindStringSubmatch(line)
+			receiver := matches[1]
+			receiverType := matches[2]
+			funcName := matches[3]
+
+			if functionsInOtherFiles[receiver+"."+funcName] || functionsInOtherFiles[receiverType+"."+funcName] {
+				// Skip the entire function block
+				inFunc = true
+				bracesCount = 1
 				continue
 			}
-			// Skip lines inside the struct
+		}
+
+		// If inside a struct or function, track curly braces to know when to stop skipping
+		if inStruct || inFunc {
+			bracesCount += strings.Count(line, "{") - strings.Count(line, "}")
+			if bracesCount == 0 {
+				// End of the struct or function block
+				inStruct = false
+				inFunc = false
+			}
 			continue
 		}
 
-		// Handle single-line comments preceding structs
-		if strings.HasPrefix(line, "//") {
-			commentBuffer = append(commentBuffer, line)
-		} else {
-			// Write comments if not followed by a struct definition
-			if len(commentBuffer) > 0 {
-				for _, comment := range commentBuffer {
-					_, _ = writer.WriteString(comment + "\n")
-				}
-				commentBuffer = nil
-			}
-			_, _ = writer.WriteString(line + "\n")
-		}
+		// Write non-duplicate lines to the temporary file
+		_, _ = writer.WriteString(line + "\n")
 	}
 
 	if err := scanner.Err(); err != nil {
 		return err
-	}
-
-	// Write remaining comments if any
-	if len(commentBuffer) > 0 {
-		for _, comment := range commentBuffer {
-			_, _ = writer.WriteString(comment + "\n")
-		}
 	}
 
 	writer.Flush()

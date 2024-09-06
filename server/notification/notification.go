@@ -5,27 +5,22 @@ import (
 
 	"github.com/argoproj/notifications-engine/pkg/api"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/utils/ptr"
-
+	
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/notification"
 )
 
-// Server provides an Application service
+// Server provides an Application service and implements NotificationServiceServer
 type Server struct {
 	apiFactory api.Factory
+	notification.UnimplementedNotificationServiceServer
 }
 
 // NewServer returns a new instance of the Application service
 func NewServer(apiFactory api.Factory) notification.NotificationServiceServer {
-	s := &Server{apiFactory: apiFactory}
-	return s
+	return &Server{apiFactory: apiFactory}
 }
 
-// mustEmbedUnimplementedNotificationServiceServer is required by the gRPC toolchain
-func (s *Server) mustEmbedUnimplementedNotificationServiceServer() {}
-
-
-// List returns list of notification triggers
+// ListTriggers returns a list of notification triggers
 func (s *Server) ListTriggers(ctx context.Context, q *notification.TriggersListRequest) (*notification.TriggerList, error) {
 	api, err := s.apiFactory.GetAPI()
 	if err != nil {
@@ -41,7 +36,7 @@ func (s *Server) ListTriggers(ctx context.Context, q *notification.TriggersListR
 	return &notification.TriggerList{Items: triggers}, nil
 }
 
-// List returns list of notification services
+// ListServices returns a list of notification services
 func (s *Server) ListServices(ctx context.Context, q *notification.ServicesListRequest) (*notification.ServiceList, error) {
 	api, err := s.apiFactory.GetAPI()
 	if err != nil {
@@ -57,7 +52,7 @@ func (s *Server) ListServices(ctx context.Context, q *notification.ServicesListR
 	return &notification.ServiceList{Items: services}, nil
 }
 
-// List returns list of notification templates
+// ListTemplates returns a list of notification templates
 func (s *Server) ListTemplates(ctx context.Context, q *notification.TemplatesListRequest) (*notification.TemplateList, error) {
 	api, err := s.apiFactory.GetAPI()
 	if err != nil {
