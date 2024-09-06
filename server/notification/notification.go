@@ -21,6 +21,10 @@ func NewServer(apiFactory api.Factory) notification.NotificationServiceServer {
 	return s
 }
 
+// mustEmbedUnimplementedNotificationServiceServer is required by the gRPC toolchain
+func (s *Server) mustEmbedUnimplementedNotificationServiceServer() {}
+
+
 // List returns list of notification triggers
 func (s *Server) ListTriggers(ctx context.Context, q *notification.TriggersListRequest) (*notification.TriggerList, error) {
 	api, err := s.apiFactory.GetAPI()
@@ -28,10 +32,11 @@ func (s *Server) ListTriggers(ctx context.Context, q *notification.TriggersListR
 		if apierr.IsNotFound(err) {
 			return &notification.TriggerList{}, nil
 		}
+		return nil, err
 	}
 	triggers := []*notification.Trigger{}
 	for trigger := range api.GetConfig().Triggers {
-		triggers = append(triggers, &notification.Trigger{Name: ptr.To(trigger)})
+		triggers = append(triggers, &notification.Trigger{Name: trigger})
 	}
 	return &notification.TriggerList{Items: triggers}, nil
 }
@@ -47,7 +52,7 @@ func (s *Server) ListServices(ctx context.Context, q *notification.ServicesListR
 	}
 	services := []*notification.Service{}
 	for svc := range api.GetConfig().Services {
-		services = append(services, &notification.Service{Name: ptr.To(svc)})
+		services = append(services, &notification.Service{Name: svc})
 	}
 	return &notification.ServiceList{Items: services}, nil
 }
@@ -63,7 +68,7 @@ func (s *Server) ListTemplates(ctx context.Context, q *notification.TemplatesLis
 	}
 	templates := []*notification.Template{}
 	for tmpl := range api.GetConfig().Templates {
-		templates = append(templates, &notification.Template{Name: ptr.To(tmpl)})
+		templates = append(templates, &notification.Template{Name: tmpl})
 	}
 	return &notification.TemplateList{Items: templates}, nil
 }

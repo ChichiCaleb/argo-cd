@@ -150,7 +150,6 @@ func removeDuplicateStructs(filePath string, structPattern *regexp.Regexp, struc
 		} else {
 			// Write comments if not followed by a struct definition
 			if len(commentBuffer) > 0 {
-				// Write the comments to the temp file if not directly before a struct
 				for _, comment := range commentBuffer {
 					_, _ = writer.WriteString(comment + "\n")
 				}
@@ -180,9 +179,6 @@ func removeDuplicateStructs(filePath string, structPattern *regexp.Regexp, struc
 
 	return nil
 }
-
-
-
 
 // replaceFile replaces the original file with the new file
 func replaceFile(originalPath, newPath string) error {

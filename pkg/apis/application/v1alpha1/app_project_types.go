@@ -18,9 +18,7 @@ import (
 	"google.golang.org/protobuf/runtime/protoimpl"
 )
 
-    state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+   
 
 type ErrApplicationNotAllowedToUseProject struct {
 	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON

@@ -22,6 +22,7 @@ type Server interface {
 	Run(path string) error
 }
 
+
 type server struct {
 	lock       sync.Mutex
 	creds      map[string]Creds
@@ -102,3 +103,6 @@ func (s *server) Environ(id string) []string {
 		fmt.Sprintf("%s=%s", AKSPASS_SOCKET_PATH_ENV, s.socketPath),
 	}
 }
+
+// mustEmbedUnimplementedAskPassServiceServer is required by the gRPC toolchain
+func (s *server) mustEmbedUnimplementedAskPassServiceServer() {}
