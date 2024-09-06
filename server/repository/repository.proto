@@ -18,7 +18,6 @@ message RepoAppsQuery {
 	string appProject = 4;
 }
 
-
 // AppInfo contains application type and app file path
 message AppInfo {
 	string type = 1;
@@ -111,12 +110,13 @@ message RepoUpdateRequest {
 service RepositoryService {
 
 	// List returns list of repos or repository credentials
-	rpc List(RepoQuery) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.RepositoryList) {
-		option (google.api.http).get = "/api/v1/repositories";
+	// change endpoint to "/api/v1/repositories/list" as grpc v2 throws duplicate endpount error
+	 rpc List(RepoQuery) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.RepositoryList) {
+	 	option (google.api.http).get = "/api/v1/repositories/list";
 		option deprecated = true;
-	}
+	 }
 
-		// Get returns a repository or its credentials
+	// Get returns a repository or its credentials
 	rpc Get(RepoQuery) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.Repository) {
 		option (google.api.http).get = "/api/v1/repositories/{repo}";
 	}
@@ -149,12 +149,13 @@ service RepositoryService {
 	}
 
 	// Create creates a repo or a repo credential set
-	rpc Create(RepoCreateRequest) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.Repository) {
-		option (google.api.http) = {
-			post: "/api/v1/repositories"
-			body: "repo"
-		};
-		option deprecated = true;
+	// change endpoint to "/api/v1/repositories/create" as grpc v2 throws duplicate endpount error
+	 rpc Create(RepoCreateRequest) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.Repository) {
+	 	option (google.api.http) = {
+	 		post: "/api/v1/repositories/create"
+	 		body: "repo"
+	 	};
+	 	option deprecated = true;
 	}
 
 	// CreateRepository creates a new repository configuration
@@ -166,13 +167,14 @@ service RepositoryService {
 	}
 
 	// Update updates a repo or repo credential set
-	rpc Update(RepoUpdateRequest) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.Repository) {
-		option (google.api.http) = {
-			put: "/api/v1/repositories/{repo.repo}"
-			body: "repo"
-		};
+	// change endpoint to "/api/v1/repositories/update/{repo.repo} as grpc v2 throws duplicate endpount error
+	 rpc Update(RepoUpdateRequest) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.Repository) {
+	 	option (google.api.http) = {
+	 		put: "/api/v1/repositories/update/{repo.repo}"
+	 		body: "repo"
+	 	};
 		option deprecated = true;
-	}
+	 }
 
 	// UpdateRepository updates a repository configuration
 	rpc UpdateRepository(RepoUpdateRequest) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.Repository) {
@@ -183,10 +185,11 @@ service RepositoryService {
 	}
 
 	// Delete deletes a repository from the configuration
-	rpc Delete(RepoQuery) returns (RepoResponse) {
-		option (google.api.http).delete = "/api/v1/repositories/{repo}";
-		option deprecated = true;
-	}
+	// change endpoint to "/api/v1/repositories/delete/{repo}"; as grpc v2 throws duplicate endpount error
+	 rpc Delete(RepoQuery) returns (RepoResponse) {
+	 	option (google.api.http).delete = "/api/v1/repositories/delete/{repo}";
+	 	option deprecated = true;
+	 }
 
 	// DeleteRepository deletes a repository from the configuration
 	rpc DeleteRepository(RepoQuery) returns (RepoResponse) {

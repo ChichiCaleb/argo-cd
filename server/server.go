@@ -460,25 +460,29 @@ func startListener(host string, port int) (net.Listener, error) {
 }
 
 func (a *ArgoCDServer) Listen() (*Listeners, error) {
+	// Start main listener
 	mainLn, err := startListener(a.ListenHost, a.ListenPort)
 	if err != nil {
 		return nil, err
 	}
+
+	// Start metrics listener
 	metricsLn, err := startListener(a.ListenHost, a.MetricsPort)
 	if err != nil {
 		io.Close(mainLn)
 		return nil, err
 	}
+
+	// Setup gRPC dial options
 	var dOpts []grpc.DialOption
 	dOpts = append(dOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(apiclient.MaxGRPCMessageSize)))
 	dOpts = append(dOpts, grpc.WithUserAgent(fmt.Sprintf("%s/%s", common.ArgoCDUserAgentName, common.GetVersion().Version)))
 	dOpts = append(dOpts, grpc.WithUnaryInterceptor(grpc_util.OTELUnaryClientInterceptor()))
 	dOpts = append(dOpts, grpc.WithStreamInterceptor(grpc_util.OTELStreamClientInterceptor()))
+
+	// Configure TLS or insecure credentials
 	if a.useTLS() {
-		// The following sets up the dial Options for grpc-gateway to talk to gRPC server over TLS.
-		// grpc-gateway is just translating HTTP/HTTPS requests as gRPC requests over localhost,
-		// so we need to supply the same certificates to establish the connections that a normal,
-		// external gRPC client would need.
+		// Setup TLS configuration for gRPC
 		tlsConfig := a.settings.TLSConfig()
 		if a.TLSConfigCustomizer != nil {
 			a.TLSConfigCustomizer(tlsConfig)
@@ -489,13 +493,19 @@ func (a *ArgoCDServer) Listen() (*Listeners, error) {
 	} else {
 		dOpts = append(dOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
-	// nolint:staticcheck
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%d", a.ListenPort), dOpts...)
+
+	// Use grpc.NewClient instead of grpc.Dial
+	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%d", a.ListenPort), dOpts...)
 	if err != nil {
 		io.Close(mainLn)
 		io.Close(metricsLn)
 		return nil, err
 	}
+
+	// Establish the connection 
+	conn.Connect() 
+
+	// Return the listeners and the gRPC connection
 	return &Listeners{Main: mainLn, Metrics: metricsLn, GatewayConn: conn}, nil
 }
 

@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 option go_package = "github.com/argoproj/argo-cd/v2/pkg/apiclient/notification";
 
 // Notification Service
@@ -9,7 +9,7 @@ package notification;
 import "google/api/annotations.proto";
 
 message Trigger {
-    required string name = 1;
+     string name = 1;
 }
 
 message TriggerList {
@@ -19,7 +19,7 @@ message TriggerList {
 message TriggersListRequest {}
 
 message Service {
-    required string name = 1;
+     string name = 1;
 }
 
 message ServiceList {
@@ -29,7 +29,7 @@ message ServiceList {
 message ServicesListRequest {}
 
 message Template {
-    required string name = 1;
+     string name = 1;
 }
 
 message TemplateList {

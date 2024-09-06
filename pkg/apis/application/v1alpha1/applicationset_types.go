@@ -1057,9 +1057,7 @@ func (t *ApplicationSetTree) Normalize() {
 	})
 }
 
-// func init() {
-// 	SchemeBuilder.Register(&ApplicationSet{}, &ApplicationSetList{})
-// }
+
 
 // RefreshRequired checks if the ApplicationSet needs to be refreshed
 func (a *ApplicationSet) RefreshRequired() bool {
