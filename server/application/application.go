@@ -480,16 +480,17 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 
 		appSpec := a.Spec.DeepCopy()
 		sources := make([]appv1.ApplicationSource, len(appSpec.GetSources()))
-          if a.Spec.HasMultipleSources() {
-			for i, sourcePtr := range appSpec.GetSources() {
-				sources[i] = *sourcePtr // Dereference each pointer
+
+		if a.Spec.HasMultipleSources() {
+			for i, source := range appSpec.GetSources() {
+				sources[i] = source 
 			}
 		} else {
 			source := a.Spec.GetSource()
 			if q.GetRevision() != "" {
 				source.TargetRevision = q.GetRevision()
 			}
-			sources = append(sources, *source) // Dereference before appending
+			sources = append(sources, source) 
 		}
 
 		// Store the map of all sources having ref field into a map for applications with sources field
@@ -627,29 +628,31 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 		if err != nil {
 			return fmt.Errorf("error getting kustomize settings: %w", err)
 		}
-		kustomizeOptions, err := kustomizeSettings.GetOptions(*a.Spec.GetSource()) // Dereference the pointer
-if err != nil {
-    return fmt.Errorf("error getting kustomize settings options: %w", err)
-}
+		kustomizeOptions, err := kustomizeSettings.GetOptions(a.Spec.GetSource()) 
 
-req := &apiclient.ManifestRequest{
-    Repo:               repo,
-    Revision:           source.TargetRevision,
-    AppLabelKey:        appInstanceLabelKey,
-    AppName:            a.Name,
-    Namespace:          a.Spec.Destination.Namespace,
-    ApplicationSource:  source, // No need to take the address
-    Repos:              helmRepos,
-    KustomizeOptions:   kustomizeOptions,
-    KubeVersion:        serverVersion,
-    ApiVersions:        argo.APIResourcesToStrings(apiResources, true),
-    HelmRepoCreds:      helmCreds,
-    HelmOptions:        helmOptions,
-    TrackingMethod:     string(argoutil.GetTrackingMethod(s.settingsMgr)),
-    EnabledSourceTypes: enableGenerateManifests,
-    ProjectName:        proj.Name,
-    ProjectSourceRepos: proj.Spec.SourceRepos,
-}
+		if err != nil {
+			return fmt.Errorf("error getting kustomize settings options: %w", err)
+		}
+
+		req := &apiclient.ManifestRequest{
+			Repo:               repo,
+			Revision:           source.TargetRevision,
+			AppLabelKey:        appInstanceLabelKey,
+			AppName:            a.Name,
+			Namespace:          a.Spec.Destination.Namespace,
+			ApplicationSource:  &source, // Pass the address of source
+			Repos:              helmRepos,
+			KustomizeOptions:   kustomizeOptions,
+			KubeVersion:        serverVersion,
+			ApiVersions:        argo.APIResourcesToStrings(apiResources, true),
+			HelmRepoCreds:      helmCreds,
+			HelmOptions:        helmOptions,
+			TrackingMethod:     string(argoutil.GetTrackingMethod(s.settingsMgr)),
+			EnabledSourceTypes: enableGenerateManifests,
+			ProjectName:        proj.Name,
+			ProjectSourceRepos: proj.Spec.SourceRepos,
+		}
+		
 
 repoStreamClient, err := client.GenerateManifestWithFiles(stream.Context())
 if err != nil {
@@ -759,13 +762,14 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings: %w", err)
 			}
-			kustomizeOptions, err := kustomizeSettings.GetOptions(*a.Spec.GetSource()) // Dereference
+			kustomizeOptions, err := kustomizeSettings.GetOptions(a.Spec.GetSource()) 
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings options: %w", err)
 			}
+
 			_, err = client.GetAppDetails(ctx, &apiclient.RepoServerAppDetailsQuery{
 				Repo:               repo,
-				Source:             source, // Remove '&' as source is already a pointer
+				Source:             &source, 
 				AppName:            appName,
 				KustomizeOptions:   kustomizeOptions,
 				Repos:              helmRepos,
@@ -1292,11 +1296,13 @@ func (s *Server) getApplicationClusterConfig(ctx context.Context, a *appv1.Appli
 func (s *Server) getCachedAppState(ctx context.Context, a *appv1.Application, getFromCache func() error) error {
 	err := getFromCache()
 	if err != nil && errors.Is(err, servercache.ErrCacheMiss) {
-		conditions := a.Status.GetConditions()
+		// Fix: Pass an empty map to GetConditions
+		conditions := a.Status.GetConditions(map[string]bool{})
 		if len(conditions) > 0 {
+			// Fix: No need to dereference cond
 			nonPointerConditions := make([]appv1.ApplicationCondition, len(conditions))
 			for i, cond := range conditions {
-				nonPointerConditions[i] = *cond
+				nonPointerConditions[i] = cond
 			}
 			return errors.New(argoutil.FormatAppConditions(nonPointerConditions))
 		}
@@ -1569,7 +1575,7 @@ if err != nil {
 // source we choose (configured sources or sources for a specific version), we return an error.
 func getAppSourceBySourceIndexAndVersionId(a *appv1.Application, sourceIndexMaybe *int32, versionIdMaybe *int32) (*appv1.ApplicationSource, error) {
 	// Start with all the app's configured sources.
-	sources := a.Spec.GetSources() // Adjust if GetSources() returns values or pointers
+	sources := a.Spec.GetSources() // Assume this returns a slice of values ([]appv1.ApplicationSource)
 
 	// If the user specified a version, get the sources for that version. If the version is not found, return an error.
 	if versionIdMaybe != nil {
@@ -1579,11 +1585,8 @@ func getAppSourceBySourceIndexAndVersionId(a *appv1.Application, sourceIndexMayb
 		if err != nil {
 			return nil, fmt.Errorf("error getting source by version ID: %w", err)
 		}
-		// Convert the slice of values to a slice of pointers
-		sources = make([]*appv1.ApplicationSource, len(sourceValues))
-		for i, source := range sourceValues {
-			sources[i] = &source
-		}
+		// Set the sources to be the source values (no need to convert to pointers)
+		sources = sourceValues
 	}
 
 	// Start by assuming we want the first source.
@@ -1600,10 +1603,13 @@ func getAppSourceBySourceIndexAndVersionId(a *appv1.Application, sourceIndexMayb
 		}
 	}
 
+	// Get the source by index
 	source := sources[sourceIndex]
 
-	return source, nil
+	// Return the address of the source (convert value to pointer)
+	return &source, nil
 }
+
 
 
 // getRevisionHistoryByVersionId returns the revision history for a specific version ID.
