@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 
 # This script auto-generates protobuf related files. It is intended to be run manually when either
 # API types are added/modified, or server gRPC calls are added. The generated files should then
@@ -62,7 +62,9 @@ rm -rf "${GOPATH}/src/k8s.io/apimachinery" && mkdir -p "${GOPATH}/src/k8s.io" &&
 rm -rf "${GOPATH}/src/k8s.io/api" && mkdir -p "${GOPATH}/src/k8s.io" && cp -r "${PROJECT_ROOT}/vendor/k8s.io/api" "${GOPATH}/src/k8s.io"
 rm -rf "${GOPATH}/src/k8s.io/apiextensions-apiserver" && mkdir -p "${GOPATH}/src/k8s.io" && cp -r "${PROJECT_ROOT}/vendor/k8s.io/apiextensions-apiserver" "${GOPATH}/src/k8s.io"
 
-go-to-protobuf \
+# adjust "kubernetes go-to-protobuf" to generate proto3 and use golang/protobuf instead of gogo/protobuf
+go build -o ./dist/go-to-protobuf "${PROJECT_ROOT}/hack/go-to-protobuf"
+./dist/go-to-protobuf \
     --go-header-file="${PROJECT_ROOT}"/hack/custom-boilerplate.go.txt \
     --packages="$(
         IFS=,
@@ -76,19 +78,12 @@ go-to-protobuf \
     --proto-import="${protoc_include}" \
     --output-dir="${GOPATH}/src/"
 
+# remove duplicate v1alpha1 package struct from generated.pb.go file
+go build -o ./dist/remove-duplicate-struct "${PROJECT_ROOT}/hack/remove-duplicate-struct"
+./dist/remove-duplicate-struct
+
 # go-to-protobuf modifies vendored code. Re-vendor code so it's available for subsequent steps.
 go mod vendor
-
-# Either protoc-gen-go, protoc-gen-gofast, or protoc-gen-gogofast can be used to build
-# server/*/<service>.pb.go from .proto files. golang/protobuf and gogo/protobuf can be used
-# interchangeably. The difference in the options are:
-# 1. protoc-gen-go - official golang/protobuf
-#GOPROTOBINARY=go
-# 2. protoc-gen-gofast - fork of golang golang/protobuf. Faster code generation
-#GOPROTOBINARY=gofast
-# 3. protoc-gen-gogofast - faster code generation and gogo extensions and flexibility in controlling
-# the generated go code (e.g. customizing field names, nullable fields)
-GOPROTOBINARY=gogofast
 
 # Generate server/<service>/(<service>.pb.go|<service>.pb.gw.go)
 MOD_ROOT=${GOPATH}/pkg/mod
@@ -104,16 +99,17 @@ for i in ${PROTO_FILES}; do
         -I"$GOPATH"/src \
         -I"${GOOGLE_PROTO_API_PATH}" \
         -I"${GOGO_PROTOBUF_PATH}" \
-        --${GOPROTOBINARY}_out=plugins=grpc:"$GOPATH"/src \
-        --grpc-gateway_out=logtostderr=true:"$GOPATH"/src \
-        --swagger_out=logtostderr=true:. \
+        --go_out="$GOPATH/src" \
+        --go-grpc_out="$GOPATH/src" \
+        --grpc-gateway_out=logtostderr=true:"$GOPATH/src" \
+        --openapiv2_out=logtostderr=true:. \
         "$i"
 done
 
 [ -L "${GOPATH_PROJECT_ROOT}" ] && rm -rf "${GOPATH_PROJECT_ROOT}"
 [ -L ./v2 ] && rm -rf v2
 
-# collect_swagger gathers swagger files into a subdirectory
+# Collect swagger files
 collect_swagger() {
     SWAGGER_ROOT="$1"
     SWAGGER_OUT="${PROJECT_ROOT}/assets/swagger.json"
@@ -151,7 +147,7 @@ EOF
     /bin/rm "${PRIMARY_SWAGGER}" "${COMBINED_SWAGGER}"
 }
 
-# clean up generated swagger files (should come after collect_swagger)
+# Clean up generated swagger files (should come after collect_swagger)
 clean_swagger() {
     SWAGGER_ROOT="$1"
     find "${SWAGGER_ROOT}" -name '*.swagger.json' -delete
@@ -162,3 +158,7 @@ clean_swagger server
 clean_swagger reposerver
 clean_swagger controller
 clean_swagger cmpserver
+
+
+
+
