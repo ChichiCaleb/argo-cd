@@ -120,20 +120,28 @@ func getServiceName(backend map[string]interface{}, gvk schema.GroupVersionKind)
 	return "", errors.New("unable to resolve string")
 }
 
+func resourceRefToString(ref v1alpha1.ResourceRef) string {
+	return fmt.Sprintf("%s/%s/%s/%s", ref.Group, ref.Kind, ref.Namespace, ref.Name)
+}
+
+
 func populateIngressInfo(un *unstructured.Unstructured, res *ResourceInfo) {
-	ingress := getIngress(un)
-	targetsMap := make(map[v1alpha1.ResourceRef]bool)
-	gvk := un.GroupVersionKind()
-	if backend, ok, err := unstructured.NestedMap(un.Object, "spec", "backend"); ok && err == nil {
-		if serviceName, err := getServiceName(backend, gvk); err == nil {
-			targetsMap[v1alpha1.ResourceRef{
-				Group:     "",
-				Kind:      kube.ServiceKind,
-				Namespace: un.GetNamespace(),
-				Name:      serviceName,
-			}] = true
+ingress := getIngress(un)
+targetsMap := make(map[string]bool)
+gvk := un.GroupVersionKind()
+if backend, ok, err := unstructured.NestedMap(un.Object, "spec", "backend"); ok && err == nil {
+	if serviceName, err := getServiceName(backend, gvk); err == nil {
+		ref := v1alpha1.ResourceRef{
+			Group:     "",
+			Kind:      kube.ServiceKind,
+			Namespace: un.GetNamespace(),
+			Name:      serviceName,
 		}
+		key := resourceRefToString(ref)
+		targetsMap[key] = true
 	}
+}
+	
 	urlsSet := make(map[string]bool)
 	if rules, ok, err := unstructured.NestedSlice(un.Object, "spec", "rules"); ok && err == nil {
 		for i := range rules {
@@ -225,6 +233,79 @@ func populateIngressInfo(un *unstructured.Unstructured, res *ResourceInfo) {
 	}
 	res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{TargetRefs: targets, Ingress: ingress, ExternalURLs: urls}
 }
+
+func populateIstioVirtualServiceInfo(un *unstructured.Unstructured, res *ResourceInfo) {
+    // Create a map with string keys
+    targetsMap := make(map[string]bool)
+
+    // Extract HTTP rules from the Unstructured object
+    if rules, ok, err := unstructured.NestedSlice(un.Object, "spec", "http"); ok && err == nil {
+        for i := range rules {
+            rule, ok := rules[i].(map[string]interface{})
+            if !ok {
+                continue
+            }
+            routes, ok, err := unstructured.NestedSlice(rule, "route")
+            if !ok || err != nil {
+                continue
+            }
+            for i := range routes {
+                route, ok := routes[i].(map[string]interface{})
+                if !ok {
+                    continue
+                }
+
+                // Extract host name
+                if hostName, ok, err := unstructured.NestedString(route, "destination", "host"); ok && err == nil {
+                    hostSplits := strings.Split(hostName, ".")
+                    serviceName := hostSplits[0]
+
+                    var namespace string
+                    if len(hostSplits) >= 2 {
+                        namespace = hostSplits[1]
+                    } else {
+                        namespace = un.GetNamespace()
+                    }
+
+                    // Create ResourceRef and convert it to string
+                    ref := v1alpha1.ResourceRef{
+                        Kind:      kube.ServiceKind,
+                        Name:      serviceName,
+                        Namespace: namespace,
+                    }
+                    key := resourceRefToString(ref)
+                    targetsMap[key] = true
+                }
+            }
+        }
+    }
+
+    // Convert map keys back to ResourceRef slices
+    var targets []v1alpha1.ResourceRef
+    for key := range targetsMap {
+        parts := strings.Split(key, "/")
+        if len(parts) == 3 {
+            targets = append(targets, v1alpha1.ResourceRef{
+                Kind:      parts[0],
+                Namespace: parts[1],
+                Name:      parts[2],
+            })
+        }
+    }
+
+    // Collect external URLs if available
+    var urls []string
+    if res.NetworkingInfo != nil {
+        urls = res.NetworkingInfo.ExternalURLs
+    }
+
+    // Update ResourceInfo
+    res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{
+        TargetRefs:  targets,
+        ExternalURLs: urls,
+    }
+}
+
 
 func populateIstioVirtualServiceInfo(un *unstructured.Unstructured, res *ResourceInfo) {
 	targetsMap := make(map[v1alpha1.ResourceRef]bool)
