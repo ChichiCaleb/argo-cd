@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/yaml"
+	"google.golang.org/protobuf/runtime/protoimpl"
 
 	"github.com/argoproj/argo-cd/v2/common"
 	"github.com/argoproj/argo-cd/v2/util/collections"
@@ -53,6 +54,9 @@ import (
 // +kubebuilder:printcolumn:name="Revision",type=string,JSONPath=`.status.sync.revision`,priority=10
 // +kubebuilder:printcolumn:name="Project",type=string,JSONPath=`.spec.project`,priority=10
 type Application struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
 	Spec              ApplicationSpec   `json:"spec" protobuf:"bytes,2,opt,name=spec"`
@@ -62,6 +66,9 @@ type Application struct {
 
 // ApplicationSpec represents desired application state. Contains link to repository with application definition and additional parameters link definition revision.
 type ApplicationSpec struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Source is a reference to the location of the application's manifests or chart
 	Source *ApplicationSource `json:"source,omitempty" protobuf:"bytes,1,opt,name=source"`
 	// Destination is a reference to the target Kubernetes server and namespace
@@ -96,6 +103,9 @@ type TrackingMethod string
 
 // ResourceIgnoreDifferences contains resource filter and list of json paths which should be ignored during comparison with live state.
 type ResourceIgnoreDifferences struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Group             string   `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
 	Kind              string   `json:"kind" protobuf:"bytes,2,opt,name=kind"`
 	Name              string   `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
@@ -109,6 +119,9 @@ type ResourceIgnoreDifferences struct {
 
 // EnvEntry represents an entry in the application's environment
 type EnvEntry struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Name is the name of the variable, usually expressed in uppercase
 	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
 	// Value is the value of the variable
@@ -169,6 +182,9 @@ func (e Env) Envsubst(s string) string {
 
 // ApplicationSource contains all required information about the source of an application
 type ApplicationSource struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// RepoURL is the URL to the repository (Git or Helm) that contains the application manifests
 	RepoURL string `json:"repoURL" protobuf:"bytes,1,opt,name=repoURL"`
 	// Path is a directory path within the Git repository, and is only valid for applications sourced from Git.
@@ -356,6 +372,9 @@ const (
 )
 
 type RefTarget struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Repo           Repository `protobuf:"bytes,1,opt,name=repo"`
 	TargetRevision string     `protobuf:"bytes,2,opt,name=targetRevision"`
 	Chart          string     `protobuf:"bytes,3,opt,name=chart"`
@@ -365,6 +384,9 @@ type RefTargetRevisionMapping map[string]*RefTarget
 
 // ApplicationSourceHelm holds helm specific options
 type ApplicationSourceHelm struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// ValuesFiles is a list of Helm value files to use when generating a template
 	ValueFiles []string `json:"valueFiles,omitempty" protobuf:"bytes,1,opt,name=valueFiles"`
 	// Parameters is a list of Helm parameters which are passed to the helm template command upon manifest generation
@@ -399,6 +421,9 @@ type ApplicationSourceHelm struct {
 
 // HelmParameter is a parameter that's passed to helm template during manifest generation
 type HelmParameter struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Name is the name of the Helm parameter
 	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
 	// Value is the value for the Helm parameter
@@ -409,6 +434,9 @@ type HelmParameter struct {
 
 // HelmFileParameter is a file parameter that's passed to helm template during manifest generation
 type HelmFileParameter struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Name is the name of the Helm parameter
 	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
 	// Path is the path to the file containing the values for the Helm parameter
@@ -515,6 +543,9 @@ func (images KustomizeImages) Find(image KustomizeImage) int {
 
 // ApplicationSourceKustomize holds options specific to an Application source specific to Kustomize
 type ApplicationSourceKustomize struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// NamePrefix is a prefix appended to resources for Kustomize apps
 	NamePrefix string `json:"namePrefix,omitempty" protobuf:"bytes,1,opt,name=namePrefix"`
 	// NameSuffix is a suffix appended to resources for Kustomize apps
@@ -552,6 +583,9 @@ type ApplicationSourceKustomize struct {
 }
 
 type KustomizeReplica struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Name of Deployment or StatefulSet
 	Name string `json:"name" protobuf:"bytes,1,name=name"`
 	// Number of replicas
@@ -596,6 +630,9 @@ func NewKustomizeReplica(text string) (*KustomizeReplica, error) {
 type KustomizePatches []KustomizePatch
 
 type KustomizePatch struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Path    string             `json:"path,omitempty" yaml:"path,omitempty" protobuf:"bytes,1,opt,name=path"`
 	Patch   string             `json:"patch,omitempty" yaml:"patch,omitempty" protobuf:"bytes,2,opt,name=patch"`
 	Target  *KustomizeSelector `json:"target,omitempty" yaml:"target,omitempty" protobuf:"bytes,3,opt,name=target"`
@@ -613,18 +650,27 @@ func (p *KustomizePatch) Equals(o KustomizePatch) bool {
 }
 
 type KustomizeSelector struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	KustomizeResId     `json:",inline,omitempty" yaml:",inline,omitempty" protobuf:"bytes,1,opt,name=resId"`
 	AnnotationSelector string `json:"annotationSelector,omitempty" yaml:"annotationSelector,omitempty" protobuf:"bytes,2,opt,name=annotationSelector"`
 	LabelSelector      string `json:"labelSelector,omitempty" yaml:"labelSelector,omitempty" protobuf:"bytes,3,opt,name=labelSelector"`
 }
 
 type KustomizeResId struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	KustomizeGvk `json:",inline,omitempty" yaml:",inline,omitempty" protobuf:"bytes,1,opt,name=gvk"`
 	Name         string `json:"name,omitempty" yaml:"name,omitempty" protobuf:"bytes,2,opt,name=name"`
 	Namespace    string `json:"namespace,omitempty" yaml:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
 }
 
 type KustomizeGvk struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Group   string `json:"group,omitempty" yaml:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
 	Version string `json:"version,omitempty" yaml:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
 	Kind    string `json:"kind,omitempty" yaml:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
@@ -691,6 +737,9 @@ func (rs KustomizeReplicas) FindByName(name string) int {
 
 // JsonnetVar represents a variable to be passed to jsonnet during manifest generation
 type JsonnetVar struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Name  string `json:"name" protobuf:"bytes,1,opt,name=name"`
 	Value string `json:"value" protobuf:"bytes,2,opt,name=value"`
 	Code  bool   `json:"code,omitempty" protobuf:"bytes,3,opt,name=code"`
@@ -708,6 +757,9 @@ func NewJsonnetVar(s string, code bool) JsonnetVar {
 
 // ApplicationSourceJsonnet holds options specific to applications of type Jsonnet
 type ApplicationSourceJsonnet struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// ExtVars is a list of Jsonnet External Variables
 	ExtVars []JsonnetVar `json:"extVars,omitempty" protobuf:"bytes,1,opt,name=extVars"`
 	// TLAS is a list of Jsonnet Top-level Arguments
@@ -723,6 +775,9 @@ func (j *ApplicationSourceJsonnet) IsZero() bool {
 
 // ApplicationSourceDirectory holds options for applications of type plain YAML or Jsonnet
 type ApplicationSourceDirectory struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Recurse specifies whether to scan a directory recursively for manifests
 	Recurse bool `json:"recurse,omitempty" protobuf:"bytes,1,opt,name=recurse"`
 	// Jsonnet holds options specific to Jsonnet
@@ -739,6 +794,9 @@ func (d *ApplicationSourceDirectory) IsZero() bool {
 }
 
 type OptionalMap struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Map is the value of a map type parameter.
 	// +optional
 	Map map[string]string `json:"map" protobuf:"bytes,1,rep,name=map"`
@@ -773,6 +831,9 @@ func (o *OptionalMap) Equals(other *OptionalMap) bool {
 }
 
 type OptionalArray struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Array is the value of an array type parameter.
 	// +optional
 	Array []string `json:"array" protobuf:"bytes,1,rep,name=array"`
@@ -807,6 +868,9 @@ func (o *OptionalArray) Equals(other *OptionalArray) bool {
 }
 
 type ApplicationSourcePluginParameter struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// We use pointers to structs because go-to-protobuf represents pointers to arrays/maps as repeated fields.
 	// These repeated fields have no way to represent "present but empty." So we would have no way to distinguish
 	// {name: parameters, array: []} from {name: parameter}
@@ -928,6 +992,9 @@ func escaped(paramName string) string {
 
 // ApplicationSourcePlugin holds options specific to config management plugins
 type ApplicationSourcePlugin struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Name       string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
 	Env        `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
 	Parameters ApplicationSourcePluginParameters `json:"parameters,omitempty" protobuf:"bytes,3,opt,name=parameters"`
@@ -987,6 +1054,9 @@ func (c *ApplicationSourcePlugin) RemoveEnvEntry(key string) error {
 
 // ApplicationDestination holds information about the application's destination
 type ApplicationDestination struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Server specifies the URL of the target cluster's Kubernetes control plane API. This must be set if Name is not set.
 	Server string `json:"server,omitempty" protobuf:"bytes,1,opt,name=server"`
 	// Namespace specifies the target namespace for the application's resources.
@@ -1008,6 +1078,9 @@ var (
 
 // ApplicationStatus contains status information for the application
 type ApplicationStatus struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Resources is a list of Kubernetes resources managed by this application
 	Resources []ResourceStatus `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
 	// Sync contains information about the application's current sync status
@@ -1068,11 +1141,17 @@ func (app *Application) BuildComparedToStatus() ComparedTo {
 
 // JWTTokens represents a list of JWT tokens
 type JWTTokens struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Items []JWTToken `json:"items,omitempty" protobuf:"bytes,1,opt,name=items"`
 }
 
 // OperationInitiator contains information about the initiator of an operation
 type OperationInitiator struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Username contains the name of a user who started operation
 	Username string `json:"username,omitempty" protobuf:"bytes,1,opt,name=username"`
 	// Automated is set to true if operation was initiated automatically by the application controller.
@@ -1081,6 +1160,9 @@ type OperationInitiator struct {
 
 // Operation contains information about a requested or running operation
 type Operation struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Sync contains parameters for the operation
 	Sync *SyncOperation `json:"sync,omitempty" protobuf:"bytes,1,opt,name=sync"`
 	// InitiatedBy contains information about who initiated the operations
@@ -1101,6 +1183,9 @@ func (o *Operation) DryRun() bool {
 
 // SyncOperationResource contains resources to sync.
 type SyncOperationResource struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Group     string `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
 	Kind      string `json:"kind" protobuf:"bytes,2,opt,name=kind"`
 	Name      string `json:"name" protobuf:"bytes,3,opt,name=name"`
@@ -1147,6 +1232,9 @@ func (r SyncOperationResource) Compare(name string, namespace string, gvk schema
 
 // SyncOperation contains details about a sync operation.
 type SyncOperation struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Revision is the revision (Git) or chart version (Helm) which to sync the application to
 	// If omitted, will use the revision specified in app spec.
 	Revision string `json:"revision,omitempty" protobuf:"bytes,1,opt,name=revision"`
@@ -1180,6 +1268,9 @@ func (o *SyncOperation) IsApplyStrategy() bool {
 
 // OperationState contains information about state of a running operation
 type OperationState struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Operation is the original requested operation
 	Operation Operation `json:"operation" protobuf:"bytes,1,opt,name=operation"`
 	// Phase is the current phase of the operation
@@ -1197,6 +1288,9 @@ type OperationState struct {
 }
 
 type Info struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Name  string `json:"name" protobuf:"bytes,1,name=name"`
 	Value string `json:"value" protobuf:"bytes,2,name=value"`
 }
@@ -1236,12 +1330,21 @@ func (o SyncOptions) HasOption(option string) bool {
 }
 
 type ManagedNamespaceMetadata struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Labels      map[string]string `json:"labels,omitempty" protobuf:"bytes,1,opt,name=labels"`
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,2,opt,name=annotations"`
 }
 
 // SyncPolicy controls when a sync will be performed in response to updates in git
 type SyncPolicy struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Automated will keep an application synced to the target revision
 	Automated *SyncPolicyAutomated `json:"automated,omitempty" protobuf:"bytes,1,opt,name=automated"`
 	// Options allow you to specify whole app sync-options
@@ -1260,6 +1363,9 @@ func (p *SyncPolicy) IsZero() bool {
 
 // RetryStrategy contains information about the strategy to apply when a sync failed
 type RetryStrategy struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Limit is the maximum number of attempts for retrying a failed sync. If set to 0, no retries will be performed.
 	Limit int64 `json:"limit,omitempty" protobuf:"bytes,1,opt,name=limit"`
 	// Backoff controls how to backoff on subsequent retries of failed syncs
@@ -1312,6 +1418,9 @@ func (r *RetryStrategy) NextRetryAt(lastAttempt time.Time, retryCounts int64) (t
 
 // Backoff is the backoff strategy to use on subsequent retries for failing syncs
 type Backoff struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Duration is the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
 	Duration string `json:"duration,omitempty" protobuf:"bytes,1,opt,name=duration"`
 	// Factor is a factor to multiply the base duration after each failed retry
@@ -1322,6 +1431,9 @@ type Backoff struct {
 
 // SyncPolicyAutomated controls the behavior of an automated sync
 type SyncPolicyAutomated struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Prune specifies whether to delete resources from the cluster that are not found in the sources anymore as part of automated sync (default: false)
 	Prune bool `json:"prune,omitempty" protobuf:"bytes,1,opt,name=prune"`
 	// SelfHeal specifies whether to revert resources back to their desired state upon modification in the cluster (default: false)
@@ -1332,6 +1444,9 @@ type SyncPolicyAutomated struct {
 
 // SyncStrategy controls the manner in which a sync is performed
 type SyncStrategy struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Apply will perform a `kubectl apply` to perform the sync.
 	Apply *SyncStrategyApply `json:"apply,omitempty" protobuf:"bytes,1,opt,name=apply"`
 	// Hook will submit any referenced resources to perform the sync. This is the default strategy
@@ -1353,6 +1468,9 @@ func (m *SyncStrategy) Force() bool {
 
 // SyncStrategyApply uses `kubectl apply` to perform the apply
 type SyncStrategyApply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Force indicates whether or not to supply the --force flag to `kubectl apply`.
 	// The --force flag deletes and re-create the resource, when PATCH encounters conflict and has
 	// retried for 5 times.
@@ -1362,6 +1480,9 @@ type SyncStrategyApply struct {
 // SyncStrategyHook will perform a sync using hooks annotations.
 // If no hook annotation is specified falls back to `kubectl apply`.
 type SyncStrategyHook struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Embed SyncStrategyApply type to inherit any `apply` options
 	// +optional
 	SyncStrategyApply `json:",inline" protobuf:"bytes,1,opt,name=syncStrategyApply"`
@@ -1369,6 +1490,9 @@ type SyncStrategyHook struct {
 
 // RevisionMetadata contains metadata for a specific revision in a Git repository
 type RevisionMetadata struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// who authored this revision,
 	// typically their name and email, e.g. "John Doe <john_doe@my-company.com>",
 	// but might not match this example
@@ -1386,6 +1510,9 @@ type RevisionMetadata struct {
 
 // ChartDetails contains helm chart metadata for a specific version
 type ChartDetails struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Description string `json:"description,omitempty" protobuf:"bytes,1,opt,name=description"`
 	// The URL of this projects home page, e.g. "http://example.com"
 	Home string `json:"home,omitempty" protobuf:"bytes,2,opt,name=home"`
@@ -1395,6 +1522,9 @@ type ChartDetails struct {
 
 // SyncOperationResult represent result of sync operation
 type SyncOperationResult struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Resources contains a list of sync result items for each individual resource in a sync operation
 	Resources ResourceResults `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
 	// Revision holds the revision this sync operation was performed to
@@ -1411,6 +1541,9 @@ type SyncOperationResult struct {
 
 // ResourceResult holds the operation result details of a specific resource
 type ResourceResult struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Group specifies the API group of the resource
 	Group string `json:"group" protobuf:"bytes,1,opt,name=group"`
 	// Version specifies the API version of the resource
@@ -1468,6 +1601,9 @@ func (r ResourceResults) PruningRequired() (num int) {
 
 // RevisionHistory contains history information about a previous sync
 type RevisionHistory struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Revision holds the revision the sync was performed against
 	Revision string `json:"revision,omitempty" protobuf:"bytes,2,opt,name=revision"`
 	// DeployedAt holds the time the sync operation completed
@@ -1488,6 +1624,9 @@ type RevisionHistory struct {
 
 // ApplicationWatchEvent contains information about application change.
 type ApplicationWatchEvent struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Type watch.EventType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=k8s.io/apimachinery/pkg/watch.EventType"`
 
 	// Application is:
@@ -1501,6 +1640,9 @@ type ApplicationWatchEvent struct {
 // ApplicationList is list of Application resources
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ApplicationList struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
 	Items           []Application `json:"items" protobuf:"bytes,2,rep,name=items"`
@@ -1508,6 +1650,9 @@ type ApplicationList struct {
 
 // ComponentParameter contains information about component parameter value
 type ComponentParameter struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Component string `json:"component,omitempty" protobuf:"bytes,1,opt,name=component"`
 	Name      string `json:"name" protobuf:"bytes,2,opt,name=name"`
 	Value     string `json:"value" protobuf:"bytes,3,opt,name=value"`
@@ -1555,6 +1700,9 @@ const (
 
 // ApplicationCondition contains details about an application condition, which is usually an error or warning
 type ApplicationCondition struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Type is an application condition type
 	Type ApplicationConditionType `json:"type" protobuf:"bytes,1,opt,name=type"`
 	// Message contains human-readable message indicating details about condition
@@ -1565,6 +1713,9 @@ type ApplicationCondition struct {
 
 // ComparedTo contains application source and target which was used for resources comparison
 type ComparedTo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Source is a reference to the application's source used for comparison
 	Source ApplicationSource `json:"source,omitempty" protobuf:"bytes,1,opt,name=source"`
 	// Destination is a reference to the application's destination used for comparison
@@ -1577,6 +1728,9 @@ type ComparedTo struct {
 
 // SyncStatus contains information about the currently observed live and desired states of an application
 type SyncStatus struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Status is the sync state of the comparison
 	Status SyncStatusCode `json:"status" protobuf:"bytes,1,opt,name=status,casttype=SyncStatusCode"`
 	// ComparedTo contains information about what has been compared
@@ -1589,6 +1743,9 @@ type SyncStatus struct {
 
 // HealthStatus contains information about the currently observed health state of an application or resource
 type HealthStatus struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Status holds the status code of the application or resource
 	Status health.HealthStatusCode `json:"status,omitempty" protobuf:"bytes,1,opt,name=status"`
 	// Message is a human-readable informational message describing the health status
@@ -1597,6 +1754,9 @@ type HealthStatus struct {
 
 // InfoItem contains arbitrary, human readable information about an application
 type InfoItem struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Name is a human readable title for this piece of information.
 	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
 	// Value is human readable content.
@@ -1606,6 +1766,9 @@ type InfoItem struct {
 // ResourceNetworkingInfo holds networking resource related information
 // TODO: describe members of this type
 type ResourceNetworkingInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	TargetLabels map[string]string        `json:"targetLabels,omitempty" protobuf:"bytes,1,opt,name=targetLabels"`
 	TargetRefs   []ResourceRef            `json:"targetRefs,omitempty" protobuf:"bytes,2,opt,name=targetRefs"`
 	Labels       map[string]string        `json:"labels,omitempty" protobuf:"bytes,3,opt,name=labels"`
@@ -1616,6 +1779,9 @@ type ResourceNetworkingInfo struct {
 
 // TODO: describe this type
 type HostResourceInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	ResourceName         v1.ResourceName `json:"resourceName,omitempty" protobuf:"bytes,1,name=resourceName"`
 	RequestedByApp       int64           `json:"requestedByApp,omitempty" protobuf:"bytes,2,name=requestedByApp"`
 	RequestedByNeighbors int64           `json:"requestedByNeighbors,omitempty" protobuf:"bytes,3,name=requestedByNeighbors"`
@@ -1626,6 +1792,9 @@ type HostResourceInfo struct {
 // TODO: describe purpose of this type
 // TODO: describe members of this type
 type HostInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Name          string             `json:"name,omitempty" protobuf:"bytes,1,name=name"`
 	ResourcesInfo []HostResourceInfo `json:"resourcesInfo,omitempty" protobuf:"bytes,2,name=resourcesInfo"`
 	SystemInfo    v1.NodeSystemInfo  `json:"systemInfo,omitempty" protobuf:"bytes,3,opt,name=systemInfo"`
@@ -1634,6 +1803,9 @@ type HostInfo struct {
 // ApplicationTree holds nodes which belongs to the application
 // TODO: describe purpose of this type
 type ApplicationTree struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Nodes contains list of nodes which either directly managed by the application and children of directly managed nodes.
 	Nodes []ResourceNode `json:"nodes,omitempty" protobuf:"bytes,1,rep,name=nodes"`
 	// OrphanedNodes contains if or orphaned nodes: nodes which are not managed by the app but in the same namespace. List is populated only if orphaned resources enabled in app project.
@@ -1712,6 +1884,9 @@ func (t *ApplicationTree) Normalize() {
 
 // ApplicationSummary contains information about URLs and container images used by an application
 type ApplicationSummary struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// ExternalURLs holds all external URLs of application child resources.
 	ExternalURLs []string `json:"externalURLs,omitempty" protobuf:"bytes,1,opt,name=externalURLs"`
 	// Images holds all images of application child resources.
@@ -1767,6 +1942,9 @@ func (t *ApplicationTree) GetSummary(app *Application) ApplicationSummary {
 
 // ResourceRef includes fields which uniquely identify a resource
 type ResourceRef struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Group     string `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
 	Version   string `json:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
 	Kind      string `json:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
@@ -1778,6 +1956,9 @@ type ResourceRef struct {
 // ResourceNode contains information about live resource and its children
 // TODO: describe members of this type
 type ResourceNode struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	ResourceRef     `json:",inline" protobuf:"bytes,1,opt,name=resourceRef"`
 	ParentRefs      []ResourceRef           `json:"parentRefs,omitempty" protobuf:"bytes,2,opt,name=parentRefs"`
 	Info            []InfoItem              `json:"info,omitempty" protobuf:"bytes,3,opt,name=info"`
@@ -1806,6 +1987,9 @@ func (n *ResourceNode) GroupKindVersion() schema.GroupVersionKind {
 // ResourceStatus holds the current sync and health status of a resource
 // TODO: describe members of this type
 type ResourceStatus struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Group           string         `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
 	Version         string         `json:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
 	Kind            string         `json:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
@@ -1826,6 +2010,9 @@ func (r *ResourceStatus) GroupVersionKind() schema.GroupVersionKind {
 // ResourceDiff holds the diff of a live and target resource object
 // TODO: describe members of this type
 type ResourceDiff struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Group     string `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
 	Kind      string `json:"kind,omitempty" protobuf:"bytes,2,opt,name=kind"`
 	Namespace string `json:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
@@ -1866,6 +2053,9 @@ const (
 
 // ConnectionState contains information about remote resource connection state, currently used for clusters and repositories
 type ConnectionState struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Status contains the current status indicator for the connection
 	Status ConnectionStatus `json:"status" protobuf:"bytes,1,opt,name=status"`
 	// Message contains human readable information about the connection status
@@ -1876,6 +2066,9 @@ type ConnectionState struct {
 
 // Cluster is the definition of a cluster resource
 type Cluster struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// ID is an internal field cluster identifier. Not exposed via API.
 	ID string `json:"-"`
 	// Server is the API server URL of the Kubernetes cluster
@@ -1948,6 +2141,9 @@ func (c *Cluster) Equals(other *Cluster) bool {
 
 // ClusterInfo contains information about the cluster
 type ClusterInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// ConnectionState contains information about the connection to the cluster
 	ConnectionState ConnectionState `json:"connectionState,omitempty" protobuf:"bytes,1,opt,name=connectionState"`
 	// ServerVersion contains information about the Kubernetes version of the cluster
@@ -1970,6 +2166,9 @@ func (c *ClusterInfo) GetApiVersions() []string {
 
 // ClusterCacheInfo contains information about the cluster cache
 type ClusterCacheInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// ResourcesCount holds number of observed Kubernetes resources
 	ResourcesCount int64 `json:"resourcesCount,omitempty" protobuf:"bytes,1,opt,name=resourcesCount"`
 	// APIsCount holds number of observed Kubernetes API count
@@ -1980,12 +2179,18 @@ type ClusterCacheInfo struct {
 
 // ClusterList is a collection of Clusters.
 type ClusterList struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	Items           []Cluster `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // AWSAuthConfig is an AWS IAM authentication configuration
 type AWSAuthConfig struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// ClusterName contains AWS cluster name
 	ClusterName string `json:"clusterName,omitempty" protobuf:"bytes,1,opt,name=clusterName"`
 
@@ -1999,6 +2204,9 @@ type AWSAuthConfig struct {
 // ExecProviderConfig is config used to call an external command to perform cluster authentication
 // See: https://godoc.org/k8s.io/client-go/tools/clientcmd/api#ExecConfig
 type ExecProviderConfig struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Command to execute
 	Command string `json:"command,omitempty" protobuf:"bytes,1,opt,name=command"`
 
@@ -2018,6 +2226,9 @@ type ExecProviderConfig struct {
 // ClusterConfig is the configuration attributes. This structure is subset of the go-client
 // rest.Config with annotations added for marshalling.
 type ClusterConfig struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Server requires Basic authentication
 	Username string `json:"username,omitempty" protobuf:"bytes,1,opt,name=username"`
 	Password string `json:"password,omitempty" protobuf:"bytes,2,opt,name=password"`
@@ -2039,6 +2250,9 @@ type ClusterConfig struct {
 
 // TLSClientConfig contains settings to enable transport layer security
 type TLSClientConfig struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Insecure specifies that the server should be accessed without verifying the TLS certificate. For testing only.
 	Insecure bool `json:"insecure" protobuf:"bytes,1,opt,name=insecure"`
 	// ServerName is passed to the server for SNI and is used in the client to check server
@@ -2060,6 +2274,9 @@ type TLSClientConfig struct {
 // This is mainly used for unit conversion in unknown resources (e.g. 0.1 == 100mi)
 // TODO: Describe the members of this type
 type KnownTypeField struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Field string `json:"field,omitempty" protobuf:"bytes,1,opt,name=field"`
 	Type  string `json:"type,omitempty" protobuf:"bytes,2,opt,name=type"`
 }
@@ -2067,6 +2284,9 @@ type KnownTypeField struct {
 // OverrideIgnoreDiff contains configurations about how fields should be ignored during diffs between
 // the desired state and live state
 type OverrideIgnoreDiff struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// JSONPointers is a JSON path list following the format defined in RFC4627 (https://datatracker.ietf.org/doc/html/rfc6902#section-3)
 	JSONPointers []string `json:"jsonPointers" protobuf:"bytes,1,rep,name=jSONPointers"`
 	// JQPathExpressions is a JQ path list that will be evaludated during the diff process
@@ -2077,6 +2297,9 @@ type OverrideIgnoreDiff struct {
 }
 
 type rawResourceOverride struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	HealthLua             string           `json:"health.lua,omitempty"`
 	UseOpenLibs           bool             `json:"health.lua.useOpenLibs,omitempty"`
 	Actions               string           `json:"actions,omitempty"`
@@ -2088,6 +2311,9 @@ type rawResourceOverride struct {
 // ResourceOverride holds configuration to customize resource diffing and health assessment
 // TODO: describe the members of this type
 type ResourceOverride struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	HealthLua             string             `protobuf:"bytes,1,opt,name=healthLua"`
 	UseOpenLibs           bool               `protobuf:"bytes,5,opt,name=useOpenLibs"`
 	Actions               string             `protobuf:"bytes,3,opt,name=actions"`
@@ -2144,6 +2370,9 @@ func (o *ResourceOverride) GetActions() (ResourceActions, error) {
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceActions struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	ActionDiscoveryLua string                     `json:"discovery.lua,omitempty" yaml:"discovery.lua,omitempty" protobuf:"bytes,1,opt,name=actionDiscoveryLua"`
 	Definitions        []ResourceActionDefinition `json:"definitions,omitempty" protobuf:"bytes,2,rep,name=definitions"`
 }
@@ -2151,6 +2380,9 @@ type ResourceActions struct {
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceActionDefinition struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Name      string `json:"name" protobuf:"bytes,1,opt,name=name"`
 	ActionLua string `json:"action.lua" yaml:"action.lua" protobuf:"bytes,2,opt,name=actionLua"`
 }
@@ -2158,6 +2390,9 @@ type ResourceActionDefinition struct {
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceAction struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Name        string                `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
 	Params      []ResourceActionParam `json:"params,omitempty" protobuf:"bytes,2,rep,name=params"`
 	Disabled    bool                  `json:"disabled,omitempty" protobuf:"varint,3,opt,name=disabled"`
@@ -2168,6 +2403,9 @@ type ResourceAction struct {
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceActionParam struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Name    string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
 	Value   string `json:"value,omitempty" protobuf:"bytes,2,opt,name=value"`
 	Type    string `json:"type,omitempty" protobuf:"bytes,3,opt,name=type"`
@@ -2293,6 +2531,9 @@ func validateGroupName(name string) error {
 
 // OrphanedResourcesMonitorSettings holds settings of orphaned resources monitoring
 type OrphanedResourcesMonitorSettings struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Warn indicates if warning condition should be created for apps which have orphaned resources
 	Warn *bool `json:"warn,omitempty" protobuf:"bytes,1,name=warn"`
 	// Ignore contains a list of resources that are to be excluded from orphaned resources monitoring
@@ -2301,6 +2542,9 @@ type OrphanedResourcesMonitorSettings struct {
 
 // OrphanedResourceKey is a reference to a resource to be ignored from
 type OrphanedResourceKey struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Group string `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
 	Kind  string `json:"kind,omitempty" protobuf:"bytes,2,opt,name=kind"`
 	Name  string `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
@@ -2313,12 +2557,18 @@ func (s *OrphanedResourcesMonitorSettings) IsWarn() bool {
 
 // SignatureKey is the specification of a key required to verify commit signatures with
 type SignatureKey struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// The ID of the key in hexadecimal notation
 	KeyID string `json:"keyID" protobuf:"bytes,1,name=keyID"`
 }
 
 // AppProjectSpec is the specification of an AppProject
 type AppProjectSpec struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// SourceRepos contains list of repository URLs which can be used for deployment
 	SourceRepos []string `json:"sourceRepos,omitempty" protobuf:"bytes,1,name=sourceRepos"`
 	// Destinations contains list of destinations available for deployment
@@ -2354,6 +2604,9 @@ type SyncWindows []*SyncWindow
 
 // SyncWindow contains the kind, time, duration and attributes that are used to assign the syncWindows to apps
 type SyncWindow struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Kind defines if the window allows or blocks syncs
 	Kind string `json:"kind,omitempty" protobuf:"bytes,1,opt,name=kind"`
 	// Schedule is the time the window will begin, specified in cron format
@@ -2717,6 +2970,9 @@ func (d AppProjectSpec) DestinationClusters() []string {
 
 // ProjectRole represents a role that has access to a project
 type ProjectRole struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Name is a name for this role
 	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
 	// Description is a description of the role
@@ -2731,6 +2987,9 @@ type ProjectRole struct {
 
 // JWTToken holds the issuedAt and expiresAt values of a token
 type JWTToken struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	IssuedAt  int64  `json:"iat" protobuf:"int64,1,opt,name=iat"`
 	ExpiresAt int64  `json:"exp,omitempty" protobuf:"int64,2,opt,name=exp"`
 	ID        string `json:"id,omitempty" protobuf:"bytes,3,opt,name=id"`
@@ -2738,12 +2997,18 @@ type JWTToken struct {
 
 // Command holds binary path and arguments list
 type Command struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Command []string `json:"command,omitempty" protobuf:"bytes,1,name=command"`
 	Args    []string `json:"args,omitempty" protobuf:"bytes,2,rep,name=args"`
 }
 
 // ConfigManagementPlugin contains config management plugin configuration
 type ConfigManagementPlugin struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	Name     string   `json:"name" protobuf:"bytes,1,name=name"`
 	Init     *Command `json:"init,omitempty" protobuf:"bytes,2,name=init"`
 	Generate Command  `json:"generate" protobuf:"bytes,3,name=generate"`
@@ -2752,11 +3017,17 @@ type ConfigManagementPlugin struct {
 
 // HelmOptions holds helm options
 type HelmOptions struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	ValuesFileSchemes []string `protobuf:"bytes,1,opt,name=valuesFileSchemes"`
 }
 
 // KustomizeOptions are options for kustomize to use when building manifests
 type KustomizeOptions struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// BuildOptions is a string of build parameters to use when calling `kustomize build`
 	BuildOptions string `protobuf:"bytes,1,opt,name=buildOptions"`
 	// BinaryPath holds optional path to kustomize binary
@@ -2765,6 +3036,9 @@ type KustomizeOptions struct {
 
 // ApplicationDestinationServiceAccount holds information about the service account to be impersonated for the application sync operation.
 type ApplicationDestinationServiceAccount struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 	// Server specifies the URL of the target cluster's Kubernetes control plane API.
 	Server string `json:"server,omitempty" protobuf:"bytes,1,opt,name=server"`
 	// Namespace specifies the target namespace for the application's resources.
@@ -2780,6 +3054,7 @@ func (app *Application) CascadedDeletion() bool {
 			return true
 		}
 	}
+	
 	return false
 }
 
