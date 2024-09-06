@@ -476,8 +476,8 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 			return fmt.Errorf("error getting API resources: %w", err)
 		}
 
-		
-		sources = make([]appv1.ApplicationSource, len(appSpec.GetSources()))
+		appSpec := a.Spec.DeepCopy()
+		sources := make([]appv1.ApplicationSource, len(appSpec.GetSources()))
           if a.Spec.HasMultipleSources() {
 			for i, sourcePtr := range appSpec.GetSources() {
 				sources[i] = *sourcePtr // Dereference each pointer
@@ -803,7 +803,7 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 }
 
 // ListResourceEvents returns a list of event resources
-func (s *Server) ListResourceEvents(ctx context.Context, q *application.ApplicationResourceEventsQuery) (*apiclient.EventListWrapper, error) {
+func (s *Server) ListResourceEvents(ctx context.Context, q *application.ApplicationResourceEventsQuery) (*application.EventListWrapper, error) {
 	a, _, err := s.getApplicationEnforceRBACInformer(ctx, rbacpolicy.ActionGet, q.GetProject(), q.GetAppNamespace(), q.GetName())
 	if err != nil {
 		return nil, err
