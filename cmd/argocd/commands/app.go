@@ -165,14 +165,16 @@ func NewApplicationCreateCommand(clientOpts *argocdclient.ClientOptions) *cobra.
 				}
 				conn, appIf := argocdClient.NewApplicationClientOrDie()
 				defer argoio.Close(conn)
+			
 				appCreateRequest := application.ApplicationCreateRequest{
-					Application: app,
-					Upsert:      &upsert,
-					Validate:    &appOpts.Validate,
+					Application: app,                        
+					Upsert:      upsert,                     // Directly use boolean value
+					Validate:    appOpts.Validate,           // Directly use boolean value
 				}
+				
 
 				// Get app before creating to see if it is being updated or no change
-				existing, err := appIf.Get(ctx, &application.ApplicationQuery{Name: &app.Name})
+				existing, err := appIf.Get(ctx, &application.ApplicationQuery{Name: appName})
 				unwrappedError := grpc.UnwrapGRPCStatus(err).Code()
 				// As part of the fix for CVE-2022-41354, the API will return Permission Denied when an app does not exist.
 				if unwrappedError != codes.NotFound && unwrappedError != codes.PermissionDenied {
@@ -238,6 +240,8 @@ func getRefreshType(refresh bool, hardRefresh bool) *string {
 	return nil
 }
 
+
+
 func hasAppChanged(appReq, appRes *argoappv1.Application, upsert bool) bool {
 	// upsert==false, no change occurred from create command
 	if !upsert {
@@ -269,12 +273,19 @@ func hasAppChanged(appReq, appRes *argoappv1.Application, upsert bool) bool {
 	return true
 }
 
+
 func parentChildDetails(appIf application.ApplicationServiceClient, ctx context.Context, appName string, appNs string) (map[string]argoappv1.ResourceNode, map[string][]string, map[string]struct{}) {
 	mapUidToNode := make(map[string]argoappv1.ResourceNode)
 	mapParentToChild := make(map[string][]string)
 	parentNode := make(map[string]struct{})
 
-	resourceTree, err := appIf.ResourceTree(ctx, &application.ResourcesQuery{Name: &appName, AppNamespace: &appNs, ApplicationName: &appName})
+	
+	resourceTree, err := appIf.ResourceTree(ctx, &application.ResourcesQuery{
+		Name:            appName,    
+		AppNamespace:    appNs,     
+		ApplicationName: appName,    
+	})
+
 	errors.CheckError(err)
 
 	for _, node := range resourceTree.Nodes {
@@ -369,10 +380,11 @@ func NewApplicationGetCommand(clientOpts *argocdclient.ClientOptions) *cobra.Com
 			appName, appNs := argo.ParseFromQualifiedName(args[0], appNamespace)
 
 			app, err := appIf.Get(ctx, &application.ApplicationQuery{
-				Name:         &appName,
-				Refresh:      getRefreshType(refresh, hardRefresh),
-				AppNamespace: &appNs,
+				Name:         appName,        
+				Refresh:      getRefreshType(refresh, hardRefresh), 
+				AppNamespace: appNs,          
 			})
+			
 
 			errors.CheckError(err)
 

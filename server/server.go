@@ -956,8 +956,8 @@ func newArgoCDServiceSet(a *ArgoCDServer) *ArgoCDServiceSet {
 
 // translateGrpcCookieHeader conditionally sets a cookie on the response.
 func (a *ArgoCDServer) translateGrpcCookieHeader(ctx context.Context, w http.ResponseWriter, resp protoreflect.ProtoMessage) error {
-	// Cast the response to the appropriate session response type if possible
-	if sessionResp, ok := resp.Interface().(*sessionpkg.SessionResponse); ok {
+	// Check if the response is a session response by using type assertion
+	if sessionResp, ok := resp.(*sessionpkg.SessionResponse); ok {
 		token := sessionResp.Token
 		err := a.setTokenCookie(token, w)
 		if err != nil {

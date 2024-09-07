@@ -113,6 +113,7 @@ type RepoServerInitConstants struct {
 	HelmRegistryMaxIndexSize                     int64
 	DisableHelmManifestMaxExtractedSize          bool
 	IncludeHiddenDirectories                     bool
+	apiclient.UnimplementedRepoServerServiceServer
 }
 
 // NewService returns a new instance of the Manifest service
