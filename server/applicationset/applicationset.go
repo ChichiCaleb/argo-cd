@@ -65,6 +65,8 @@ type Server struct {
 	ScmRootCAPath            string
 	AllowedScmProviders      []string
 	EnableScmProviders       bool
+	// Embed the unimplemented server to satisfy the interface
+	applicationset.UnimplementedApplicationSetServiceServer
 }
 
 // NewServer returns a new instance of the ApplicationSet service
@@ -113,6 +115,7 @@ func NewServer(
 	}
 	return s
 }
+
 
 func (s *Server) Get(ctx context.Context, q *applicationset.ApplicationSetGetQuery) (*v1alpha1.ApplicationSet, error) {
 	namespace := s.appsetNamespaceOrDefault(q.AppsetNamespace)

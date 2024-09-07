@@ -10,7 +10,8 @@ import (
 	"github.com/argoproj/argo-cd/v2/util/kube"
 
 	"github.com/argoproj/pkg/grpc/http"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+    "google.golang.org/protobuf/reflect/protoreflect"
 
 	// nolint:staticcheck
 	"github.com/golang/protobuf/proto"
@@ -112,7 +113,7 @@ func processApplicationListField(v interface{}, fields map[string]interface{}, e
 }
 
 func init() {
-	logsForwarder := func(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w gohttp.ResponseWriter, req *gohttp.Request, recv func() (proto.Message, error), opts ...func(context.Context, gohttp.ResponseWriter, proto.Message) error) {
+	logsForwarder := func(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w gohttp.ResponseWriter, req *gohttp.Request, recv func() (protoreflect.ProtoMessage, error), opts ...func(context.Context, gohttp.ResponseWriter, protoreflect.ProtoMessage) error) {
 		if req.URL.Query().Get("download") == "true" {
 			w.Header().Set("Content-Type", "application/octet-stream")
 			fileName := "log"
@@ -139,16 +140,18 @@ func init() {
 			http.StreamForwarder(ctx, mux, marshaler, w, req, recv, opts...)
 		}
 	}
+	
 	forward_ApplicationService_PodLogs_0 = logsForwarder
-	forward_ApplicationService_PodLogs_1 = logsForwarder
-	forward_ApplicationService_WatchResourceTree_0 = http.StreamForwarder
-	forward_ApplicationService_Watch_0 = http.NewStreamForwarder(func(message proto.Message) (string, error) {
-		event, ok := message.(*v1alpha1.ApplicationWatchEvent)
-		if !ok {
-			return "", errors.New("unexpected message type")
-		}
-		return event.Application.Name, nil
-	})
-	forward_ApplicationService_List_0 = http.UnaryForwarderWithFieldProcessor(processApplicationListField)
-	forward_ApplicationService_ManagedResources_0 = http.UnaryForwarder
+forward_ApplicationService_PodLogs_1 = logsForwarder
+forward_ApplicationService_WatchResourceTree_0 = http.StreamForwarder
+forward_ApplicationService_Watch_0 = http.NewStreamForwarder(func(message protoreflect.ProtoMessage) (string, error) {
+    event, ok := message.(*v1alpha1.ApplicationWatchEvent)
+    if !ok {
+        return "", errors.New("unexpected message type")
+    }
+    return event.Application.Name, nil
+})
+forward_ApplicationService_List_0 = http.UnaryForwarderWithFieldProcessor(processApplicationListField)
+forward_ApplicationService_ManagedResources_0 = http.UnaryForwarder
+
 }
