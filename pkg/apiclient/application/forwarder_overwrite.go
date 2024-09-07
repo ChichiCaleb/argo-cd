@@ -13,7 +13,7 @@ import (
     "google.golang.org/protobuf/reflect/protoreflect"
 
 
-
+http "github.com/argoproj/argo-cd/v2/pkg/apiclient"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 )
 
@@ -135,7 +135,7 @@ func init() {
 				}
 			}
 		} else {
-			StreamForwarder(ctx, mux, marshaler, w, req, func() (protoreflect.ProtoMessage, error) {
+			http.StreamForwarder(ctx, mux, marshaler, w, req, func() (protoreflect.ProtoMessage, error) {
 				return recv()
 			}, opts...)
 		}
@@ -143,15 +143,15 @@ func init() {
 
 	forward_ApplicationService_PodLogs_0 = logsForwarder
 	forward_ApplicationService_PodLogs_1 = logsForwarder
-	forward_ApplicationService_WatchResourceTree_0 = StreamForwarder
-	forward_ApplicationService_Watch_0 = NewStreamForwarder(func(message protoreflect.ProtoMessage) (string, error) {
+	forward_ApplicationService_WatchResourceTree_0 = http.StreamForwarder
+	forward_ApplicationService_Watch_0 = http.NewStreamForwarder(func(message protoreflect.ProtoMessage) (string, error) {
 		event, ok := message.(*v1alpha1.ApplicationWatchEvent)
 		if !ok {
 			return "", errors.New("unexpected message type")
 		}
 		return event.Application.Name, nil
 	})
-	forward_ApplicationService_List_0 = UnaryForwarderWithFieldProcessor(processApplicationListField)
+	forward_ApplicationService_List_0 = http.UnaryForwarderWithFieldProcessor(processApplicationListField)
 	forward_ApplicationService_ManagedResources_0 = http.UnaryForwarder
 
 	

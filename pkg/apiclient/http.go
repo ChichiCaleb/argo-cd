@@ -1,4 +1,4 @@
-package application
+package apiclient
 
 import (
 	"encoding/json"
@@ -24,21 +24,22 @@ type messageMarshaler struct {
 	exclude        bool
 	isSSE          bool
 	fieldProcessor FieldProcessor
+	marshaler      *runtime.JSONPb // Use JSONPb from grpc-gateway v2
 }
 
 func (m *messageMarshaler) Unmarshal(data []byte, v interface{}) error {
-	return json.Unmarshal(data, v)
+	return m.marshaler.Unmarshal(data, v)
 }
 
 func (m *messageMarshaler) NewDecoder(r io.Reader) runtime.Decoder {
-	return runtime.NewJSONDecoder(r)
+	return m.marshaler.NewDecoder(r)
 }
 
 func (m *messageMarshaler) NewEncoder(w io.Writer) runtime.Encoder {
-	return runtime.NewJSONEncoder(w)
+	return m.marshaler.NewEncoder(w)
 }
 
-func (m *messageMarshaler) ContentType() string {
+func (m *messageMarshaler) ContentType(v interface{}) string {
 	if m.isSSE {
 		return "text/event-stream"
 	}
@@ -147,7 +148,7 @@ func newMarshaler(req *http.Request, isSSE bool) *messageMarshaler {
 			fields[field] = true
 		}
 	}
-	return &messageMarshaler{isSSE: isSSE, fields: fields, exclude: exclude}
+	return &messageMarshaler{isSSE: isSSE, fields: fields, exclude: exclude, marshaler: &runtime.JSONPb{}}
 }
 
 type StreamForwarderFunc func(
@@ -163,7 +164,7 @@ type StreamForwarderFunc func(
 func flush(flusher http.Flusher) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Warn("recovered in flush, issue with writer inside http.ResponseWriter")
+			log.Println("recovered in flush, issue with writer inside http.ResponseWriter")
 		}
 	}()
 	flusher.Flush()
@@ -176,7 +177,7 @@ func writeKeepalive(w http.ResponseWriter, mut *sync.Mutex) {
 	_, err := w.Write([]byte(":\n"))
 
 	if err != nil {
-		log.Warnf("failed to write http keepalive response: %v", err)
+		log.Printf("failed to write http keepalive response: %v", err)
 	} else if f, ok := w.(http.Flusher); ok {
 		flush(f)
 	}
@@ -287,19 +288,8 @@ var (
 	// UnaryForwarder serializes protobuf message to JSON and removes fields using query parameter `fields`.
 	// The `fields` parameter example:
 	// fields=items.metadata.name,items.spec - response should include only items.metadata.name and items.spec fields
-	// fields=-items.metadata.name - response should include all fields except items.metadata.name
-	UnaryForwarder = func(
-		ctx context.Context,
-		mux *runtime.ServeMux,
-		marshaler runtime.Marshaler,
-		w http.ResponseWriter,
-		req *http.Request,
-		resp proto.Message,
-		opts ...func(context.Context, http.ResponseWriter, proto.Message) error,
-	) {
-		runtime.ForwardResponseMessage(ctx, mux, newMarshaler(req, false), w, req, resp, opts...)
-	}
-
+	// -items.spec - response should exclude items.spec field
+	UnaryForwarder = UnaryForwarderWithFieldProcessor(nil)
 	// StreamForwarder serializes protobuf message to JSON and removes fields using query parameter `fields`
 	StreamForwarder = NewStreamForwarder(nil)
 )

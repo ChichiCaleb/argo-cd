@@ -105,10 +105,10 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 			case bool:
 				if resOut {
 					finalLinks = append(finalLinks, &application.LinkInfo{
-						Title:       ptr.To(link.Title),
-						Url:         ptr.To(finalURL.String()),
-						Description: link.Description,
-						IconClass:   link.IconClass,
+						Title:       derefOrEmpty(link.Title),
+						Url:         derefOrEmpty(finalURL.String()),
+						Description: derefOrEmpty(link.Description),
+						IconClass:   derefOrEmpty(link.IconClass),
 					})
 				}
 			default:
@@ -117,14 +117,22 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 			}
 		} else {
 			finalLinks = append(finalLinks, &application.LinkInfo{
-				Title:       ptr.To(link.Title),
-				Url:         ptr.To(finalURL.String()),
-				Description: link.Description,
-				IconClass:   link.IconClass,
+				Title:       derefOrEmpty(link.Title),
+				Url:         derefOrEmpty(finalURL.String()),
+				Description: derefOrEmpty(link.Description),
+				IconClass:   derefOrEmpty(link.IconClass),
 			})
 		}
 	}
 	return &application.LinksResponse{
 		Items: finalLinks,
 	}, errors
+}
+
+// derefOrEmpty returns the string value of a pointer or an empty string if the pointer is nil
+func derefOrEmpty(ptr *string) string {
+	if ptr == nil {
+		return ""
+	}
+	return *ptr
 }
