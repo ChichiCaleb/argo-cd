@@ -20,7 +20,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/retry"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+
 
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/project"
@@ -491,16 +491,16 @@ func (s *Server) Delete(ctx context.Context, q *project.ProjectQuery) (*project.
 	return &project.EmptyResponse{}, err
 }
 
-func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*apiclient.EventListWrapper, error) {
+func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*project.EventListWrapper, error) {
 	// Enforce RBAC policy for the project
 	if err := s.enf.EnforceErr(ctx.Value("claims"), rbacpolicy.ResourceProjects, rbacpolicy.ActionGet, q.Name); err != nil {
-		return &apiclient.EventListWrapper{}, err
+		return &project.EventListWrapper{}, err
 	}
 
 	// Get the project
 	proj, err := s.appclientset.ArgoprojV1alpha1().AppProjects(s.ns).Get(ctx, q.Name, metav1.GetOptions{})
 	if err != nil {
-		return &apiclient.EventListWrapper{}, err
+		return &project.EventListWrapper{}, err
 	}
 
 	// Create field selector for events based on project information
@@ -513,11 +513,11 @@ func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*apic
 	// List events for the project
 	eventList, err := s.kubeclientset.CoreV1().Events(s.ns).List(ctx, metav1.ListOptions{FieldSelector: fieldSelector})
 	if err != nil {
-		return &apiclient.EventListWrapper{}, err
+		return &project.EventListWrapper{}, err
 	}
 
-	// Return the event list wrapped in the apiclient.EventListWrapper
-	return &apiclient.EventListWrapper{
+	// Return the event list wrapped in the project.EventListWrapper
+	return &project.EventListWrapper{
 		EventList: eventList,
 	}, nil
 }

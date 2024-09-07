@@ -44,6 +44,7 @@ type Server struct {
 	settings      *settings.SettingsManager
 	namespace     string
 	repositorypkg.UnimplementedRepositoryServiceServer
+	apiclient.UnimplementedRepoServerServiceServer
 	
 }
 
