@@ -35,6 +35,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/yaml"
 	"google.golang.org/protobuf/runtime/protoimpl"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/argoproj/argo-cd/v2/common"
 	"github.com/argoproj/argo-cd/v2/util/collections"
@@ -639,10 +640,18 @@ type KustomizePatch struct {
 	Options map[string]bool    `json:"options,omitempty" yaml:"options,omitempty" protobuf:"bytes,4,opt,name=options"`
 }
 
-// Copied from: https://github.com/kubernetes-sigs/kustomize/blob/cd7ba1744eadb793ab7cd056a76ee8a5ca725db9/api/types/patch.go
 func (p *KustomizePatch) Equals(o KustomizePatch) bool {
-	targetEqual := (p.Target == o.Target) ||
-		(p.Target != nil && o.Target != nil && *p.Target == *o.Target)
+	var targetEqual bool
+
+	// Use proto.Equal to compare protobuf fields
+	if p.Target == nil && o.Target == nil {
+		targetEqual = true
+	} else if p.Target != nil && o.Target != nil {
+		targetEqual = proto.Equal(p.Target, o.Target)
+	} else {
+		targetEqual = false
+	}
+
 	return p.Path == o.Path &&
 		p.Patch == o.Patch &&
 		targetEqual &&
@@ -2295,9 +2304,7 @@ type OverrideIgnoreDiff struct {
 }
 
 type rawResourceOverride struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	 
 	HealthLua             string           `json:"health.lua,omitempty"`
 	UseOpenLibs           bool             `json:"health.lua.useOpenLibs,omitempty"`
 	Actions               string           `json:"actions,omitempty"`
@@ -2305,6 +2312,9 @@ type rawResourceOverride struct {
 	IgnoreResourceUpdates string           `json:"ignoreResourceUpdates,omitempty"`
 	KnownTypeFields       []KnownTypeField `json:"knownTypeFields,omitempty"`
 }
+
+
+
 
 // ResourceOverride holds configuration to customize resource diffing and health assessment
 // TODO: describe the members of this type
@@ -2343,17 +2353,28 @@ func (s *ResourceOverride) UnmarshalJSON(data []byte) error {
 
 // TODO: describe this method
 func (s ResourceOverride) MarshalJSON() ([]byte, error) {
-	ignoreDifferencesData, err := yaml.Marshal(s.IgnoreDifferences)
-	if err != nil {
-		return nil, err
-	}
-	ignoreResourceUpdatesData, err := yaml.Marshal(s.IgnoreResourceUpdates)
-	if err != nil {
-		return nil, err
-	}
-	raw := &rawResourceOverride{s.HealthLua, s.UseOpenLibs, s.Actions, string(ignoreDifferencesData), string(ignoreResourceUpdatesData), s.KnownTypeFields}
-	return json.Marshal(raw)
+    ignoreDifferencesData, err := yaml.Marshal(s.IgnoreDifferences)
+    if err != nil {
+        return nil, err
+    }
+    ignoreResourceUpdatesData, err := yaml.Marshal(s.IgnoreResourceUpdates)
+    if err != nil {
+        return nil, err
+    }
+
+    raw := rawResourceOverride{
+        HealthLua:             s.HealthLua,
+        UseOpenLibs:           s.UseOpenLibs,
+        Actions:               s.Actions,
+        IgnoreDifferences:     string(ignoreDifferencesData),
+        IgnoreResourceUpdates: string(ignoreResourceUpdatesData),
+        KnownTypeFields:       s.KnownTypeFields,
+    }
+
+    return json.Marshal(raw)
 }
+
+
 
 // TODO: describe this method
 func (o *ResourceOverride) GetActions() (ResourceActions, error) {
