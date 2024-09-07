@@ -109,6 +109,7 @@ func collectStructAndFunctionNames(filePath string, structPattern, funcPattern *
 }
 
 // removeDuplicateStructsAndFunctions removes duplicates from pb.go files
+// removeDuplicateStructsAndFunctions removes duplicates and functions starting with "Get" from pb.go files
 func removeDuplicateStructsAndFunctions(filePath string, structPattern, funcPattern *regexp.Regexp, structsInOtherFiles, functionsInOtherFiles map[string]bool) error {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -153,7 +154,8 @@ func removeDuplicateStructsAndFunctions(filePath string, structPattern, funcPatt
 			receiverType := matches[2]
 			funcName := matches[3]
 
-			if functionsInOtherFiles[receiver+"."+funcName] || functionsInOtherFiles[receiverType+"."+funcName] {
+			// Check if the function is a duplicate or starts with "Get"
+			if functionsInOtherFiles[receiver+"."+funcName] || functionsInOtherFiles[receiverType+"."+funcName] || strings.HasPrefix(funcName, "Get") {
 				// Skip the entire function block
 				inFunc = true
 				bracesCount = 1
@@ -189,6 +191,7 @@ func removeDuplicateStructsAndFunctions(filePath string, structPattern, funcPatt
 
 	return nil
 }
+
 
 // replaceFile replaces the original file with the new file
 func replaceFile(originalPath, newPath string) error {
