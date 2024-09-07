@@ -132,3 +132,6 @@ func (a *ArgoCDRepoServer) CreateGRPC() *grpc.Server {
 
 	return server
 }
+
+// mustEmbedUnimplementedRepoServerServiceServer is required by the gRPC toolchain
+func (a *ArgoCDRepoServer) mustEmbedUnimplementedRepoServerServiceServer() {}
