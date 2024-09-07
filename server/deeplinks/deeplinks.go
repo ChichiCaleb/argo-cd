@@ -9,7 +9,7 @@ import (
 	"github.com/argoproj/gitops-engine/pkg/utils/kube"
 	"github.com/expr-lang/expr"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/utils/ptr"
+	
 
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -105,10 +105,10 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 			case bool:
 				if resOut {
 					finalLinks = append(finalLinks, &application.LinkInfo{
-						Title:       derefOrEmpty(link.Title),
-						Url:         derefOrEmpty(finalURL.String()),
-						Description: derefOrEmpty(link.Description),
-						IconClass:   derefOrEmpty(link.IconClass),
+						Title:       link.Title,
+						Url:         finalURL.String(),
+						Description: link.Description,
+						IconClass:   link.IconClass,
 					})
 				}
 			default:
@@ -117,10 +117,10 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 			}
 		} else {
 			finalLinks = append(finalLinks, &application.LinkInfo{
-				Title:       derefOrEmpty(link.Title),
-				Url:         derefOrEmpty(finalURL.String()),
-				Description: derefOrEmpty(link.Description),
-				IconClass:   derefOrEmpty(link.IconClass),
+				Title:       link.Title,
+				Url:         finalURL.String(),
+				Description: link.Description,
+				IconClass:   link.IconClass,
 			})
 		}
 	}
@@ -129,10 +129,3 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 	}, errors
 }
 
-// derefOrEmpty returns the string value of a pointer or an empty string if the pointer is nil
-func derefOrEmpty(ptr *string) string {
-	if ptr == nil {
-		return ""
-	}
-	return *ptr
-}

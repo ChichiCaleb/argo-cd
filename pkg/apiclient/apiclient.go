@@ -318,17 +318,17 @@ func (c *client) OIDCConfig(ctx context.Context, set *settingspkg.Settings) (*oa
 	var clientID string
 	var issuerURL string
 	var scopes []string
-	if set.OIDCConfig != nil && set.OIDCConfig.Issuer != "" {
-		if set.OIDCConfig.CLIClientID != "" {
-			clientID = set.OIDCConfig.CLIClientID
+	if set.OidcConfig != nil && set.OidcConfig.Issuer != "" {
+		if set.OidcConfig.CliClientID != "" {
+			clientID = set.OidcConfig.CliClientID
 		} else {
-			clientID = set.OIDCConfig.ClientID
+			clientID = set.OidcConfig.ClientID
 		}
-		issuerURL = set.OIDCConfig.Issuer
-		scopes = set.OIDCConfig.Scopes
+		issuerURL = set.OidcConfig.Issuer
+		scopes = set.OidcConfig.Scopes
 	} else if set.DexConfig != nil && len(set.DexConfig.Connectors) > 0 {
 		clientID = common.ArgoCDCLIClientAppID
-		issuerURL = fmt.Sprintf("%s%s", set.URL, common.DexAPIEndpoint)
+		issuerURL = fmt.Sprintf("%s%s", set.Url, common.DexAPIEndpoint)
 	} else {
 		return nil, nil, fmt.Errorf("%s is not configured with SSO", c.ServerAddr)
 	}
@@ -813,9 +813,9 @@ func (c *client) WatchApplicationWithRetry(ctx context.Context, appName string, 
 			if err == nil {
 				var wc applicationpkg.ApplicationService_WatchClient
 				wc, err = appIf.Watch(ctx, &applicationpkg.ApplicationQuery{
-					Name:            &appName,
-					AppNamespace:    &appNs,
-					ResourceVersion: &revision,
+					Name:            appName,
+					AppNamespace:    appNs,
+					ResourceVersion: revision,
 				})
 				if err == nil {
 					for {
