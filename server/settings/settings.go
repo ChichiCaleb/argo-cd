@@ -142,7 +142,7 @@ func (s *Server) Get(ctx context.Context, q *settingspkg.SettingsQuery) (*settin
 			EnablePKCEAuthentication: oidcConfig.EnablePKCEAuthentication,
 		}
 		if len(argoCDSettings.OIDCConfig().RequestedIDTokenClaims) > 0 {
-			set.OidcConfig.IDTokenClaims = argoCDSettings.OIDCConfig().RequestedIDTokenClaims
+			set.OidcConfig.IdTokenClaims = argoCDSettings.OIDCConfig().RequestedIDTokenClaims
 		}
 	}
 	return &set, nil
