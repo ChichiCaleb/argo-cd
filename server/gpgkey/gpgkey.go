@@ -19,6 +19,7 @@ type Server struct {
 	db            db.ArgoDB
 	repoClientset apiclient.Clientset
 	enf           *rbac.Enforcer
+	gpgkeypkg.UnimplementedGPGKeyServiceServer
 }
 
 // NewServer returns a new instance of the service with type GPGKeyService

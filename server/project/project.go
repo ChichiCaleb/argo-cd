@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/retry"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/project"
@@ -41,6 +42,14 @@ const (
 	JWTTokenSubFormat = "proj:%s:%s"
 )
 
+type EventListWrapper struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	EventList *v1.EventList `protobuf:"bytes,1,opt,name=eventList,proto3" json:"eventList,omitempty"`
+}
+
 // Server provides a Project service
 type Server struct {
 	ns            string
@@ -54,6 +63,7 @@ type Server struct {
 	projInformer  cache.SharedIndexInformer
 	settingsMgr   *settings.SettingsManager
 	db            db.ArgoDB
+	project.UnimplementedProjectServiceServer
 }
 
 // NewServer returns a new instance of the Project service
@@ -488,21 +498,30 @@ func (s *Server) Delete(ctx context.Context, q *project.ProjectQuery) (*project.
 	return &project.EmptyResponse{}, err
 }
 
-func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*v1.EventList, error) {
+func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*EventListWrapper, error) {
 	if err := s.enf.EnforceErr(ctx.Value("claims"), rbacpolicy.ResourceProjects, rbacpolicy.ActionGet, q.Name); err != nil {
-		return nil, err
+		return &EventListWrapper{}, err
 	}
 	proj, err := s.appclientset.ArgoprojV1alpha1().AppProjects(s.ns).Get(ctx, q.Name, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
+		return &EventListWrapper{}, err
 	}
 	fieldSelector := fields.SelectorFromSet(map[string]string{
 		"involvedObject.name":      proj.Name,
 		"involvedObject.uid":       string(proj.UID),
 		"involvedObject.namespace": proj.Namespace,
 	}).String()
-	return s.kubeclientset.CoreV1().Events(s.ns).List(ctx, metav1.ListOptions{FieldSelector: fieldSelector})
+	eventList, err := s.kubeclientset.CoreV1().Events(s.ns).List(ctx, metav1.ListOptions{FieldSelector: fieldSelector})
+	if err != nil {
+		return &EventListWrapper{}, err
+	}
+
+	// Wrap the EventList in EventListWrapper
+	return &EventListWrapper{
+		EventList: eventList,
+	}, nil
 }
+
 
 func (s *Server) logEvent(a *v1alpha1.AppProject, ctx context.Context, reason string, action string) {
 	eventInfo := argo.EventInfo{Type: v1.EventTypeNormal, Reason: reason}

@@ -43,6 +43,8 @@ type Server struct {
 	projLister    cache.SharedIndexInformer
 	settings      *settings.SettingsManager
 	namespace     string
+	repositorypkg.UnimplementedRepositoryServiceServer
+	
 }
 
 // NewServer returns a new instance of the Repository service

@@ -23,6 +23,7 @@ type Server struct {
 	authenticator      Authenticator
 	policyEnf          *rbacpolicy.RBACPolicyEnforcer
 	limitLoginAttempts func() (util.Closer, error)
+	session.UnimplementedSessionServiceServer
 }
 
 type Authenticator interface {
@@ -31,8 +32,15 @@ type Authenticator interface {
 
 // NewServer returns a new instance of the Session service
 func NewServer(mgr *sessionmgr.SessionManager, settingsMgr *settings.SettingsManager, authenticator Authenticator, policyEnf *rbacpolicy.RBACPolicyEnforcer, rateLimiter func() (util.Closer, error)) *Server {
-	return &Server{mgr, settingsMgr, authenticator, policyEnf, rateLimiter}
+    return &Server{
+        mgr:                mgr,
+        settingsMgr:        settingsMgr,
+        authenticator:      authenticator,
+        policyEnf:          policyEnf,
+        limitLoginAttempts: rateLimiter,
+    }
 }
+
 
 // Create generates a JWT token signed by Argo CD intended for web/CLI logins of the admin user
 // using username/password

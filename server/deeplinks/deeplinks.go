@@ -95,6 +95,16 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 			errors = append(errors, fmt.Sprintf("failed to evaluate link template '%v' with resource %v, error=%v", link.URL, name, err.Error()))
 			continue
 		}
+		// Dereferencing *string and handling nil values
+		description := ""
+		if link.Description != nil {
+			description = *link.Description
+		}
+		iconClass := ""
+		if link.IconClass != nil {
+			iconClass = *link.IconClass
+		}
+
 		if link.Condition != nil {
 			out, err := expr.Eval(*link.Condition, obj)
 			if err != nil {
@@ -107,8 +117,8 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 					finalLinks = append(finalLinks, &application.LinkInfo{
 						Title:       link.Title,
 						Url:         finalURL.String(),
-						Description: link.Description,
-						IconClass:   link.IconClass,
+						Description: description,  // Use the dereferenced value
+						IconClass:   iconClass,    // Use the dereferenced value
 					})
 				}
 			default:
@@ -119,8 +129,8 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 			finalLinks = append(finalLinks, &application.LinkInfo{
 				Title:       link.Title,
 				Url:         finalURL.String(),
-				Description: link.Description,
-				IconClass:   link.IconClass,
+				Description: description,  // Use the dereferenced value
+				IconClass:   iconClass,    // Use the dereferenced value
 			})
 		}
 	}

@@ -24,6 +24,7 @@ type Server struct {
 	repoClientset apiclient.Clientset
 	enf           *rbac.Enforcer
 	settings      *settings.SettingsManager
+	repocredspkg.UnimplementedRepoCredsServiceServer
 }
 
 // NewServer returns a new instance of the Repository service

@@ -30,6 +30,7 @@ type Server struct {
 	enf     *rbac.Enforcer
 	cache   *servercache.Cache
 	kubectl kube.Kubectl
+	cluster.UnimplementedClusterServiceServer
 }
 
 // NewServer returns a new instance of the Cluster service

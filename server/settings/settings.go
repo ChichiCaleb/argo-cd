@@ -24,6 +24,8 @@ type Server struct {
 	authenticator             Authenticator
 	disableAuth               bool
 	appsInAnyNamespaceEnabled bool
+
+	settingspkg.UnimplementedSettingsServiceServer
 }
 
 type Authenticator interface {

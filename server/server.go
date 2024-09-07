@@ -35,7 +35,7 @@ import (
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/redis/go-redis/v9"
 	log "github.com/sirupsen/logrus"
@@ -1336,6 +1336,7 @@ func mustRegisterGWHandler(register registerFunc, ctx context.Context, mux *runt
 		panic(err)
 	}
 }
+
 
 func replaceBaseHRef(data string, replaceWith string) string {
 	return baseHRefRegex.ReplaceAllString(data, replaceWith)

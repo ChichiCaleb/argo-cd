@@ -20,6 +20,7 @@ type Server struct {
 	jsonnetVersion   string
 	authenticator    settings.Authenticator
 	disableAuth      func() (bool, error)
+	version.UnimplementedVersionServiceServer
 }
 
 func NewServer(authenticator settings.Authenticator, disableAuth func() (bool, error)) *Server {

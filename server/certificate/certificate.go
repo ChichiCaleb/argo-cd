@@ -16,6 +16,7 @@ type Server struct {
 	db            db.ArgoDB
 	repoClientset apiclient.Clientset
 	enf           *rbac.Enforcer
+	certificatepkg.UnimplementedCertificateServiceServer
 }
 
 // NewServer returns a new instance of the Certificate service
