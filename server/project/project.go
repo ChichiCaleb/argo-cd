@@ -42,13 +42,6 @@ const (
 	JWTTokenSubFormat = "proj:%s:%s"
 )
 
-type EventListWrapper struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	EventList *v1.EventList `protobuf:"bytes,1,opt,name=eventList,proto3" json:"eventList,omitempty"`
-}
 
 // Server provides a Project service
 type Server struct {
@@ -498,29 +491,37 @@ func (s *Server) Delete(ctx context.Context, q *project.ProjectQuery) (*project.
 	return &project.EmptyResponse{}, err
 }
 
-func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*EventListWrapper, error) {
+func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*apiclient.EventListWrapper, error) {
+	// Enforce RBAC policy for the project
 	if err := s.enf.EnforceErr(ctx.Value("claims"), rbacpolicy.ResourceProjects, rbacpolicy.ActionGet, q.Name); err != nil {
-		return &EventListWrapper{}, err
+		return &apiclient.EventListWrapper{}, err
 	}
+
+	// Get the project
 	proj, err := s.appclientset.ArgoprojV1alpha1().AppProjects(s.ns).Get(ctx, q.Name, metav1.GetOptions{})
 	if err != nil {
-		return &EventListWrapper{}, err
+		return &apiclient.EventListWrapper{}, err
 	}
+
+	// Create field selector for events based on project information
 	fieldSelector := fields.SelectorFromSet(map[string]string{
 		"involvedObject.name":      proj.Name,
 		"involvedObject.uid":       string(proj.UID),
 		"involvedObject.namespace": proj.Namespace,
 	}).String()
+
+	// List events for the project
 	eventList, err := s.kubeclientset.CoreV1().Events(s.ns).List(ctx, metav1.ListOptions{FieldSelector: fieldSelector})
 	if err != nil {
-		return &EventListWrapper{}, err
+		return &apiclient.EventListWrapper{}, err
 	}
 
-	// Wrap the EventList in EventListWrapper
-	return &EventListWrapper{
+	// Return the event list wrapped in the apiclient.EventListWrapper
+	return &apiclient.EventListWrapper{
 		EventList: eventList,
 	}, nil
 }
+
 
 
 func (s *Server) logEvent(a *v1alpha1.AppProject, ctx context.Context, reason string, action string) {

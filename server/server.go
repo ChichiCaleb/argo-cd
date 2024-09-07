@@ -22,8 +22,7 @@ import (
 	gosync "sync"
 	"time"
 
-	// nolint:staticcheck
-	golang_proto "github.com/golang/protobuf/proto"
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 
@@ -956,8 +955,9 @@ func newArgoCDServiceSet(a *ArgoCDServer) *ArgoCDServiceSet {
 }
 
 // translateGrpcCookieHeader conditionally sets a cookie on the response.
-func (a *ArgoCDServer) translateGrpcCookieHeader(ctx context.Context, w http.ResponseWriter, resp golang_proto.Message) error {
-	if sessionResp, ok := resp.(*sessionpkg.SessionResponse); ok {
+func (a *ArgoCDServer) translateGrpcCookieHeader(ctx context.Context, w http.ResponseWriter, resp protoreflect.ProtoMessage) error {
+	// Cast the response to the appropriate session response type if possible
+	if sessionResp, ok := resp.Interface().(*sessionpkg.SessionResponse); ok {
 		token := sessionResp.Token
 		err := a.setTokenCookie(token, w)
 		if err != nil {
@@ -972,6 +972,7 @@ func (a *ArgoCDServer) translateGrpcCookieHeader(ctx context.Context, w http.Res
 
 	return nil
 }
+
 
 func (a *ArgoCDServer) setTokenCookie(token string, w http.ResponseWriter) error {
 	cookiePath := fmt.Sprintf("path=/%s", strings.TrimRight(strings.TrimLeft(a.ArgoCDServerOpts.BaseHRef, "/"), "/"))
@@ -1031,15 +1032,16 @@ func (a *ArgoCDServer) newHTTPServer(ctx context.Context, port int, grpcWebHandl
 		},
 	}
 
-	// HTTP 1.1+JSON Server
-	// grpc-ecosystem/grpc-gateway is used to proxy HTTP requests to the corresponding gRPC call
-	// NOTE: if a marshaller option is not supplied, grpc-gateway will default to the jsonpb from
-	// golang/protobuf. Which does not support types such as time.Time. gogo/protobuf does support
-	// time.Time, but does not support custom UnmarshalJSON() and MarshalJSON() methods. Therefore
-	// we use our own Marshaler
-	gwMuxOpts := runtime.WithMarshalerOption(runtime.MIMEWildcard, new(grpc_util.JSONMarshaler))
-	gwCookieOpts := runtime.WithForwardResponseOption(a.translateGrpcCookieHeader)
-	gwmux := runtime.NewServeMux(gwMuxOpts, gwCookieOpts)
+
+
+	// Use grpc-gateway's JSONPb marshaler instead of the custom one
+    gwMuxOpts := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{})
+	// Use the updated function in WithForwardResponseOption
+    gwCookieOpts := runtime.WithForwardResponseOption(a.translateGrpcCookieHeader)
+
+   // Register gRPC-gateway handlers
+    gwmux := runtime.NewServeMux(gwMuxOpts, gwCookieOpts)
+
 
 	var handler http.Handler = gwmux
 	if a.EnableGZip {
