@@ -96,6 +96,7 @@ type Service struct {
 	initConstants             RepoServerInitConstants
 	// now is usually just time.Now, but may be replaced by unit tests for testing purposes
 	now func() time.Time
+	apiclient.UnimplementedRepoServerServiceServer
 }
 
 type RepoServerInitConstants struct {
