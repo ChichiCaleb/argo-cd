@@ -1731,9 +1731,9 @@ func TestEnv_Environ(t *testing.T) {
 		want []string
 	}{
 		{"Nil", nil, nil},
-		{"Env", Env{{}}, nil},
-		{"One", Env{{"FOO", "bar"}}, []string{"FOO=bar"}},
-		{"Two", Env{{"FOO", "bar"}, {"FOO", "bar"}}, []string{"FOO=bar", "FOO=bar"}},
+		{"Env", Env{{Key: "FOO", Value: "bar"}}, nil}, // Correctly initialized EnvEntry
+		{"One", Env{{Key: "FOO", Value: "bar"}}, []string{"FOO=bar"}},
+		{"Two", Env{{Key: "FOO", Value: "bar"}, {Key: "FOO", Value: "bar"}}, []string{"FOO=bar", "FOO=bar"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1741,6 +1741,7 @@ func TestEnv_Environ(t *testing.T) {
 		})
 	}
 }
+
 
 func TestKustomizeImage_Match(t *testing.T) {
 	// no prefix
@@ -3196,11 +3197,12 @@ func TestRemoveEnvEntry(t *testing.T) {
 		plugins := &ApplicationSourcePlugin{
 			Name: "test",
 			Env: Env{
-				&EnvEntry{"foo", "bar"},
-				&EnvEntry{"alpha", "beta"},
-				&EnvEntry{"gamma", "delta"},
+				&EnvEntry{Key: "foo", Value: "bar"},   // Correctly initialized EnvEntry
+				&EnvEntry{Key: "alpha", Value: "beta"},
+				&EnvEntry{Key: "gamma", Value: "delta"},
 			},
 		}
+		
 		require.NoError(t, plugins.RemoveEnvEntry("alpha"))
 		want := Env{&EnvEntry{"foo", "bar"}, &EnvEntry{"gamma", "delta"}}
 		assert.Equal(t, want, plugins.Env)
