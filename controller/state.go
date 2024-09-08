@@ -247,7 +247,8 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 			atLeastOneRevisionIsNotPossibleToBeUpdated = true
 		}
 
-		log.Debugf("Generating Manifest for source %s revision %s", source, revision)
+		log.Debugf("Generating Manifest for source %v revision %s", source, revision)
+
 		manifestInfo, err := repoClient.GenerateManifest(context.Background(), &apiclient.ManifestRequest{
 			Repo:               repo,
 			Repos:              permittedHelmRepos,

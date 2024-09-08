@@ -90,26 +90,22 @@ func Test_getRefreshType(t *testing.T) {
 	testCases := []struct {
 		refresh     bool
 		hardRefresh bool
-		expected    *string
+		expected    string
 	}{
-		{false, false, nil},
-		{false, true, &refreshTypeHard},
-		{true, false, &refreshTypeNormal},
-		{true, true, &refreshTypeHard},
+		{false, false, ""},
+		{false, true, refreshTypeHard},
+		{true, false, refreshTypeNormal},
+		{true, true, refreshTypeHard},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("hardRefresh=%t refresh=%t", testCase.hardRefresh, testCase.refresh), func(t *testing.T) {
 			refreshType := getRefreshType(testCase.refresh, testCase.hardRefresh)
-			if testCase.expected == nil {
-				assert.Nil(t, refreshType)
-			} else {
-				assert.NotNil(t, refreshType)
-				assert.Equal(t, *testCase.expected, *refreshType)
-			}
+			assert.Equal(t, testCase.expected, refreshType)
 		})
 	}
 }
+
 
 func TestFindRevisionHistoryWithoutPassedId(t *testing.T) {
 	histories := v1alpha1.RevisionHistories{}
@@ -1985,6 +1981,8 @@ func (c *customAcdClient) NewApplicationClientOrDie() (io.Closer, applicationpkg
 	return &fakeConnection{}, &fakeAppServiceClient{}
 }
 
+
+
 func (c *customAcdClient) NewSettingsClientOrDie() (io.Closer, settingspkg.SettingsServiceClient) {
 	return &fakeConnection{}, &fakeSettingsServiceClient{}
 }
@@ -1999,7 +1997,7 @@ type fakeSettingsServiceClient struct{}
 
 func (f fakeSettingsServiceClient) Get(ctx context.Context, in *settingspkg.SettingsQuery, opts ...grpc.CallOption) (*settingspkg.Settings, error) {
 	return &settingspkg.Settings{
-		URL: "http://localhost:8080",
+		Url: "http://localhost:8080",
 	}, nil
 }
 
@@ -2007,7 +2005,9 @@ func (f fakeSettingsServiceClient) GetPlugins(ctx context.Context, in *settingsp
 	return nil, nil
 }
 
-type fakeAppServiceClient struct{}
+type fakeAppServiceClient struct{
+	applicationpkg.ApplicationServiceClient
+}
 
 func (c *fakeAppServiceClient) Get(ctx context.Context, in *applicationpkg.ApplicationQuery, opts ...grpc.CallOption) (*v1alpha1.Application, error) {
 	time := metav1.Date(2020, time.November, 10, 23, 0, 0, 0, time.UTC)
@@ -2081,8 +2081,15 @@ func (c *fakeAppServiceClient) List(ctx context.Context, in *applicationpkg.Appl
 	return nil, nil
 }
 
-func (c *fakeAppServiceClient) ListResourceEvents(ctx context.Context, in *applicationpkg.ApplicationResourceEventsQuery, opts ...grpc.CallOption) (*v1.EventList, error) {
-	return nil, nil
+func (f *fakeAppServiceClient) ListResourceEvents(
+	ctx context.Context,
+	query *applicationpkg.ApplicationResourceEventsQuery,
+	opts ...grpc.CallOption,
+) (*applicationpkg.EventListWrapper, error) {
+	// You can return a fake or mock implementation of EventListWrapper
+	return &applicationpkg.EventListWrapper{
+		EventList: &v1.EventList{}, // Populate with test data if necessary
+	}, nil
 }
 
 func (c *fakeAppServiceClient) Watch(ctx context.Context, in *applicationpkg.ApplicationQuery, opts ...grpc.CallOption) (applicationpkg.ApplicationService_WatchClient, error) {

@@ -435,7 +435,8 @@ argocd admin settings resource-overrides ignore-differences ./deploy.yaml --argo
 				}
 
 				if reflect.DeepEqual(&res, normalizedRes) {
-					_, _ = fmt.Printf("No fields are ignored by ignoreDifferences settings: \n%s\n", override.IgnoreDifferences)
+					_, _ = fmt.Printf("No fields are ignored by ignoreDifferences settings: \n%v\n", override.IgnoreDifferences)
+
 					return
 				}
 
@@ -482,7 +483,8 @@ argocd admin settings resource-overrides ignore-resource-updates ./deploy.yaml -
 				}
 
 				if reflect.DeepEqual(&res, normalizedRes) {
-					_, _ = fmt.Printf("No fields are ignored by ignoreResourceUpdates settings: \n%s\n", override.IgnoreResourceUpdates)
+					_, _ = fmt.Printf("No fields are ignored by ignoreResourceUpdates settings: \n%v\n", override.IgnoreResourceUpdates)
+
 					return
 				}
 
