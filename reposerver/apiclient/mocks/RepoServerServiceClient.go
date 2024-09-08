@@ -59,7 +59,7 @@ func (_m *RepoServerServiceClient) GenerateManifest(ctx context.Context, in *api
 }
 
 // GenerateManifestWithFiles provides a mock function with given fields: ctx, opts
-func (_m *RepoServerServiceClient) GenerateManifestWithFiles(ctx context.Context, opts ...grpc.CallOption) (apiclient.RepoServerService_GenerateManifestWithFilesClient, error) {
+func (_m *RepoServerServiceClient) GenerateManifestWithFiles(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[apiclient.ManifestRequestWithFiles, apiclient.ManifestResponse], error) {
 	_va := make([]interface{}, len(opts))
 	for _i := range opts {
 		_va[_i] = opts[_i]
@@ -73,16 +73,16 @@ func (_m *RepoServerServiceClient) GenerateManifestWithFiles(ctx context.Context
 		panic("no return value specified for GenerateManifestWithFiles")
 	}
 
-	var r0 apiclient.RepoServerService_GenerateManifestWithFilesClient
+	var r0 grpc.ClientStreamingClient[apiclient.ManifestRequestWithFiles, apiclient.ManifestResponse]
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, ...grpc.CallOption) (apiclient.RepoServerService_GenerateManifestWithFilesClient, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, ...grpc.CallOption) (grpc.ClientStreamingClient[apiclient.ManifestRequestWithFiles, apiclient.ManifestResponse], error)); ok {
 		return rf(ctx, opts...)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, ...grpc.CallOption) apiclient.RepoServerService_GenerateManifestWithFilesClient); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, ...grpc.CallOption) grpc.ClientStreamingClient[apiclient.ManifestRequestWithFiles, apiclient.ManifestResponse]); ok {
 		r0 = rf(ctx, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(apiclient.RepoServerService_GenerateManifestWithFilesClient)
+			r0 = ret.Get(0).(grpc.ClientStreamingClient[apiclient.ManifestRequestWithFiles, apiclient.ManifestResponse])
 		}
 	}
 

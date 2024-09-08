@@ -227,6 +227,11 @@ func (_m *ClusterServiceServer) Update(_a0 context.Context, _a1 *cluster.Cluster
 	return r0, r1
 }
 
+// mustEmbedUnimplementedClusterServiceServer provides a mock function with given fields:
+func (_m *ClusterServiceServer) mustEmbedUnimplementedClusterServiceServer() {
+	_m.Called()
+}
+
 // NewClusterServiceServer creates a new instance of ClusterServiceServer. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewClusterServiceServer(t interface {

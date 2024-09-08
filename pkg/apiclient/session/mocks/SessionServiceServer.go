@@ -104,6 +104,11 @@ func (_m *SessionServiceServer) GetUserInfo(_a0 context.Context, _a1 *session.Ge
 	return r0, r1
 }
 
+// mustEmbedUnimplementedSessionServiceServer provides a mock function with given fields:
+func (_m *SessionServiceServer) mustEmbedUnimplementedSessionServiceServer() {
+	_m.Called()
+}
+
 // NewSessionServiceServer creates a new instance of SessionServiceServer. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewSessionServiceServer(t interface {
