@@ -1314,7 +1314,8 @@ func TestSyncStrategy_Force(t *testing.T) {
 		{"TestApply", fields{Apply: &SyncStrategyApply{}}, false},
 		{"TestForceApply", fields{Apply: &SyncStrategyApply{Force: true}}, true},
 		{"TestHook", fields{Hook: &SyncStrategyHook{}}, false},
-		{"TestForceHook", fields{Hook: &SyncStrategyHook{SyncStrategyApply{Force: true}}}, true},
+		{"TestForceHook", fields{Hook: &SyncStrategyHook{SyncStrategyApply: SyncStrategyApply{Force: true}}}, true},
+
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1697,7 +1698,7 @@ func TestEnv_IsZero(t *testing.T) {
 }
 
 func TestEnv_Envsubst(t *testing.T) {
-	env := Env{&EnvEntry{"FOO", "bar"}}
+	env := Env{&EnvEntry{Name: "FOO", Value: "bar"}}
 	assert.Equal(t, "", env.Envsubst(""))
 	assert.Equal(t, "bar", env.Envsubst("$FOO"))
 	assert.Equal(t, "bar", env.Envsubst("${FOO}"))
@@ -1711,13 +1712,17 @@ func TestEnv_Envsubst(t *testing.T) {
 }
 
 func TestEnv_Envsubst_Overlap(t *testing.T) {
-	env := Env{&EnvEntry{"ARGOCD_APP_NAMESPACE", "default"}, &EnvEntry{"ARGOCD_APP_NAME", "guestbook"}}
+	env := Env{
+		&EnvEntry{Name: "ARGOCD_APP_NAMESPACE", Value: "default"},
+		&EnvEntry{Name: "ARGOCD_APP_NAME", Value: "guestbook"},
+	}
 
 	assert.Equal(t,
 		"namespace: default; name: guestbook",
 		env.Envsubst("namespace: $ARGOCD_APP_NAMESPACE; name: $ARGOCD_APP_NAME"),
 	)
 }
+
 
 func TestEnv_Environ(t *testing.T) {
 	tests := []struct {

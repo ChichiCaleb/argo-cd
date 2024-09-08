@@ -608,9 +608,9 @@ func (t *TestServerStream) Recv() (*application.ApplicationManifestQueryWithFile
 		t.headerSent = true
 		return &application.ApplicationManifestQueryWithFilesWrapper{Part: &application.ApplicationManifestQueryWithFilesWrapper_Query{
 			Query: &application.ApplicationManifestQueryWithFiles{
-				Name:     ptr.To(t.appName),
-				Project:  ptr.To(t.project),
-				Checksum: ptr.To(""),
+				Name:     t.appName,
+				Project:  t.project,
+				Checksum: "",
 			},
 		}}, nil
 	}
@@ -796,27 +796,27 @@ func TestNoAppEnumeration(t *testing.T) {
 
 	t.Run("Get", func(t *testing.T) {
 		// nolint:staticcheck
-		_, err := appServer.Get(adminCtx, &application.ApplicationQuery{Name: ptr.To("test")})
+		_, err := appServer.Get(adminCtx, &application.ApplicationQuery{Name: "test"})
 		require.NoError(t, err)
 		// nolint:staticcheck
-		_, err = appServer.Get(noRoleCtx, &application.ApplicationQuery{Name: ptr.To("test")})
+		_, err = appServer.Get(noRoleCtx, &application.ApplicationQuery{Name: "test"})
 		assert.Equal(t, permissionDeniedErr.Error(), err.Error(), "error message must be _only_ the permission error, to avoid leaking information about app existence")
 		// nolint:staticcheck
-		_, err = appServer.Get(adminCtx, &application.ApplicationQuery{Name: ptr.To("doest-not-exist")})
+		_, err = appServer.Get(adminCtx, &application.ApplicationQuery{Name: "doest-not-exist"})
 		assert.Equal(t, permissionDeniedErr.Error(), err.Error(), "error message must be _only_ the permission error, to avoid leaking information about app existence")
 		// nolint:staticcheck
-		_, err = appServer.Get(adminCtx, &application.ApplicationQuery{Name: ptr.To("doest-not-exist"), Project: []string{"test"}})
+		_, err = appServer.Get(adminCtx, &application.ApplicationQuery{Name: "doest-not-exist", Project: []string{"test"}})
 		assert.Equal(t, "rpc error: code = NotFound desc = applications.argoproj.io \"doest-not-exist\" not found", err.Error(), "when the request specifies a project, we can return the standard k8s error message")
 	})
 
 	t.Run("GetManifests", func(t *testing.T) {
-		_, err := appServer.GetManifests(adminCtx, &application.ApplicationManifestQuery{Name: ptr.To("test")})
+		_, err := appServer.GetManifests(adminCtx, &application.ApplicationManifestQuery{Name: "test"})
 		require.NoError(t, err)
-		_, err = appServer.GetManifests(noRoleCtx, &application.ApplicationManifestQuery{Name: ptr.To("test")})
+		_, err = appServer.GetManifests(noRoleCtx, &application.ApplicationManifestQuery{Name: "test"})
 		assert.Equal(t, permissionDeniedErr.Error(), err.Error(), "error message must be _only_ the permission error, to avoid leaking information about app existence")
-		_, err = appServer.GetManifests(adminCtx, &application.ApplicationManifestQuery{Name: ptr.To("doest-not-exist")})
+		_, err = appServer.GetManifests(adminCtx, &application.ApplicationManifestQuery{Name: "doest-not-exist"})
 		assert.Equal(t, permissionDeniedErr.Error(), err.Error(), "error message must be _only_ the permission error, to avoid leaking information about app existence")
-		_, err = appServer.GetManifests(adminCtx, &application.ApplicationManifestQuery{Name: ptr.To("doest-not-exist"), Project: ptr.To("test")})
+		_, err = appServer.GetManifests(adminCtx, &application.ApplicationManifestQuery{Name: ptr.To("doest-not-exist"), Project: "test"})
 		assert.Equal(t, "rpc error: code = NotFound desc = applications.argoproj.io \"doest-not-exist\" not found", err.Error(), "when the request specifies a project, we can return the standard k8s error message")
 	})
 
