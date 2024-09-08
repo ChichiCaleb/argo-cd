@@ -73,7 +73,7 @@ func NewReloginCommand(globalClientOpts *argocdclient.ClientOptions) *cobra.Comm
 				errors.CheckError(err)
 				oauth2conf, provider, err := acdClient.OIDCConfig(ctx, acdSet)
 				errors.CheckError(err)
-				tokenString, refreshToken = oauth2Login(ctx, ssoPort, acdSet.GetOIDCConfig(), oauth2conf, provider, ssoLaunchBrowser)
+				tokenString, refreshToken = oauth2Login(ctx, ssoPort, acdSet.GetOidcConfig(), oauth2conf, provider, ssoLaunchBrowser)
 			}
 
 			localCfg.UpsertUser(localconfig.User{

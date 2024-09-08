@@ -36,6 +36,7 @@ const cmpTimeoutBuffer = 100 * time.Millisecond
 // Service implements ConfigManagementPluginService interface
 type Service struct {
 	initConstants CMPServerInitConstants
+	apiclient.UnimplementedConfigManagementPluginServiceServer
 }
 
 type CMPServerInitConstants struct {

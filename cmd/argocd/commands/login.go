@@ -136,7 +136,7 @@ argocd login cd.argoproj.io --core`,
 					errors.CheckError(err)
 					oauth2conf, provider, err := acdClient.OIDCConfig(ctx, acdSet)
 					errors.CheckError(err)
-					tokenString, refreshToken = oauth2Login(ctx, ssoPort, acdSet.GetOIDCConfig(), oauth2conf, provider, ssoLaunchBrowser)
+					tokenString, refreshToken = oauth2Login(ctx, ssoPort, acdSet.GetOidcConfig(), oauth2conf, provider, ssoLaunchBrowser)
 				}
 				parser := jwt.NewParser(jwt.WithoutClaimsValidation())
 				claims := jwt.MapClaims{}
@@ -311,7 +311,7 @@ func oauth2Login(
 	var oidcconfig oidcconfig.OIDCConfig
 	grantType := oidcutil.InferGrantType(oidcConf)
 	opts := []oauth2.AuthCodeOption{oauth2.AccessTypeOffline}
-	if claimsRequested := oidcSettings.GetIDTokenClaims(); claimsRequested != nil {
+	if claimsRequested := oidcSettings.GetIdTokenClaims(); claimsRequested != nil {
 		opts = oidcutil.AppendClaimsAuthenticationRequestParameter(opts, claimsRequested)
 	}
 
