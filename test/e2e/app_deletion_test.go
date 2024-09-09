@@ -8,7 +8,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 // when a app gets stuck in sync, and we try to delete it, it won't delete, instead we must then terminate it
@@ -29,18 +29,18 @@ func TestDeletingAppStuckInSync(t *testing.T) {
 		Sync().
 		Then().
 		// stuck in running state
-		Expect(OperationPhaseIs(OperationRunning)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.OperationPhaseIs(OperationRunning)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		When().
 		Delete(true).
 		Then().
 		// delete is ignored, still stuck in running state
-		Expect(OperationPhaseIs(OperationRunning)).
+		Expect(appFixture.OperationPhaseIs(OperationRunning)).
 		When().
 		TerminateOp().
 		Then().
 		// delete is successful
-		Expect(DoesNotExist())
+		Expect(appFixture.DoesNotExist())
 }
 
 func TestDeletingAppByLabel(t *testing.T) {
@@ -50,7 +50,7 @@ func TestDeletingAppByLabel(t *testing.T) {
 		CreateApp("--label=foo=bar").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCode(SyncStatusCodeSynced))).
+		Expect(appFixture.SyncStatusIs(SyncStatusCode(SyncStatusCodeSynced))).
 		When().
 		IgnoreErrors().
 		DeleteBySelector("foo=baz").
@@ -65,7 +65,7 @@ func TestDeletingAppByLabel(t *testing.T) {
 		DeleteBySelector("foo=bar").
 		Then().
 		// delete is successful
-		Expect(DoesNotExist())
+		Expect(appFixture.DoesNotExist())
 }
 
 func TestDeletingAppByLabelWait(t *testing.T) {
@@ -75,10 +75,10 @@ func TestDeletingAppByLabelWait(t *testing.T) {
 		CreateApp("--label=foo=bar").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCode(SyncStatusCodeSynced))).
+		Expect(appFixture.SyncStatusIs(SyncStatusCode(SyncStatusCodeSynced))).
 		When().
 		DeleteBySelectorWithWait("foo=bar").
 		Then().
 		// delete is successful
-		Expect(DoesNotExistNow())
+		Expect(appFixture.DoesNotExistNow())
 }

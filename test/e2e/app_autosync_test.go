@@ -11,7 +11,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	"github.com/argoproj/argo-cd/v2/util/errors"
 )
 
@@ -24,13 +24,13 @@ func TestAutoSyncSelfHealDisabled(t *testing.T) {
 			app.Spec.SyncPolicy = &SyncPolicy{Automated: &SyncPolicyAutomated{SelfHeal: false}}
 		}).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		// app should be auto-synced if git change detected
 		When().
 		PatchFile("guestbook-ui-deployment.yaml", `[{"op": "replace", "path": "/spec/revisionHistoryLimit", "value": 1}]`).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		// app should not be auto-synced if k8s change detected
 		When().
 		And(func() {
@@ -39,7 +39,7 @@ func TestAutoSyncSelfHealDisabled(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync))
 }
 
 func TestAutoSyncSelfHealEnabled(t *testing.T) {
@@ -54,8 +54,8 @@ func TestAutoSyncSelfHealEnabled(t *testing.T) {
 			}
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		// app should be auto-synced once k8s change detected
 		And(func() {
@@ -64,31 +64,31 @@ func TestAutoSyncSelfHealEnabled(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		// app should be attempted to auto-synced once and marked with error after failed attempt detected
 		PatchFile("guestbook-ui-deployment.yaml", `[{"op": "replace", "path": "/spec/revisionHistoryLimit", "value": "badValue"}]`).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
 		When().
 		// Trigger refresh again to make sure controller notices previously failed sync attempt before expectation timeout expires
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(Condition(ApplicationConditionSyncError, "Failed sync attempt")).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.Condition(ApplicationConditionSyncError, "Failed sync attempt")).
 		When().
 		// SyncError condition should be removed after successful sync
 		PatchFile("guestbook-ui-deployment.yaml", `[{"op": "replace", "path": "/spec/revisionHistoryLimit", "value": 1}]`).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
 		When().
 		// Trigger refresh twice to make sure controller notices successful attempt and removes condition
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Empty(t, app.Status.Conditions)
 		})

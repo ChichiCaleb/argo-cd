@@ -26,30 +26,16 @@ install_go() {
    # Add Go to PATH for the current user
   echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
 
-  # Add Go to PATH for all users (including root)
-  sudo sh -c 'echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile'
-
   # Source the updated profile for the current user
   source ~/.profile
-
-  # Source the updated profile for the root user
-  sudo sh -c 'source /etc/profile'
 
   # Clean up downloaded tar file
   rm "${go_tar}"
 
 }
 
-install_format_tools() {
-  go install mvdan.cc/gofumpt@latest
-  echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
-  source ~/.profile
-}
-
 # Run installation functions
 install_go
-
-install_format_tools
 
 # Install and configure nginx ingress for kind cluster
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml

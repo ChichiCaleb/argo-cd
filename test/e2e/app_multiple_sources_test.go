@@ -9,7 +9,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	. "github.com/argoproj/argo-cd/v2/util/argo"
 )
 
@@ -36,17 +36,17 @@ func TestMultiSourceAppCreation(t *testing.T) {
 			assert.Equal(t, DeploymentNamespace(), app.Spec.Destination.Namespace)
 			assert.Equal(t, KubernetesInternalAPIServerAddr, app.Spec.Destination.Server)
 		}).
-		Expect(Event(EventReasonResourceCreated, "create")).
+		Expect(appFixture.Event(EventReasonResourceCreated, "create")).
 		And(func(_ *Application) {
 			// app should be listed
 			output, err := RunCli("app", "list")
 			require.NoError(t, err)
 			assert.Contains(t, output, Name())
 		}).
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		Given().Timeout(60).
 		When().Wait().Then().
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		And(func(app *Application) {
 			statusByName := map[string]SyncStatusCode{}
 			for _, r := range app.Status.Resources {
@@ -91,17 +91,17 @@ func TestMultiSourceAppWithHelmExternalValueFiles(t *testing.T) {
 			assert.Equal(t, DeploymentNamespace(), app.Spec.Destination.Namespace)
 			assert.Equal(t, KubernetesInternalAPIServerAddr, app.Spec.Destination.Server)
 		}).
-		Expect(Event(EventReasonResourceCreated, "create")).
+		Expect(appFixture.Event(EventReasonResourceCreated, "create")).
 		And(func(_ *Application) {
 			// app should be listed
 			output, err := RunCli("app", "list")
 			require.NoError(t, err)
 			assert.Contains(t, output, Name())
 		}).
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		Given().Timeout(60).
 		When().Wait().Then().
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		And(func(app *Application) {
 			statusByName := map[string]SyncStatusCode{}
 			for _, r := range app.Status.Resources {
@@ -139,17 +139,17 @@ func TestMultiSourceAppWithSourceOverride(t *testing.T) {
 			assert.Equal(t, DeploymentNamespace(), app.Spec.Destination.Namespace)
 			assert.Equal(t, KubernetesInternalAPIServerAddr, app.Spec.Destination.Server)
 		}).
-		Expect(Event(EventReasonResourceCreated, "create")).
+		Expect(appFixture.Event(EventReasonResourceCreated, "create")).
 		And(func(_ *Application) {
 			// app should be listed
 			output, err := RunCli("app", "list")
 			require.NoError(t, err)
 			assert.Contains(t, output, Name())
 		}).
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		Given().Timeout(60).
 		When().Wait().Then().
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		And(func(app *Application) {
 			statusByName := map[string]SyncStatusCode{}
 			for _, r := range app.Status.Resources {

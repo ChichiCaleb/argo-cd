@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	. "github.com/argoproj/argo-cd/v2/util/errors"
 )
 
@@ -45,7 +45,7 @@ func TestCanAddAppFromPrivateRepoWithRepoCfg(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(Success(""))
+		Expect(appFixture.Success(""))
 }
 
 // make sure you can create an app from a private repo, if the creds are set-up in the CM
@@ -68,7 +68,7 @@ func TestCanAddAppFromInsecurePrivateRepoWithCredCfg(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(Success(""))
+		Expect(appFixture.Success(""))
 }
 
 // make sure we can create an app from a private repo, in a secure manner using
@@ -94,7 +94,7 @@ func TestCanAddAppFromPrivateRepoWithCredCfg(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(Success(""))
+		Expect(appFixture.Success(""))
 }
 
 // make sure we can create an app from a private repo, in a secure manner using
@@ -119,5 +119,5 @@ func TestCanAddAppFromClientCertRepoWithCredCfg(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(Success(""))
+		Expect(appFixture.Success(""))
 }

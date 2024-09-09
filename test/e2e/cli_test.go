@@ -10,7 +10,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 func TestCliAppCommand(t *testing.T) {
@@ -26,8 +26,8 @@ func TestCliAppCommand(t *testing.T) {
 			assert.Contains(t, NormalizeOutput(output), Tmpl(`Pod {{.Namespace}} hook Succeeded Sync pod/hook created`, vars))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(_ *Application) {
 			output, err := RunCli("app", "list")
 			require.NoError(t, err)

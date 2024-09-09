@@ -10,7 +10,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	"github.com/argoproj/argo-cd/v2/util/argo"
 )
 
@@ -21,9 +21,9 @@ func TestClusterRoleBinding(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", app.Name, "--revision=HEAD")
 			require.NoError(t, err)
@@ -33,9 +33,9 @@ func TestClusterRoleBinding(t *testing.T) {
 		SetTrackingMethod(string(argo.TrackingMethodAnnotation)).
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", app.Name, "--revision=HEAD")
 			require.NoError(t, err)
@@ -51,7 +51,7 @@ func TestClusterRoleBindingHook(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }

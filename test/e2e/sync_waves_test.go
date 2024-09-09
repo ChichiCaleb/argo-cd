@@ -5,7 +5,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 
 	"github.com/argoproj/gitops-engine/pkg/health"
 	. "github.com/argoproj/gitops-engine/pkg/sync/common"
@@ -28,32 +28,32 @@ func TestFixingDegradedApp(t *testing.T) {
 		}).
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusDegraded)).
-		Expect(ResourceResultNumbering(1)).
-		Expect(ResourceSyncStatusIs("ConfigMap", "cm-1", SyncStatusCodeSynced)).
-		Expect(ResourceHealthIs("ConfigMap", "cm-1", health.HealthStatusDegraded)).
-		Expect(ResourceSyncStatusIs("ConfigMap", "cm-2", SyncStatusCodeOutOfSync)).
-		Expect(ResourceHealthIs("ConfigMap", "cm-2", health.HealthStatusMissing)).
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusDegraded)).
+		Expect(appFixture.ResourceResultNumbering(1)).
+		Expect(appFixture.ResourceSyncStatusIs("ConfigMap", "cm-1", SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceHealthIs("ConfigMap", "cm-1", health.HealthStatusDegraded)).
+		Expect(appFixture.ResourceSyncStatusIs("ConfigMap", "cm-2", SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceHealthIs("ConfigMap", "cm-2", health.HealthStatusMissing)).
 		When().
 		PatchFile("cm-1.yaml", `[{"op": "replace", "path": "/metadata/annotations/health", "value": "Healthy"}]`).
 		PatchFile("cm-2.yaml", `[{"op": "replace", "path": "/metadata/annotations/health", "value": "Healthy"}]`).
 		// need to force a refresh here
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(ResourceSyncStatusIs("ConfigMap", "cm-1", SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceSyncStatusIs("ConfigMap", "cm-1", SyncStatusCodeOutOfSync)).
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(ResourceResultNumbering(2)).
-		Expect(ResourceSyncStatusIs("ConfigMap", "cm-1", SyncStatusCodeSynced)).
-		Expect(ResourceHealthIs("ConfigMap", "cm-1", health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusIs("ConfigMap", "cm-2", SyncStatusCodeSynced)).
-		Expect(ResourceHealthIs("ConfigMap", "cm-2", health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceResultNumbering(2)).
+		Expect(appFixture.ResourceSyncStatusIs("ConfigMap", "cm-1", SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceHealthIs("ConfigMap", "cm-1", health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusIs("ConfigMap", "cm-2", SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceHealthIs("ConfigMap", "cm-2", health.HealthStatusHealthy))
 }
 
 func TestOneProgressingDeploymentIsSucceededAndSynced(t *testing.T) {
@@ -71,10 +71,10 @@ func TestOneProgressingDeploymentIsSucceededAndSynced(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusProgressing)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceResultNumbering(1))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusProgressing)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceResultNumbering(1))
 }
 
 func TestDegradedDeploymentIsSucceededAndSynced(t *testing.T) {
@@ -97,10 +97,10 @@ func TestDegradedDeploymentIsSucceededAndSynced(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusDegraded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceResultNumbering(1))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusDegraded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceResultNumbering(1))
 }
 
 // resources should be pruned in reverse of creation order(syncwaves order)
@@ -124,8 +124,8 @@ func TestSyncPruneOrderWithSyncWaves(t *testing.T) {
 		Sync().
 		Wait().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		// delete files to remove resources
 		DeleteFile("pod.yaml").
@@ -133,15 +133,15 @@ func TestSyncPruneOrderWithSyncWaves(t *testing.T) {
 		Refresh(RefreshTypeHard).
 		IgnoreErrors().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		When().
 		// prune order: pod -> rolebinding -> sa & role
 		Sync("--prune").
 		Wait().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(NotPod(func(p v1.Pod) bool { return p.Name == "pod-with-finalizers" })).
-		Expect(ResourceResultNumbering(4))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.NotPod(func(p v1.Pod) bool { return p.Name == "pod-with-finalizers" })).
+		Expect(appFixture.ResourceResultNumbering(4))
 }

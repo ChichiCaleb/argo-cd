@@ -11,7 +11,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 // resource.includeEventLabelKeys keys set in argocd-cm
@@ -27,7 +27,7 @@ func TestLabelsOnAppK8sEvents(t *testing.T) {
 		CreateApp("--label=app=test", "--label=environment=dev", "--label=team=A", "--label=tier=ui").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			events, err := KubeClientset.CoreV1().Events(app.Namespace).List(context.Background(), metav1.ListOptions{
 				FieldSelector: fmt.Sprintf("involvedObject.name=%s,involvedObject.kind=Application", app.Name),
@@ -52,7 +52,7 @@ func TestNoLabelsOnAppK8sEvents(t *testing.T) {
 		CreateApp("--label=app=test", "--label=environment=dev", "--label=team=A", "--label=tier=ui").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			events, err := KubeClientset.CoreV1().Events(app.Namespace).List(context.Background(), metav1.ListOptions{
 				FieldSelector: fmt.Sprintf("involvedObject.name=%s,involvedObject.kind=Application", app.Name),

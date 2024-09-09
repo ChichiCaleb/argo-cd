@@ -8,7 +8,7 @@ import (
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 func TestGitSubmoduleSSHSupport(t *testing.T) {
@@ -22,8 +22,8 @@ func TestGitSubmoduleSSHSupport(t *testing.T) {
 		CreateFromFile(func(app *Application) {}).
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(Pod(func(p v1.Pod) bool { return p.Name == "pod-in-submodule" }))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return p.Name == "pod-in-submodule" }))
 }
 
 func TestGitSubmoduleHTTPSSupport(t *testing.T) {
@@ -37,8 +37,8 @@ func TestGitSubmoduleHTTPSSupport(t *testing.T) {
 		CreateFromFile(func(app *Application) {}).
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(Pod(func(p v1.Pod) bool { return p.Name == "pod-in-submodule" }))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return p.Name == "pod-in-submodule" }))
 }
 
 func TestGitSubmoduleRemovalSupport(t *testing.T) {
@@ -52,13 +52,13 @@ func TestGitSubmoduleRemovalSupport(t *testing.T) {
 		CreateFromFile(func(app *Application) {}).
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(Pod(func(p v1.Pod) bool { return p.Name == "pod-in-submodule" })).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return p.Name == "pod-in-submodule" })).
 		When().
 		RemoveSubmodule().
 		Refresh(RefreshTypeNormal).
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NotPod(func(p v1.Pod) bool { return p.Name == "pod-in-submodule" }))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NotPod(func(p v1.Pod) bool { return p.Name == "pod-in-submodule" }))
 }

@@ -12,7 +12,7 @@ import (
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	. "github.com/argoproj/argo-cd/v2/util/errors"
 	"github.com/argoproj/argo-cd/v2/util/rand"
 )
@@ -26,11 +26,11 @@ func TestSelectiveSync(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceHealthIs("Service", "guestbook-ui", health.HealthStatusHealthy)).
-		Expect(ResourceHealthIs("Deployment", "guestbook-ui", health.HealthStatusMissing))
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceHealthIs("Service", "guestbook-ui", health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthIs("Deployment", "guestbook-ui", health.HealthStatusMissing))
 }
 
 // when running selective sync, hooks do not run
@@ -43,12 +43,12 @@ func TestSelectiveSyncDoesNotRunHooks(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(ResourceHealthIs("Pod", "pod", health.HealthStatusHealthy)).
-		Expect(ResourceResultNumbering(1))
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceappFixture.("Pod", "pod", health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceResultNumbering(1))
 }
 
 func TestSelectiveSyncWithoutNamespace(t *testing.T) {
@@ -71,13 +71,13 @@ func TestSelectiveSyncWithoutNamespace(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", selectedResourceNamespace, health.HealthStatusHealthy)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", fixture.DeploymentNamespace(), health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", selectedResourceNamespace, SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", fixture.DeploymentNamespace(), SyncStatusCodeSynced))
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", selectedResourceNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", fixture.DeploymentNamespace(), health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", selectedResourceNamespace, SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", fixture.DeploymentNamespace(), SyncStatusCodeSynced))
 }
 
 // In selectedResource to sync, namespace is provided
@@ -101,13 +101,13 @@ func TestSelectiveSyncWithNamespace(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", selectedResourceNamespace, health.HealthStatusHealthy)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", fixture.DeploymentNamespace(), health.HealthStatusMissing)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", selectedResourceNamespace, SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", fixture.DeploymentNamespace(), SyncStatusCodeOutOfSync))
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", selectedResourceNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", fixture.DeploymentNamespace(), health.HealthStatusMissing)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", selectedResourceNamespace, SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", fixture.DeploymentNamespace(), SyncStatusCodeOutOfSync))
 }
 
 func getNewNamespace(t *testing.T) string {

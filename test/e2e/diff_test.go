@@ -6,7 +6,7 @@ import (
 	. "github.com/argoproj/gitops-engine/pkg/sync/common"
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	"github.com/argoproj/argo-cd/v2/test/fixture/test"
 )
 
@@ -31,8 +31,8 @@ spec:
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		DeleteFile("pod-1.yaml").
 		PatchFile("pod-2.yaml", `[{"op": "add", "path": "/metadata/annotations", "value": {"bar": "Baz"}}]`).
@@ -51,5 +51,5 @@ spec:
 `).
 		Refresh(RefreshTypeHard).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync))
 }

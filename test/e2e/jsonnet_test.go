@@ -10,7 +10,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	. "github.com/argoproj/argo-cd/v2/util/errors"
 )
 
@@ -21,7 +21,7 @@ func TestJsonnetAppliedCorrectly(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			manifests, err := RunCli("app", "manifests", app.Name, "--source", "live")
 			require.NoError(t, err)
@@ -51,7 +51,7 @@ func TestJsonnetTlaParameterAppliedCorrectly(t *testing.T) {
 		CreateApp("--jsonnet-tla-str", "name=testing-tla", "--jsonnet-tla-code", "replicas=0").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			manifests, err := RunCli("app", "manifests", app.Name, "--source", "live")
 			require.NoError(t, err)
@@ -81,8 +81,8 @@ func TestJsonnetTlaEnv(t *testing.T) {
 		CreateApp("--jsonnet-tla-str", "foo=$ARGOCD_APP_NAME", "--jsonnet-tla-code", "bar='$ARGOCD_APP_NAME'").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, Name(), FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map", "-o", "jsonpath={.data.foo}")).(string))
 			assert.Equal(t, Name(), FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map", "-o", "jsonpath={.data.bar}")).(string))
@@ -96,8 +96,8 @@ func TestJsonnetExtVarEnv(t *testing.T) {
 		CreateApp("--jsonnet-ext-var-str", "foo=$ARGOCD_APP_NAME", "--jsonnet-ext-var-code", "bar='$ARGOCD_APP_NAME'").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, Name(), FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map", "-o", "jsonpath={.data.foo}")).(string))
 			assert.Equal(t, Name(), FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map", "-o", "jsonpath={.data.bar}")).(string))
@@ -112,8 +112,8 @@ func TestJsonnetNestedDirWithImports(t *testing.T) {
 		CreateApp("--directory-recurse").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusIs("Namespace", "hello-world", SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusIs("Namespace", "hello-root", SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusIs("Namespace", "hello-world", SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusIs("Namespace", "hello-root", SyncStatusCodeSynced))
 }

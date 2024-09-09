@@ -5,7 +5,7 @@ import (
 
 	. "github.com/argoproj/gitops-engine/pkg/sync/common"
 
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 // check we fail with message if we delete a non-prunable resource
@@ -18,7 +18,7 @@ func TestPruningRequired(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
 		When().
 		DeleteFile("pod-2.yaml").
 		Sync().

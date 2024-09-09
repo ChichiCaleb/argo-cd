@@ -12,7 +12,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	. "github.com/argoproj/argo-cd/v2/util/argo"
 	. "github.com/argoproj/argo-cd/v2/util/errors"
 )
@@ -25,7 +25,7 @@ func TestAppCreationInOtherNamespace(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			assert.Equal(t, ctx.AppName(), app.Name)
 			assert.Equal(t, AppNamespace(), app.Namespace)
@@ -91,16 +91,16 @@ func TestDeletingNamespacedAppStuckInSync(t *testing.T) {
 		Sync().
 		Then().
 		// stuck in running state
-		Expect(OperationPhaseIs(OperationRunning)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.OperationPhaseIs(OperationRunning)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		When().
 		Delete(true).
 		Then().
 		// delete is ignored, still stuck in running state
-		Expect(OperationPhaseIs(OperationRunning)).
+		Expect(appFixture.OperationPhaseIs(OperationRunning)).
 		When().
 		TerminateOp().
 		Then().
 		// delete is successful
-		Expect(DoesNotExist())
+		Expect(appFixture.DoesNotExist())
 }

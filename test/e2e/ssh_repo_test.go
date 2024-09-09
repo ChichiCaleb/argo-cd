@@ -6,7 +6,7 @@ import (
 	. "github.com/argoproj/gitops-engine/pkg/sync/common"
 
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 func TestCanAccessInsecureSSHRepo(t *testing.T) {
@@ -18,7 +18,7 @@ func TestCanAccessInsecureSSHRepo(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded))
 }
 
 func TestCanAccessSSHRepo(t *testing.T) {
@@ -31,5 +31,5 @@ func TestCanAccessSSHRepo(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded))
 }

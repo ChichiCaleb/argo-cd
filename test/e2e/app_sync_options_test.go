@@ -10,7 +10,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 // Given application is set with --sync-option CreateNamespace=true and --sync-option ServerSideApply=true
@@ -42,20 +42,20 @@ func TestNamespaceCreationWithSSA(t *testing.T) {
 			}
 		}).
 		Then().
-		Expect(NoNamespace(namespace)).
+		Expect(appFixture.NoNamespace(namespace)).
 		When().
 		AppSet("--dest-namespace", namespace).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(Namespace(namespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Success("")).
+		Expect(appFixture.Namespace(namespace, func(app *Application, ns *v1.Namespace) {
 			assert.NotContains(t, ns.Annotations, "kubectl.kubernetes.io/last-applied-configuration")
 		})).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", namespace, health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", namespace, SyncStatusCodeSynced)).
-		Expect(ResourceHealthWithNamespaceIs("Service", "guestbook-ui", namespace, health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Service", "guestbook-ui", namespace, SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", namespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", namespace, SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Service", "guestbook-ui", namespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Service", "guestbook-ui", namespace, SyncStatusCodeSynced))
 }

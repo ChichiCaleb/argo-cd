@@ -16,7 +16,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	. "github.com/argoproj/argo-cd/v2/util/errors"
 )
 
@@ -43,12 +43,12 @@ func testHookSuccessful(t *testing.T, hookType HookType) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeSynced)).
-		Expect(ResourceHealthIs("Pod", "pod", health.HealthStatusHealthy)).
-		Expect(ResourceResultNumbering(2)).
-		Expect(ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "hook", Message: "pod/hook created", HookType: hookType, HookPhase: OperationSucceeded, SyncPhase: SyncPhase(hookType)}))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceHealthIs("Pod", "pod", health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceResultNumbering(2)).
+		Expect(appFixture.ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "hook", Message: "pod/hook created", HookType: hookType, HookPhase: OperationSucceeded, SyncPhase: SyncPhase(hookType)}))
 }
 
 func TestPostDeleteHook(t *testing.T) {
@@ -98,11 +98,11 @@ func TestPreSyncHookFailure(t *testing.T) {
 		Expect(Error("hook  Failed              PreSync", "")).
 		// make sure resource are also printed
 		Expect(Error("pod   OutOfSync  Missing", "")).
-		Expect(OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
 		// if a pre-sync hook fails, we should not start the main sync
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceResultNumbering(1)).
-		Expect(ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceResultNumbering(1)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeOutOfSync))
 }
 
 // make sure that if sync fails, we fail the app and we did create the pod
@@ -116,11 +116,11 @@ func TestSyncHookFailure(t *testing.T) {
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
 		// even thought the hook failed, we expect the pod to be in sync
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceResultNumbering(2)).
-		Expect(ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceResultNumbering(2)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeSynced))
 }
 
 // make sure that if the deployments fails, we still get success and synced
@@ -131,9 +131,9 @@ func TestSyncHookResourceFailure(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusProgressing))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusProgressing))
 }
 
 // make sure that if post-sync fails, we fail the app and we did not create the pod
@@ -148,10 +148,10 @@ func TestPostSyncHookFailure(t *testing.T) {
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceResultNumbering(2)).
-		Expect(ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceResultNumbering(2)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeSynced))
 }
 
 // make sure that if the pod fails, we do not run the post-sync hook
@@ -167,11 +167,11 @@ func TestPostSyncHookPodFailure(t *testing.T) {
 		Sync().
 		Then().
 		// TODO - I feel like this should be a failure, not success
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeSynced)).
-		Expect(ResourceHealthIs("Pod", "pod", health.HealthStatusDegraded)).
-		Expect(ResourceResultNumbering(1)).
-		Expect(NotPod(func(p v1.Pod) bool { return p.Name == "hook" }))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod", SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceHealthIs("Pod", "pod", health.HealthStatusDegraded)).
+		Expect(appFixture.ResourceResultNumbering(1)).
+		Expect(appFixture.NotPod(func(p v1.Pod) bool { return p.Name == "hook" }))
 }
 
 func TestSyncFailHookPodFailure(t *testing.T) {
@@ -201,8 +201,8 @@ spec:
 		CreateApp().
 		Sync().
 		Then().
-		Expect(ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "sync-fail-hook", Message: "pod/sync-fail-hook created", HookType: HookTypeSyncFail, HookPhase: OperationSucceeded, SyncPhase: SyncPhaseSyncFail})).
-		Expect(OperationPhaseIs(OperationFailed))
+		Expect(appFixture.ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "sync-fail-hook", Message: "pod/sync-fail-hook created", HookType: HookTypeSyncFail, HookPhase: OperationSucceeded, SyncPhase: SyncPhaseSyncFail})).
+		Expect(appFixture.OperationPhaseIs(OperationFailed))
 }
 
 func TestSyncFailHookPodFailureSyncFailFailure(t *testing.T) {
@@ -248,9 +248,9 @@ spec:
 		CreateApp().
 		Sync().
 		Then().
-		Expect(ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "successful-sync-fail-hook", Message: "pod/successful-sync-fail-hook created", HookType: HookTypeSyncFail, HookPhase: OperationSucceeded, SyncPhase: SyncPhaseSyncFail})).
-		Expect(ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "failed-sync-fail-hook", Message: `container "main" failed with exit code 1`, HookType: HookTypeSyncFail, HookPhase: OperationFailed, SyncPhase: SyncPhaseSyncFail})).
-		Expect(OperationPhaseIs(OperationFailed))
+		Expect(appFixture.ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "successful-sync-fail-hook", Message: "pod/successful-sync-fail-hook created", HookType: HookTypeSyncFail, HookPhase: OperationSucceeded, SyncPhase: SyncPhaseSyncFail})).
+		Expect(appFixture.ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "failed-sync-fail-hook", Message: `container "main" failed with exit code 1`, HookType: HookTypeSyncFail, HookPhase: OperationFailed, SyncPhase: SyncPhaseSyncFail})).
+		Expect(appFixture.OperationPhaseIs(OperationFailed))
 }
 
 // make sure that we delete the hook on success
@@ -262,8 +262,8 @@ func TestHookDeletePolicyHookSucceededHookExit0(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(NotPod(func(p v1.Pod) bool { return p.Name == "hook" }))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.NotPod(func(p v1.Pod) bool { return p.Name == "hook" }))
 }
 
 // make sure that we delete the hook on failure, if policy is set
@@ -277,9 +277,9 @@ func TestHookDeletePolicyHookSucceededHookExit1(t *testing.T) {
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(ResourceResultNumbering(2)).
-		Expect(Pod(func(p v1.Pod) bool { return p.Name == "hook" }))
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.ResourceResultNumbering(2)).
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return p.Name == "hook" }))
 }
 
 // make sure that we do NOT delete the hook on success if failure policy is set
@@ -291,9 +291,9 @@ func TestHookDeletePolicyHookFailedHookExit0(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(ResourceResultNumbering(2)).
-		Expect(Pod(func(p v1.Pod) bool { return p.Name == "hook" }))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.ResourceResultNumbering(2)).
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return p.Name == "hook" }))
 }
 
 // make sure that we do delete the hook on failure if failure policy is set
@@ -307,9 +307,9 @@ func TestHookDeletePolicyHookFailedHookExit1(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(ResourceResultNumbering(2)).
-		Expect(NotPod(func(p v1.Pod) bool { return p.Name == "hook" }))
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.ResourceResultNumbering(2)).
+		Expect(appFixture.NotPod(func(p v1.Pod) bool { return p.Name == "hook" }))
 }
 
 // make sure that we can run the hook twice
@@ -322,10 +322,10 @@ func TestHookBeforeHookCreation(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(ResourceResultNumbering(2)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceResultNumbering(2)).
 		// the app will be in health+n-sync before this hook has run
 		Expect(Pod(func(p v1.Pod) bool { return p.Name == "hook" })).
 		And(func(_ *Application) {
@@ -339,10 +339,10 @@ func TestHookBeforeHookCreation(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(ResourceResultNumbering(2)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceResultNumbering(2)).
 		Expect(Pod(func(p v1.Pod) bool { return p.Name == "hook" })).
 		And(func(_ *Application) {
 			creationTimestamp2, err := getCreationTimestamp()
@@ -368,8 +368,8 @@ func TestHookBeforeHookCreationFailure(t *testing.T) {
 		DoNotIgnoreErrors().
 		TerminateOp().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(ResourceResultNumbering(2))
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.ResourceResultNumbering(2))
 }
 
 func getCreationTimestamp() (string, error) {
@@ -386,9 +386,9 @@ func TestHookSkip(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(ResourceResultNumbering(1)).
-		Expect(NotPod(func(p v1.Pod) bool { return p.Name == "pod" }))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.ResourceResultNumbering(1)).
+		Expect(appFixture.NotPod(func(p v1.Pod) bool { return p.Name == "pod" }))
 }
 
 // make sure that we do NOT name non-hook resources in they are unnamed
@@ -401,7 +401,7 @@ func TestNamingNonHookResource(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed))
+		Expect(appFixture.OperationPhaseIs(OperationFailed))
 }
 
 // make sure that we name hook resources in they are unnamed
@@ -416,8 +416,8 @@ func TestAutomaticallyNamingUnnamedHook(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			resources := app.Status.OperationState.SyncResult.Resources
 			assert.Len(t, resources, 3)

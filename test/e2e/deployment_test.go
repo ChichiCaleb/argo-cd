@@ -24,7 +24,7 @@ import (
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 // when we have a config map generator, AND the ignore annotation, it is ignored in the app's sync status
@@ -35,9 +35,9 @@ func TestDeployment(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		PatchFile("deployment.yaml", `[
     {
@@ -59,9 +59,9 @@ func TestDeploymentWithAnnotationTrackingMode(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		Then().
 		And(func(app *Application) {
@@ -82,9 +82,9 @@ func TestDeploymentWithLabelTrackingMode(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		Then().
 		And(func(app *Application) {
@@ -105,9 +105,9 @@ func TestDeploymentWithoutTrackingMode(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		Then().
 		And(func(app *Application) {
@@ -143,9 +143,9 @@ func TestDeployToKubernetesAPIURLWithQueryParameter(t *testing.T) {
 				CreateWithNoNameSpace("--dest-namespace", username).
 				Sync().
 				Then().
-				Expect(OperationPhaseIs(OperationSucceeded)).
-				Expect(SyncStatusIs(SyncStatusCodeSynced)).
-				Expect(HealthIs(health.HealthStatusHealthy))
+				Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+				Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+				Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 		}
 	}
 }
@@ -186,9 +186,9 @@ func TestArgoCDSupportsMultipleServiceAccountsWithDifferingRBACOnSameCluster(t *
 			// - Even when deploying to the same cluster using 2 separate ServiceAccounts, the RBAC of those ServiceAccounts should continue to fully enforce RBAC boundaries.
 
 			if !clusterScoped {
-				consequences.Expect(Condition(ApplicationConditionComparisonError, "Namespace \""+username+"\" for Deployment \"nginx-deployment\" is not managed"))
+				consequences.Expect(appFixture.Condition(ApplicationConditionComparisonError, "Namespace \""+username+"\" for Deployment \"nginx-deployment\" is not managed"))
 			} else {
-				consequences.Expect(OperationMessageContains("User \"system:serviceaccount:" + otherUser + ":" + otherUser + "-serviceaccount\" cannot create resource \"deployments\" in API group \"apps\" in the namespace \"" + username + "\""))
+				consequences.Expect(appFixture.OperationMessageContains("User \"system:serviceaccount:" + otherUser + ":" + otherUser + "-serviceaccount\" cannot create resource \"deployments\" in API group \"apps\" in the namespace \"" + username + "\""))
 			}
 		}
 	}

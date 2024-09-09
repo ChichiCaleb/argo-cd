@@ -32,7 +32,7 @@ import (
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 	accountFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/account"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	projectFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/project"
 	repoFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/repos"
 	"github.com/argoproj/argo-cd/v2/test/e2e/testdata"
@@ -96,7 +96,7 @@ func TestGetLogsDenySwitchOn(t *testing.T) {
 		Sync().
 		SetParamInSettingConfigMap("server.rbac.log.enforce.enable", "true").
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			_, err := RunCliWithRetry(appLogsRetryCount, "app", "logs", app.Name, "--kind", "Deployment", "--group", "", "--name", "guestbook-ui")
 			require.Error(t, err)
@@ -147,7 +147,7 @@ func TestGetLogsAllowSwitchOn(t *testing.T) {
 		Sync().
 		SetParamInSettingConfigMap("server.rbac.log.enforce.enable", "true").
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			out, err := RunCliWithRetry(appLogsRetryCount, "app", "logs", app.Name, "--kind", "Deployment", "--group", "", "--name", "guestbook-ui")
 			require.NoError(t, err)
@@ -203,7 +203,7 @@ func TestGetLogsAllowSwitchOff(t *testing.T) {
 		Sync().
 		SetParamInSettingConfigMap("server.rbac.log.enforce.enable", "false").
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			out, err := RunCliWithRetry(appLogsRetryCount, "app", "logs", app.Name, "--kind", "Deployment", "--group", "", "--name", "guestbook-ui")
 			require.NoError(t, err)
@@ -231,9 +231,9 @@ func TestSyncToUnsignedCommit(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationError)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.OperationPhaseIs(OperationError)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 func TestSyncToSignedCommitWithoutKnownKey(t *testing.T) {
@@ -247,9 +247,9 @@ func TestSyncToSignedCommitWithoutKnownKey(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationError)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.OperationPhaseIs(OperationError)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 func TestSyncToSignedCommitWithKnownKey(t *testing.T) {
@@ -265,9 +265,9 @@ func TestSyncToSignedCommitWithKnownKey(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestSyncToSignedBranchWithKnownKey(t *testing.T) {
@@ -284,9 +284,9 @@ func TestSyncToSignedBranchWithKnownKey(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestSyncToSignedBranchWithUnknownKey(t *testing.T) {
@@ -302,9 +302,9 @@ func TestSyncToSignedBranchWithUnknownKey(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationError)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.OperationPhaseIs(OperationError)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 func TestSyncToUnsignedBranch(t *testing.T) {
@@ -320,9 +320,9 @@ func TestSyncToUnsignedBranch(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationError)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.OperationPhaseIs(OperationError)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 func TestSyncToSignedTagWithKnownKey(t *testing.T) {
@@ -339,9 +339,9 @@ func TestSyncToSignedTagWithKnownKey(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestSyncToSignedTagWithUnknownKey(t *testing.T) {
@@ -357,9 +357,9 @@ func TestSyncToSignedTagWithUnknownKey(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationError)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.OperationPhaseIs(OperationError)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 func TestSyncToUnsignedTag(t *testing.T) {
@@ -376,9 +376,9 @@ func TestSyncToUnsignedTag(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationError)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.OperationPhaseIs(OperationError)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 func TestAppCreation(t *testing.T) {
@@ -388,7 +388,7 @@ func TestAppCreation(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			assert.Equal(t, Name(), app.Name)
 			assert.Equal(t, RepoURL(RepoURLTypeFile), app.Spec.GetSource().RepoURL)
@@ -433,7 +433,7 @@ func TestAppCreationWithoutForceUpdate(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			assert.Equal(t, ctx.AppName(), app.Name)
 			assert.Equal(t, RepoURL(RepoURLTypeFile), app.Spec.GetSource().RepoURL)
@@ -484,10 +484,10 @@ func TestPatchValuesObject(t *testing.T) {
 		Refresh(RefreshTypeNormal).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		And(func(app *Application) {
 			// Check that the patch was a success.
 			assert.Equal(t, `{"some":{"foo":"bar","new":"field"}}`, string(app.Spec.Source.Helm.ValuesObject.Raw))
@@ -503,15 +503,15 @@ func TestDeleteAppResource(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(_ *Application) {
 			// app should be listed
 			if _, err := RunCli("app", "delete-resource", Name(), "--kind", "Service", "--resource-name", "guestbook-ui"); err != nil {
 				require.NoError(t, err)
 			}
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 // Fix for issue #2677, support PATCH in HTTP service
@@ -541,19 +541,19 @@ func TestImmutableChange(t *testing.T) {
 		PatchFile("secrets.yaml", `[{"op": "add", "path": "/data/new-field", "value": "dGVzdA=="}, {"op": "add", "path": "/immutable", "value": true}]`).
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		PatchFile("secrets.yaml", `[{"op": "add", "path": "/data/new-field", "value": "dGVzdDI="}]`).
 		IgnoreErrors().
 		Sync().
 		DoNotIgnoreErrors().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceResultNumbering(1)).
-		Expect(ResourceResultMatches(ResourceResult{
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceResultNumbering(1)).
+		Expect(appFixture.ResourceResultMatches(ResourceResult{
 			Kind:      "Secret",
 			Version:   "v1",
 			Namespace: DeploymentNamespace(),
@@ -569,9 +569,9 @@ func TestImmutableChange(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestInvalidAppProject(t *testing.T) {
@@ -593,12 +593,12 @@ func TestAppDeletion(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		When().
 		Delete(true).
 		Then().
-		Expect(DoesNotExist()).
-		Expect(Event(EventReasonResourceDeleted, "delete"))
+		Expect(appFixture.DoesNotExist()).
+		Expect(appFixture.Event(EventReasonResourceDeleted, "delete"))
 
 	output, err := RunCli("app", "list")
 	require.NoError(t, err)
@@ -624,7 +624,7 @@ func TestAppLabels(t *testing.T) {
 		Sync("-l", "foo=rubbish").
 		DoNotIgnoreErrors().
 		Then().
-		Expect(Error("", "No matching apps found for filter: selector foo=rubbish")).
+		Expect(appFixture.Error("", "No matching apps found for filter: selector foo=rubbish")).
 		// check we can update the app and it is then sync'd
 		Given().
 		When().
@@ -638,12 +638,12 @@ func TestTrackAppStateAndSyncApp(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(Success(fmt.Sprintf("Service     %s  guestbook-ui  Synced ", DeploymentNamespace()))).
-		Expect(Success(fmt.Sprintf("apps   Deployment  %s  guestbook-ui  Synced", DeploymentNamespace()))).
-		Expect(Event(EventReasonResourceUpdated, "sync")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.Success(fmt.Sprintf("Service     %s  guestbook-ui  Synced ", DeploymentNamespace()))).
+		Expect(appFixture.Success(fmt.Sprintf("apps   Deployment  %s  guestbook-ui  Synced", DeploymentNamespace()))).
+		Expect(appFixture.Event(EventReasonResourceUpdated, "sync")).
 		And(func(app *Application) {
 			assert.NotNil(t, app.Status.OperationState.SyncResult)
 		})
@@ -656,7 +656,7 @@ func TestAppRollbackSuccessful(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.NotEmpty(t, app.Status.Sync.Revision)
 		}).
@@ -683,7 +683,7 @@ func TestAppRollbackSuccessful(t *testing.T) {
 			require.NoError(t, err)
 		}).
 		Expect(Event(EventReasonOperationStarted, "rollback")).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, SyncStatusCodeSynced, app.Status.Sync.Status)
 			require.NotNil(t, app.Status.OperationState.SyncResult)
@@ -701,7 +701,7 @@ func TestComparisonFailsIfClusterNotAdded(t *testing.T) {
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(DoesNotExist())
+		Expect(appFixture.DoesNotExist())
 }
 
 func TestCannotSetInvalidPath(t *testing.T) {
@@ -712,7 +712,7 @@ func TestCannotSetInvalidPath(t *testing.T) {
 		IgnoreErrors().
 		AppSet("--path", "garbage").
 		Then().
-		Expect(Error("", "app path does not exist"))
+		Expect(appFixture.Error("", "app path does not exist"))
 }
 
 func TestManipulateApplicationResources(t *testing.T) {
@@ -722,7 +722,7 @@ func TestManipulateApplicationResources(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			manifests, err := RunCli("app", "manifests", app.Name, "--source", "live")
 			require.NoError(t, err)
@@ -754,7 +754,7 @@ func TestManipulateApplicationResources(t *testing.T) {
 			})
 			require.NoError(t, err)
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync))
 }
 
 func assetSecretDataHidden(t *testing.T, manifest string) {
@@ -792,7 +792,7 @@ func TestAppWithSecrets(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			res := FailOnErr(client.GetResource(context.Background(), &applicationpkg.ApplicationResourceRequest{
 				Namespace:    &app.Spec.Destination.Namespace,
@@ -833,7 +833,7 @@ func TestAppWithSecrets(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", app.Name)
 			require.Error(t, err)
@@ -853,8 +853,8 @@ func TestAppWithSecrets(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			diffOutput := FailOnErr(RunCli("app", "diff", app.Name)).(string)
 			assert.Empty(t, diffOutput)
@@ -882,7 +882,7 @@ func TestResourceDiffing(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			// Patch deployment
 			_, err := KubeClientset.AppsV1().Deployments(DeploymentNamespace()).Patch(context.Background(),
@@ -892,7 +892,7 @@ func TestResourceDiffing(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", app.Name, "--local", "testdata", "--server-side-generate")
 			require.Error(t, err)
@@ -905,7 +905,7 @@ func TestResourceDiffing(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", app.Name, "--local", "testdata", "--server-side-generate")
 			require.NoError(t, err)
@@ -931,7 +931,7 @@ func TestResourceDiffing(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		Given().
 		ResourceOverrides(map[string]ResourceOverride{"apps/Deployment": {
 			IgnoreDifferences: OverrideIgnoreDiff{
@@ -942,7 +942,7 @@ func TestResourceDiffing(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		Given().
 		When().
 		Sync().
@@ -964,13 +964,13 @@ func TestResourceDiffing(t *testing.T) {
 		Then().
 		When().Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			deployment, err := KubeClientset.AppsV1().Deployments(DeploymentNamespace()).Get(context.Background(), "guestbook-ui", metav1.GetOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, int32(1), *deployment.Spec.RevisionHistoryLimit)
 		}).
-		When().Sync().Then().Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		When().Sync().Then().Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			deployment, err := KubeClientset.AppsV1().Deployments(DeploymentNamespace()).Get(context.Background(), "guestbook-ui", metav1.GetOptions{})
 			require.NoError(t, err)
@@ -988,7 +988,7 @@ func TestKnownTypesInCRDDiffing(t *testing.T) {
 	Given(t).
 		Path("crd-creation").
 		When().CreateApp().Sync().Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		And(func() {
 			dummyResIf := DynamicClientset.Resource(dummiesGVR).Namespace(DeploymentNamespace())
@@ -996,7 +996,7 @@ func TestKnownTypesInCRDDiffing(t *testing.T) {
 			FailOnErr(dummyResIf.Patch(context.Background(), "dummy-crd-instance", types.MergePatchType, patchData, metav1.PatchOptions{}))
 		}).Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		When().
 		And(func() {
 			SetResourceOverrides(map[string]ResourceOverride{
@@ -1010,7 +1010,7 @@ func TestKnownTypesInCRDDiffing(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestDuplicatedResources(t *testing.T) {
@@ -1028,13 +1028,13 @@ func testEdgeCasesApplicationResources(t *testing.T, appPath string, statusCode 
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 	for i := range message {
-		expect = expect.Expect(Success(message[i]))
+		expect = expect.Expect(appFixture.Success(message[i]))
 	}
 	expect.
-		Expect(HealthIs(statusCode)).
+		Expect(appFixture.HealthIs(statusCode)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", app.Name, "--local", "testdata", "--server-side-generate")
 			assert.Empty(t, diffOutput)
@@ -1321,7 +1321,7 @@ func TestSyncResourceByLabel(t *testing.T) {
 		And(func(app *Application) {
 			_, _ = RunCli("app", "sync", app.Name, "--label", fmt.Sprintf("app.kubernetes.io/instance=%s", app.Name))
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			_, err := RunCli("app", "sync", app.Name, "--label", "this-label=does-not-exist")
 			require.Error(t, err)
@@ -1339,7 +1339,7 @@ func TestSyncResourceByProject(t *testing.T) {
 		And(func(app *Application) {
 			_, _ = RunCli("app", "sync", app.Name, "--project", app.Spec.Project)
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			_, err := RunCli("app", "sync", app.Name, "--project", "this-project-does-not-exist")
 			require.Error(t, err)
@@ -1364,7 +1364,7 @@ func TestLocalManifestSync(t *testing.T) {
 		When().
 		Sync("--local-repo-root", ".").
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			res, _ := RunCli("app", "manifests", app.Name)
 			assert.Contains(t, res, "containerPort: 81")
@@ -1375,7 +1375,7 @@ func TestLocalManifestSync(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			res, _ := RunCli("app", "manifests", app.Name)
 			assert.Contains(t, res, "containerPort: 80")
@@ -1439,9 +1439,9 @@ func TestSyncAsync(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 // assertResourceActions verifies if view/modify resource actions are successful/failing for given application
@@ -1564,8 +1564,8 @@ func TestPermissions(t *testing.T) {
 		Refresh(RefreshTypeNormal).
 		Then().
 		// ensure app resource tree is empty when source/destination permissions are missing
-		Expect(Condition(ApplicationConditionInvalidSpecError, destinationError)).
-		Expect(Condition(ApplicationConditionInvalidSpecError, sourceError)).
+		Expect(appFixture.Condition(ApplicationConditionInvalidSpecError, destinationError)).
+		Expect(appFixture.Condition(ApplicationConditionInvalidSpecError, sourceError)).
 		And(func(app *Application) {
 			closer, cdClient := ArgoCDClientset.NewApplicationClientOrDie()
 			defer io.Close(closer)
@@ -1620,17 +1620,17 @@ func TestPermissionWithScopedRepo(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		DeleteFile("pod-1.yaml").
 		Refresh(RefreshTypeHard).
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceSyncStatusIs("Pod", "pod-1", SyncStatusCodeOutOfSync))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod-1", SyncStatusCodeOutOfSync))
 }
 
 func TestPermissionDeniedWithScopedRepo(t *testing.T) {
@@ -1710,7 +1710,7 @@ func TestPermissionDeniedWithNegatedServer(t *testing.T) {
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(Error("", "do not match any of the allowed destinations in project"))
+		Expect(appFixture.Error("", "do not match any of the allowed destinations in project"))
 }
 
 // make sure that if we deleted a resource from the app, it is not pruned if annotated with Prune=false
@@ -1722,17 +1722,17 @@ func TestSyncOptionPruneFalse(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		DeleteFile("pod-1.yaml").
 		Refresh(RefreshTypeHard).
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceSyncStatusIs("Pod", "pod-1", SyncStatusCodeOutOfSync))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod-1", SyncStatusCodeOutOfSync))
 }
 
 // make sure that if we have an invalid manifest, we can add it if we disable validation, we get a server error rather than a client error
@@ -1742,19 +1742,19 @@ func TestSyncOptionValidateFalse(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		When().
 		IgnoreErrors().
 		Sync().
 		Then().
 		// client error. K8s API changed error message w/ 1.25, so for now, we need to check both
-		Expect(ErrorRegex("error validating data|of type int32", "")).
+		Expect(appFixture.ErrorRegex("error validating data|of type int32", "")).
 		When().
 		PatchFile("deployment.yaml", `[{"op": "add", "path": "/metadata/annotations", "value": {"argocd.argoproj.io/sync-options": "Validate=false"}}]`).
 		Sync().
 		Then().
 		// server error
-		Expect(Error("cannot be handled as a Deployment", ""))
+		Expect(appFixture.Error("cannot be handled as a Deployment", ""))
 }
 
 // make sure that, if we have a resource that needs pruning, but we're ignoring it, the app is in-sync
@@ -1767,7 +1767,7 @@ func TestCompareOptionIgnoreExtraneous(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
 		Expect(SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		DeleteFile("pod-1.yaml").
@@ -1786,8 +1786,8 @@ func TestCompareOptionIgnoreExtraneous(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestSourceNamespaceCanBeMigratedToManagedNamespaceWithoutBeingPrunedOrOutOfSync(t *testing.T) {
@@ -1799,8 +1799,8 @@ func TestSourceNamespaceCanBeMigratedToManagedNamespaceWithoutBeingPrunedOrOutOf
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		PatchApp(`[{
 				"op": "add",
@@ -1809,8 +1809,8 @@ func TestSourceNamespaceCanBeMigratedToManagedNamespaceWithoutBeingPrunedOrOutOf
 				}]`).
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, &ManagedNamespaceMetadata{Labels: map[string]string{"foo": "bar"}}, app.Spec.SyncPolicy.ManagedNamespaceMetadata)
 		}).
@@ -1820,8 +1820,8 @@ func TestSourceNamespaceCanBeMigratedToManagedNamespaceWithoutBeingPrunedOrOutOf
 		Sync().
 		Wait().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestSelfManagedApps(t *testing.T) {
@@ -1832,8 +1832,8 @@ func TestSelfManagedApps(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(a *Application) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 			defer cancel()
@@ -1867,7 +1867,7 @@ func TestExcludedResource(t *testing.T) {
 		Sync().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(Condition(ApplicationConditionExcludedResourceWarning, "Resource apps/Deployment guestbook-ui is excluded in the settings"))
+		Expect(appFixture.Condition(ApplicationConditionExcludedResourceWarning, "Resource apps/Deployment guestbook-ui is excluded in the settings"))
 }
 
 func TestRevisionHistoryLimit(t *testing.T) {
@@ -1877,8 +1877,8 @@ func TestRevisionHistoryLimit(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Len(t, app.Status.History, 1)
 		}).
@@ -1886,8 +1886,8 @@ func TestRevisionHistoryLimit(t *testing.T) {
 		AppSet("--revision-history-limit", "1").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Len(t, app.Status.History, 1)
 		})
@@ -1906,8 +1906,8 @@ func TestOrphanedResource(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		When().
 		And(func() {
 			FailOnErr(KubeClientset.CoreV1().ConfigMaps(DeploymentNamespace()).Create(context.Background(), &v1.ConfigMap{
@@ -1918,7 +1918,7 @@ func TestOrphanedResource(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
+		Expect(appFixture.Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.Name)
 			require.NoError(t, err)
@@ -1933,7 +1933,7 @@ func TestOrphanedResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
+		Expect(appFixture.Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.Name)
 			require.NoError(t, err)
@@ -1948,8 +1948,8 @@ func TestOrphanedResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.Name)
 			require.NoError(t, err)
@@ -1964,8 +1964,8 @@ func TestOrphanedResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.Name)
 			require.NoError(t, err)
@@ -1980,8 +1980,8 @@ func TestOrphanedResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions())
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions())
 }
 
 func TestNotPermittedResources(t *testing.T) {
@@ -2052,7 +2052,7 @@ func TestNotPermittedResources(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			statusByKind := make(map[string]ResourceStatus)
 			for _, res := range app.Status.Resources {
@@ -2068,7 +2068,7 @@ func TestNotPermittedResources(t *testing.T) {
 		When().
 		Delete(true).
 		Then().
-		Expect(DoesNotExist())
+		Expect(appFixture.DoesNotExist())
 
 	// Make sure prohibited resources are not deleted during application deletion
 	FailOnErr(KubeClientset.NetworkingV1().Ingresses(TestNamespace()).Get(context.Background(), "sample-ingress", metav1.GetOptions{}))
@@ -2091,7 +2091,7 @@ func TestSyncWithInfos(t *testing.T) {
 				"--info", fmt.Sprintf("%s=%s", expectedInfo[1].Name, expectedInfo[1].Value))
 			require.NoError(t, err)
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.ElementsMatch(t, app.Status.OperationState.Operation.Info, expectedInfo)
 		})
@@ -2176,8 +2176,8 @@ func TestListResource(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		When().
 		And(func() {
 			FailOnErr(KubeClientset.CoreV1().ConfigMaps(DeploymentNamespace()).Create(context.Background(), &v1.ConfigMap{
@@ -2188,7 +2188,7 @@ func TestListResource(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
+		Expect(appFixture.Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.Name)
 			require.NoError(t, err)
@@ -2216,8 +2216,8 @@ func TestListResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions())
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions())
 }
 
 // Given application is set with --sync-option CreateNamespace=true
@@ -2253,15 +2253,15 @@ func TestNamespaceAutoCreation(t *testing.T) {
 		AppSet("--dest-namespace", updatedNamespace).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
 		When().
 		Delete(true).
 		Then().
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		And(func(app *Application) {
 			// Verify delete app does not delete the namespace auto created
 			output, err := Run("", "kubectl", "get", "namespace", updatedNamespace)
@@ -2281,8 +2281,8 @@ func TestFailedSyncWithRetry(t *testing.T) {
 		IgnoreErrors().
 		Sync("--retry-limit=1", "--retry-backoff-duration=1s").
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(OperationMessageContains("retried 1 times"))
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.OperationMessageContains("retried 1 times"))
 }
 
 func TestCreateDisableValidation(t *testing.T) {
@@ -2321,9 +2321,9 @@ spec:
 		// app should be auto-synced once created
 		CreateFromPartialFile(partialApp, "--path", path, "-l", "labels.local/from-args=args", "--helm-set", "foo=foo").
 		Then().
-		Expect(Success("")).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.Success("")).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		And(func(app *Application) {
 			assert.Equal(t, map[string]string{"labels.local/from-file": "file", "labels.local/from-args": "args"}, app.ObjectMeta.Labels)
 			assert.Equal(t, map[string]string{"annotations.local/from-file": "file"}, app.ObjectMeta.Annotations)
@@ -2374,7 +2374,7 @@ definitions:
 			})
 		}).
 		When().CreateApp().Sync().Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
@@ -2427,7 +2427,7 @@ func TestAppLogs(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			out, err := RunCliWithRetry(appLogsRetryCount, "app", "logs", app.Name, "--kind", "Deployment", "--group", "", "--name", "guestbook-ui")
 			require.NoError(t, err)
@@ -2465,7 +2465,7 @@ func TestAppWaitOperationInProgress(t *testing.T) {
 		Sync().
 		Then().
 		// stuck in running state
-		Expect(OperationPhaseIs(OperationRunning)).
+		Expect(appFixture.OperationPhaseIs(OperationRunning)).
 		When().
 		And(func() {
 			_, err := RunCli("app", "wait", ctx.AppName(), "--suspended")
@@ -2481,14 +2481,14 @@ func TestSyncOptionReplace(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "configmap/my-map created", app.Status.OperationState.SyncResult.Resources[0].Message)
 		}).
 		When().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "configmap/my-map replaced", app.Status.OperationState.SyncResult.Resources[0].Message)
 		})
@@ -2502,14 +2502,14 @@ func TestSyncOptionReplaceFromCLI(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "configmap/my-map created", app.Status.OperationState.SyncResult.Resources[0].Message)
 		}).
 		When().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "configmap/my-map replaced", app.Status.OperationState.SyncResult.Resources[0].Message)
 		})
@@ -2523,7 +2523,7 @@ func TestDiscoverNewCommit(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			sha = app.Status.Sync.Revision
 			assert.NotEmpty(t, sha)
@@ -2531,7 +2531,7 @@ func TestDiscoverNewCommit(t *testing.T) {
 		When().
 		PatchFile("config-map.yaml", `[{"op": "replace", "path": "/data/foo", "value": "hello"}]`).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		// make sure new commit is not discovered immediately after push
 		And(func(app *Application) {
 			assert.Equal(t, sha, app.Status.Sync.Revision)
@@ -2540,7 +2540,7 @@ func TestDiscoverNewCommit(t *testing.T) {
 		// make sure new commit is not discovered after refresh is requested
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			assert.NotEqual(t, sha, app.Status.Sync.Revision)
 		})
@@ -2583,9 +2583,9 @@ func TestSwitchTrackingMethod(t *testing.T) {
 		Sync().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Add resource with tracking annotation. This should put the
@@ -2600,25 +2600,25 @@ func TestSwitchTrackingMethod(t *testing.T) {
 			}, metav1.CreateOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Delete resource to bring application back in sync
 			FailOnErr(nil, KubeClientset.CoreV1().ConfigMaps(DeploymentNamespace()).Delete(context.Background(), "other-configmap", metav1.DeleteOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		SetTrackingMethod(string(argo.TrackingMethodLabel)).
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Add a resource with a tracking annotation. This should not
@@ -2634,9 +2634,9 @@ func TestSwitchTrackingMethod(t *testing.T) {
 			}, metav1.CreateOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Add a resource with the tracking label. The app should become
@@ -2651,18 +2651,18 @@ func TestSwitchTrackingMethod(t *testing.T) {
 			}, metav1.CreateOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Delete resource to bring application back in sync
 			FailOnErr(nil, KubeClientset.CoreV1().ConfigMaps(DeploymentNamespace()).Delete(context.Background(), "extra-configmap", metav1.DeleteOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestSwitchTrackingLabel(t *testing.T) {
@@ -2675,9 +2675,9 @@ func TestSwitchTrackingLabel(t *testing.T) {
 		Sync().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Add extra resource that carries the default tracking label
@@ -2692,26 +2692,26 @@ func TestSwitchTrackingLabel(t *testing.T) {
 			}, metav1.CreateOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Delete resource to bring application back in sync
 			FailOnErr(nil, KubeClientset.CoreV1().ConfigMaps(DeploymentNamespace()).Delete(context.Background(), "other-configmap", metav1.DeleteOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		// Change tracking label
 		SetTrackingLabel("argocd.tracking").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Create resource with the new tracking label, the application
@@ -2726,18 +2726,18 @@ func TestSwitchTrackingLabel(t *testing.T) {
 			}, metav1.CreateOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Delete resource to bring application back in sync
 			FailOnErr(nil, KubeClientset.CoreV1().ConfigMaps(DeploymentNamespace()).Delete(context.Background(), "other-configmap", metav1.DeleteOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Add extra resource that carries the default tracking label
@@ -2753,9 +2753,9 @@ func TestSwitchTrackingLabel(t *testing.T) {
 			}, metav1.CreateOptions{}))
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestAnnotationTrackingExtraResources(t *testing.T) {
@@ -2769,9 +2769,9 @@ func TestAnnotationTrackingExtraResources(t *testing.T) {
 		Sync().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Add a resource with an annotation that is not referencing the
@@ -2787,9 +2787,9 @@ func TestAnnotationTrackingExtraResources(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		Sync("--prune").
 		And(func() {
@@ -2812,9 +2812,9 @@ func TestAnnotationTrackingExtraResources(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		Sync("--prune").
 		And(func() {
@@ -2824,9 +2824,9 @@ func TestAnnotationTrackingExtraResources(t *testing.T) {
 			require.Equal(t, "", cm.Name)
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Add a cluster-scoped resource that is not referencing itself
@@ -2844,9 +2844,9 @@ func TestAnnotationTrackingExtraResources(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		And(func() {
 			// Add a cluster-scoped resource that is referencing itself
@@ -2864,9 +2864,9 @@ func TestAnnotationTrackingExtraResources(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		Sync("--prune").
 		And(func() {
@@ -2876,9 +2876,9 @@ func TestAnnotationTrackingExtraResources(t *testing.T) {
 			require.Equal(t, "", cr.Name)
 		}).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestCreateConfigMapsAndWaitForUpdate(t *testing.T) {
@@ -2915,11 +2915,11 @@ data:
 		Refresh(RefreshTypeNormal).
 		Wait().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(ResourceHealthWithNamespaceIs("ConfigMap", "other-map", DeploymentNamespace(), health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("ConfigMap", "other-map", DeploymentNamespace(), SyncStatusCodeSynced)).
-		Expect(ResourceHealthWithNamespaceIs("ConfigMap", "yet-another-map", DeploymentNamespace(), health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("ConfigMap", "yet-another-map", DeploymentNamespace(), SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("ConfigMap", "other-map", DeploymentNamespace(), health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("ConfigMap", "other-map", DeploymentNamespace(), SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("ConfigMap", "yet-another-map", DeploymentNamespace(), health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("ConfigMap", "yet-another-map", DeploymentNamespace(), SyncStatusCodeSynced))
 }

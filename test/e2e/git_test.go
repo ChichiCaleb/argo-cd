@@ -9,7 +9,7 @@ import (
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 func TestGitSemverResolutionNotUsingConstraint(t *testing.T) {
@@ -24,7 +24,7 @@ func TestGitSemverResolutionNotUsingConstraint(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestGitSemverResolutionNotUsingConstraintWithLeadingZero(t *testing.T) {
@@ -39,7 +39,7 @@ func TestGitSemverResolutionNotUsingConstraintWithLeadingZero(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestGitSemverResolutionUsingConstraint(t *testing.T) {
@@ -54,7 +54,7 @@ func TestGitSemverResolutionUsingConstraint(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		PatchFile("deployment.yaml", `[
 	{"op": "replace", "path": "/metadata/name", "value": "new-app"},
@@ -63,7 +63,7 @@ func TestGitSemverResolutionUsingConstraint(t *testing.T) {
 		AddTag("v0.1.2").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		Expect(Pod(func(p v1.Pod) bool { return strings.HasPrefix(p.Name, "new-app") }))
 }
 
@@ -79,7 +79,7 @@ func TestGitSemverResolutionUsingConstraintWithLeadingZero(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		PatchFile("deployment.yaml", `[
 	{"op": "replace", "path": "/metadata/name", "value": "new-app"},
@@ -88,6 +88,6 @@ func TestGitSemverResolutionUsingConstraintWithLeadingZero(t *testing.T) {
 		AddTag("0.1.2").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(Pod(func(p v1.Pod) bool { return strings.HasPrefix(p.Name, "new-app") }))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return strings.HasPrefix(p.Name, "new-app") }))
 }

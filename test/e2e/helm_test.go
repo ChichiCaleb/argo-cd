@@ -19,7 +19,7 @@ import (
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	projectFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/project"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture/repos"
 	. "github.com/argoproj/argo-cd/v2/util/errors"
@@ -34,10 +34,10 @@ func TestHelmHooksAreCreated(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "hook", Message: "pod/hook created", HookType: HookTypePreSync, HookPhase: OperationSucceeded, SyncPhase: SyncPhasePreSync}))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceResultIs(ResourceResult{Version: "v1", Kind: "Pod", Namespace: DeploymentNamespace(), Name: "hook", Message: "pod/hook created", HookType: HookTypePreSync, HookPhase: OperationSucceeded, SyncPhase: SyncPhasePreSync}))
 }
 
 // make sure we treat Helm weights as a sync wave
@@ -54,8 +54,8 @@ func TestHelmHookWeight(t *testing.T) {
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(ResourceResultNumbering(1))
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.ResourceResultNumbering(1))
 }
 
 // make sure that execute the delete policy
@@ -67,9 +67,9 @@ func TestHelmHookDeletePolicy(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(ResourceResultNumbering(2)).
-		Expect(NotPod(func(p v1.Pod) bool { return p.Name == "hook" }))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.ResourceResultNumbering(2)).
+		Expect(appFixture.NotPod(func(p v1.Pod) bool { return p.Name == "hook" }))
 }
 
 func TestDeclarativeHelm(t *testing.T) {
@@ -79,9 +79,9 @@ func TestDeclarativeHelm(t *testing.T) {
 		Declarative("declarative-apps/app.yaml").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestDeclarativeHelmInvalidValuesFile(t *testing.T) {
@@ -90,9 +90,9 @@ func TestDeclarativeHelmInvalidValuesFile(t *testing.T) {
 		When().
 		Declarative("declarative-apps/invalid-helm.yaml").
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeUnknown)).
-		Expect(Condition(ApplicationConditionComparisonError, "does-not-exist-values.yaml: no such file or directory"))
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeUnknown)).
+		Expect(appFixture.Condition(ApplicationConditionComparisonError, "does-not-exist-values.yaml: no such file or directory"))
 }
 
 func TestHelmRepo(t *testing.T) {
@@ -109,9 +109,9 @@ func TestHelmRepo(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestHelmValues(t *testing.T) {
@@ -146,9 +146,9 @@ func TestHelmIgnoreMissingValueFiles(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		AppUnSet("--ignore-missing-value-files").
 		Then().
@@ -159,7 +159,7 @@ func TestHelmIgnoreMissingValueFiles(t *testing.T) {
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(ErrorRegex("Error: open .*does-not-exist-values.yaml: no such file or directory", ""))
+		Expect(appFixture.ErrorRegex("Error: open .*does-not-exist-values.yaml: no such file or directory", ""))
 }
 
 func TestHelmValuesMultipleUnset(t *testing.T) {
@@ -262,10 +262,10 @@ func TestHelmCrdHook(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceResultNumbering(2))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceResultNumbering(2))
 }
 
 func TestHelmReleaseName(t *testing.T) {
@@ -325,8 +325,8 @@ func TestHelmSetEnv(t *testing.T) {
 		AppSet("--helm-set", "foo=$ARGOCD_APP_NAME").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, Name(), FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map", "-o", "jsonpath={.data.foo}")).(string))
 		})
@@ -340,8 +340,8 @@ func TestHelmSetStringEnv(t *testing.T) {
 		AppSet("--helm-set-string", "foo=$ARGOCD_APP_NAME").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, Name(), FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map", "-o", "jsonpath={.data.foo}")).(string))
 		})
@@ -356,7 +356,7 @@ func TestKubeVersion(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			kubeVersion := FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map",
 				"-o", "jsonpath={.data.kubeVersion}")).(string)
@@ -368,7 +368,7 @@ func TestKubeVersion(t *testing.T) {
 		AppSet("--helm-kube-version", "999.999.999").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "v999.999.999", FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map",
 				"-o", "jsonpath={.data.kubeVersion}")).(string))
@@ -384,7 +384,7 @@ func TestApiVersions(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			apiVersions := FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map",
 				"-o", "jsonpath={.data.apiVersions}")).(string)
@@ -396,7 +396,7 @@ func TestApiVersions(t *testing.T) {
 		AppSet("--helm-api-versions", "v1/MyTestResource").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			apiVersions := FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map",
 				"-o", "jsonpath={.data.apiVersions}")).(string)
@@ -412,12 +412,12 @@ func TestHelmNamespaceOverride(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		AppSet("--helm-namespace", "does-not-exist").
 		Then().
 		// The app should go out of sync, because the resource's target namespace changed.
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync))
 }
 
 func TestHelmValuesHiddenDirectory(t *testing.T) {
@@ -430,9 +430,9 @@ func TestHelmValuesHiddenDirectory(t *testing.T) {
 		AppSet("--values", "foo.yaml").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestHelmWithDependencies(t *testing.T) {
@@ -453,7 +453,7 @@ func TestHelmWithMultipleDependencies(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestHelmDependenciesPermissionDenied(t *testing.T) {
@@ -538,7 +538,7 @@ func testHelmWithDependencies(t *testing.T, chartPath string, legacyRepo bool) {
 		CreateApp("--helm-version", helmVer).
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestHelm3CRD(t *testing.T) {
@@ -549,8 +549,8 @@ func TestHelm3CRD(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusIs("CustomResourceDefinition", "crontabs.stable.example.com", SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusIs("CustomResourceDefinition", "crontabs.stable.example.com", SyncStatusCodeSynced))
 }
 
 func TestHelmRepoDiffLocal(t *testing.T) {
@@ -568,9 +568,9 @@ func TestHelmRepoDiffLocal(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			_ = os.Setenv("XDG_CONFIG_HOME", helmTmp)
 			FailOnErr(Run("", "helm", "repo", "add", "custom-repo", GetEnvWithDefault("ARGOCD_E2E_HELM_SERVICE", RepoURL(RepoURLTypeHelm)),
@@ -598,9 +598,9 @@ func TestHelmOCIRegistry(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestGitWithHelmOCIRegistryDependencies(t *testing.T) {
@@ -614,9 +614,9 @@ func TestGitWithHelmOCIRegistryDependencies(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestHelmOCIRegistryWithDependencies(t *testing.T) {
@@ -633,9 +633,9 @@ func TestHelmOCIRegistryWithDependencies(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestTemplatesGitWithHelmOCIDependencies(t *testing.T) {
@@ -649,9 +649,9 @@ func TestTemplatesGitWithHelmOCIDependencies(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestTemplatesHelmOCIWithDependencies(t *testing.T) {
@@ -668,7 +668,7 @@ func TestTemplatesHelmOCIWithDependencies(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }

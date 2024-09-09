@@ -12,7 +12,7 @@ import (
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	"github.com/argoproj/argo-cd/v2/util/errors"
 	. "github.com/argoproj/argo-cd/v2/util/errors"
 )
@@ -37,7 +37,7 @@ func TestKustomize2AppSource(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		When().
 		PatchApp(`[
 			{
@@ -54,14 +54,14 @@ func TestKustomize2AppSource(t *testing.T) {
 			}
 		]`).
 		Then().
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		When().
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(patchLabelMatchesFor("Service")).
 		And(patchLabelMatchesFor("Deployment"))
 }
@@ -75,9 +75,9 @@ func TestSyncStatusOptionIgnore(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			resourceStatus := app.Status.Resources[0]
 			assert.Contains(t, resourceStatus.Name, "my-map-")
@@ -94,11 +94,11 @@ func TestSyncStatusOptionIgnore(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
 		// this is a key check - we expect the app to be healthy because, even though we have a resources that needs
 		// pruning, because it is annotated with IgnoreExtraneous it should not contribute to the sync status
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			assert.Len(t, app.Status.Resources, 2)
 			for _, resourceStatus := range app.Status.Resources {
@@ -125,8 +125,8 @@ func TestKustomizeSSHRemoteBase(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(ResourceSyncStatusIs("ConfigMap", "my-map", SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.ResourceSyncStatusIs("ConfigMap", "my-map", SyncStatusCodeSynced))
 }
 
 // make sure we can create an app which has a SSH remote base
@@ -136,10 +136,10 @@ func TestKustomizeDeclarativeInvalidApp(t *testing.T) {
 		When().
 		Declarative("declarative-apps/app.yaml").
 		Then().
-		Expect(Success("")).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeUnknown)).
-		Expect(Condition(ApplicationConditionComparisonError, "invalid-kustomize/does-not-exist.yaml: no such file or directory"))
+		Expect(appFixture.Success("")).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeUnknown)).
+		Expect(appFixture.Condition(ApplicationappFixture.ComparisonError, "invalid-kustomize/does-not-exist.yaml: no such file or directory"))
 }
 
 // Flag --load_restrictor is no longer supported in Kustomize 4
@@ -156,9 +156,9 @@ func TestKustomizeBuildOptionsLoadRestrictor(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		Given().
 		And(func() {
 			errors.FailOnErr(fixture.Run("", "kubectl", "patch", "cm", "argocd-cm",
@@ -209,14 +209,14 @@ func TestKustomizeReplicas2AppSource(t *testing.T) {
 		And(func(app *Application) {
 			assert.Equal(t, deploymentReplicas, int(app.Spec.Source.Kustomize.Replicas[0].Count.IntVal))
 		}). // check Kustomize CLI
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		When().
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(checkReplicasFor("Deployment"))
 }
 
@@ -302,7 +302,7 @@ func TestKustomizeKubeVersion(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			kubeVersion := FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map",
 				"-o", "jsonpath={.data.kubeVersion}")).(string)
@@ -314,7 +314,7 @@ func TestKustomizeKubeVersion(t *testing.T) {
 		AppSet("--kustomize-kube-version", "999.999.999").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "v999.999.999", FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map",
 				"-o", "jsonpath={.data.kubeVersion}")).(string))
@@ -334,7 +334,7 @@ func TestKustomizeApiVersions(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			apiVersions := FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map",
 				"-o", "jsonpath={.data.apiVersions}")).(string)
@@ -346,7 +346,7 @@ func TestKustomizeApiVersions(t *testing.T) {
 		AppSet("--kustomize-api-versions", "v1/MyTestResource").
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			apiVersions := FailOnErr(Run(".", "kubectl", "-n", DeploymentNamespace(), "get", "cm", "my-map",
 				"-o", "jsonpath={.data.apiVersions}")).(string)
@@ -366,10 +366,10 @@ func TestKustomizeNamespaceOverride(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		AppSet("--kustomize-namespace", "does-not-exist").
 		Then().
 		// The app should go out of sync, because the resource's target namespace changed.
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync))
 }

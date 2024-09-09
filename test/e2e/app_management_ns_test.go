@@ -31,7 +31,7 @@ import (
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 	accountFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/account"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 	projectFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/project"
 	repoFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/repos"
 	"github.com/argoproj/argo-cd/v2/test/e2e/testdata"
@@ -88,7 +88,7 @@ func TestNamespacedGetLogsDenySwitchOn(t *testing.T) {
 		Sync().
 		SetParamInSettingConfigMap("server.rbac.log.enforce.enable", "true").
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			_, err := RunCliWithRetry(5, "app", "logs", ctx.AppQualifiedName(), "--kind", "Deployment", "--group", "", "--name", "guestbook-ui")
 			require.Error(t, err)
@@ -142,7 +142,7 @@ func TestNamespacedGetLogsAllowSwitchOnNS(t *testing.T) {
 		Sync().
 		SetParamInSettingConfigMap("server.rbac.log.enforce.enable", "true").
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			out, err := RunCliWithRetry(5, "app", "logs", ctx.AppQualifiedName(), "--kind", "Deployment", "--group", "", "--name", "guestbook-ui")
 			require.NoError(t, err)
@@ -200,7 +200,7 @@ func TestNamespacedGetLogsAllowSwitchOff(t *testing.T) {
 		Sync().
 		SetParamInSettingConfigMap("server.rbac.log.enforce.enable", "false").
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			out, err := RunCliWithRetry(5, "app", "logs", ctx.AppQualifiedName(), "--kind", "Deployment", "--group", "", "--name", "guestbook-ui")
 			require.NoError(t, err)
@@ -229,9 +229,9 @@ func TestNamespacedSyncToUnsignedCommit(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationError)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.OperationPhaseIs(OperationError)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 func TestNamespacedSyncToSignedCommitWKK(t *testing.T) {
@@ -247,9 +247,9 @@ func TestNamespacedSyncToSignedCommitWKK(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationError)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.OperationPhaseIs(OperationError)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 func TestNamespacedSyncToSignedCommitKWKK(t *testing.T) {
@@ -267,9 +267,9 @@ func TestNamespacedSyncToSignedCommitKWKK(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestNamespacedAppCreation(t *testing.T) {
@@ -281,7 +281,7 @@ func TestNamespacedAppCreation(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			assert.Equal(t, Name(), app.Name)
 			assert.Equal(t, AppNamespace(), app.Namespace)
@@ -329,7 +329,7 @@ func TestNamespacedAppCreationWithoutForceUpdate(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			assert.Equal(t, ctx.AppName(), app.Name)
 			assert.Equal(t, AppNamespace(), app.Namespace)
@@ -363,15 +363,15 @@ func TestNamespacedDeleteAppResource(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(_ *Application) {
 			// app should be listed
 			if _, err := RunCli("app", "delete-resource", ctx.AppQualifiedName(), "--kind", "Service", "--resource-name", "guestbook-ui"); err != nil {
 				require.NoError(t, err)
 			}
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(HealthIs(health.HealthStatusMissing))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.HealthIs(health.HealthStatusMissing))
 }
 
 // demonstrate that we cannot use a standard sync when an immutable field is changed, we must use "force"
@@ -386,19 +386,19 @@ func TestNamespacedImmutableChange(t *testing.T) {
 		PatchFile("secrets.yaml", `[{"op": "add", "path": "/data/new-field", "value": "dGVzdA=="}, {"op": "add", "path": "/immutable", "value": true}]`).
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		When().
 		PatchFile("secrets.yaml", `[{"op": "add", "path": "/data/new-field", "value": "dGVzdDI="}]`).
 		IgnoreErrors().
 		Sync().
 		DoNotIgnoreErrors().
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceResultNumbering(1)).
-		Expect(ResourceResultMatches(ResourceResult{
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceResultNumbering(1)).
+		Expect(appFixture.ResourceResultMatches(ResourceResult{
 			Kind:      "Secret",
 			Version:   "v1",
 			Namespace: DeploymentNamespace(),
@@ -414,9 +414,9 @@ func TestNamespacedImmutableChange(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy))
 }
 
 func TestNamespacedInvalidAppProject(t *testing.T) {
@@ -443,12 +443,12 @@ func TestNamespacedAppDeletion(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		When().
 		Delete(true).
 		Then().
-		Expect(DoesNotExist()).
-		Expect(NamespacedEvent(AppNamespace(), EventReasonResourceDeleted, "delete"))
+		Expect(appFixture.DoesNotExist()).
+		Expect(appFixture.NamespacedEvent(AppNamespace(), EventReasonResourceDeleted, "delete"))
 
 	output, err := RunCli("app", "list")
 	require.NoError(t, err)
@@ -493,12 +493,12 @@ func TestNamespacedTrackAppStateAndSyncApp(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(health.HealthStatusHealthy)).
-		Expect(Success(fmt.Sprintf("Service     %s  guestbook-ui  Synced ", DeploymentNamespace()))).
-		Expect(Success(fmt.Sprintf("apps   Deployment  %s  guestbook-ui  Synced", DeploymentNamespace()))).
-		Expect(NamespacedEvent(AppNamespace(), EventReasonResourceUpdated, "sync")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.Success(fmt.Sprintf("Service     %s  guestbook-ui  Synced ", DeploymentNamespace()))).
+		Expect(appFixture.Success(fmt.Sprintf("apps   Deployment  %s  guestbook-ui  Synced", DeploymentNamespace()))).
+		Expect(appFixture.NamespacedEvent(AppNamespace(), EventReasonResourceUpdated, "sync")).
 		And(func(app *Application) {
 			assert.NotNil(t, app.Status.OperationState.SyncResult)
 		})
@@ -514,7 +514,7 @@ func TestNamespacedAppRollbackSuccessful(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.NotEmpty(t, app.Status.Sync.Revision)
 		}).
@@ -540,8 +540,8 @@ func TestNamespacedAppRollbackSuccessful(t *testing.T) {
 			_, err = RunCli("app", "rollback", app.QualifiedName(), "1")
 			require.NoError(t, err)
 		}).
-		Expect(NamespacedEvent(AppNamespace(), EventReasonOperationStarted, "rollback")).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NamespacedEvent(AppNamespace(), EventReasonOperationStarted, "rollback")).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, SyncStatusCodeSynced, app.Status.Sync.Status)
 			require.NotNil(t, app.Status.OperationState.SyncResult)
@@ -587,7 +587,7 @@ func TestNamespacedManipulateApplicationResources(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			manifests, err := RunCli("app", "manifests", ctx.AppQualifiedName(), "--source", "live")
 			require.NoError(t, err)
@@ -620,7 +620,7 @@ func TestNamespacedManipulateApplicationResources(t *testing.T) {
 			})
 			require.NoError(t, err)
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync))
 }
 
 func TestNamespacedAppWithSecrets(t *testing.T) {
@@ -637,7 +637,7 @@ func TestNamespacedAppWithSecrets(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			res := FailOnErr(client.GetResource(context.Background(), &applicationpkg.ApplicationResourceRequest{
 				Namespace:    &app.Spec.Destination.Namespace,
@@ -682,7 +682,7 @@ func TestNamespacedAppWithSecrets(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", ctx.AppQualifiedName())
 			require.Error(t, err)
@@ -702,8 +702,8 @@ func TestNamespacedAppWithSecrets(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			diffOutput := FailOnErr(RunCli("app", "diff", ctx.AppQualifiedName())).(string)
 			assert.Empty(t, diffOutput)
@@ -734,7 +734,7 @@ func TestNamespacedResourceDiffing(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			// Patch deployment
 			_, err := KubeClientset.AppsV1().Deployments(DeploymentNamespace()).Patch(context.Background(),
@@ -744,7 +744,7 @@ func TestNamespacedResourceDiffing(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", ctx.AppQualifiedName(), "--local-repo-root", ".", "--local", "testdata/guestbook")
 			require.Error(t, err)
@@ -757,7 +757,7 @@ func TestNamespacedResourceDiffing(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", ctx.AppQualifiedName(), "--local-repo-root", ".", "--local", "testdata/guestbook")
 			require.NoError(t, err)
@@ -783,7 +783,7 @@ func TestNamespacedResourceDiffing(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		Given().
 		ResourceOverrides(map[string]ResourceOverride{"apps/Deployment": {
 			IgnoreDifferences: OverrideIgnoreDiff{
@@ -794,7 +794,7 @@ func TestNamespacedResourceDiffing(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		Given().
 		When().
 		Sync().
@@ -816,13 +816,13 @@ func TestNamespacedResourceDiffing(t *testing.T) {
 		Then().
 		When().Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			deployment, err := KubeClientset.AppsV1().Deployments(DeploymentNamespace()).Get(context.Background(), "guestbook-ui", metav1.GetOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, int32(1), *deployment.Spec.RevisionHistoryLimit)
 		}).
-		When().Sync().Then().Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		When().Sync().Then().Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			deployment, err := KubeClientset.AppsV1().Deployments(DeploymentNamespace()).Get(context.Background(), "guestbook-ui", metav1.GetOptions{})
 			require.NoError(t, err)
@@ -843,7 +843,7 @@ func TestNamespacedKnownTypesInCRDDiffing(t *testing.T) {
 		SetTrackingMethod("annotation").
 		SetAppNamespace(AppNamespace()).
 		When().CreateApp().Sync().Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		And(func() {
 			dummyResIf := DynamicClientset.Resource(dummiesGVR).Namespace(DeploymentNamespace())
@@ -851,7 +851,7 @@ func TestNamespacedKnownTypesInCRDDiffing(t *testing.T) {
 			FailOnErr(dummyResIf.Patch(context.Background(), "dummy-crd-instance", types.MergePatchType, patchData, metav1.PatchOptions{}))
 		}).Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		When().
 		And(func() {
 			SetResourceOverrides(map[string]ResourceOverride{
@@ -865,7 +865,7 @@ func TestNamespacedKnownTypesInCRDDiffing(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 // TODO(jannfis): This somehow doesn't work -- I suspect tracking method
@@ -887,13 +887,13 @@ func testNSEdgeCasesApplicationResources(t *testing.T, appPath string, statusCod
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 	for i := range message {
 		expect = expect.Expect(Success(message[i]))
 	}
 	expect.
-		Expect(HealthIs(statusCode)).
+		Expect(appFixture.HealthIs(statusCode)).
 		And(func(app *Application) {
 			diffOutput, err := RunCli("app", "diff", ctx.AppQualifiedName(), "--local-repo-root", ".", "--local", path.Join("testdata", appPath))
 			assert.Empty(t, diffOutput)
@@ -970,7 +970,7 @@ func TestNamespacedSyncResourceByLabel(t *testing.T) {
 		And(func(app *Application) {
 			_, _ = RunCli("app", "sync", ctx.AppQualifiedName(), "--label", fmt.Sprintf("app.kubernetes.io/instance=%s", app.Name))
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			_, err := RunCli("app", "sync", ctx.AppQualifiedName(), "--label", "this-label=does-not-exist")
 			require.Error(t, err)
@@ -998,7 +998,7 @@ func TestNamespacedLocalManifestSync(t *testing.T) {
 		When().
 		Sync("--local-repo-root", ".").
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			res, _ := RunCli("app", "manifests", ctx.AppQualifiedName())
 			assert.Contains(t, res, "containerPort: 81")
@@ -1009,7 +1009,7 @@ func TestNamespacedLocalManifestSync(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			res, _ := RunCli("app", "manifests", ctx.AppQualifiedName())
 			assert.Contains(t, res, "containerPort: 80")
@@ -1083,8 +1083,8 @@ func TestNamespacedSyncAsync(t *testing.T) {
 		Sync().
 		Then().
 		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 // assertResourceActions verifies if view/modify resource actions are successful/failing for given application
@@ -1215,8 +1215,8 @@ func TestNamespacedPermissions(t *testing.T) {
 		Refresh(RefreshTypeNormal).
 		Then().
 		// ensure app resource tree is empty when source/destination permissions are missing
-		Expect(Condition(ApplicationConditionInvalidSpecError, destinationError)).
-		Expect(Condition(ApplicationConditionInvalidSpecError, sourceError)).
+		Expect(appFixture.Condition(ApplicationConditionInvalidSpecError, destinationError)).
+		Expect(appFixture.Condition(ApplicationConditionInvalidSpecError, sourceError)).
 		And(func(app *Application) {
 			closer, cdClient := ArgoCDClientset.NewApplicationClientOrDie()
 			defer io.Close(closer)
@@ -1271,17 +1271,17 @@ func TestNamespacedPermissionWithScopedRepo(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		DeleteFile("pod-1.yaml").
 		Refresh(RefreshTypeHard).
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceSyncStatusIs("Pod", "pod-1", SyncStatusCodeOutOfSync))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod-1", SyncStatusCodeOutOfSync))
 }
 
 func TestNamespacedPermissionDeniedWithScopedRepo(t *testing.T) {
@@ -1324,17 +1324,17 @@ func TestNamespacedSyncOptionPruneFalse(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		DeleteFile("pod-1.yaml").
 		Refresh(RefreshTypeHard).
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
-		Expect(ResourceSyncStatusIs("Pod", "pod-1", SyncStatusCodeOutOfSync))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.ResourceSyncStatusIs("Pod", "pod-1", SyncStatusCodeOutOfSync))
 }
 
 // make sure that if we have an invalid manifest, we can add it if we disable validation, we get a server error rather than a client error
@@ -1373,13 +1373,13 @@ func TestNamespacedCompareOptionIgnoreExtraneous(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		DeleteFile("pod-1.yaml").
 		Refresh(RefreshTypeHard).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Len(t, app.Status.Resources, 2)
 			statusByName := map[string]SyncStatusCode{}
@@ -1392,8 +1392,8 @@ func TestNamespacedCompareOptionIgnoreExtraneous(t *testing.T) {
 		When().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced))
 }
 
 func TestNamespacedSelfManagedApps(t *testing.T) {
@@ -1406,8 +1406,8 @@ func TestNamespacedSelfManagedApps(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(a *Application) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 			defer cancel()
@@ -1443,7 +1443,7 @@ func TestNamespacedExcludedResource(t *testing.T) {
 		Sync().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(Condition(ApplicationConditionExcludedResourceWarning, "Resource apps/Deployment guestbook-ui is excluded in the settings"))
+		Expect(appFixture.Condition(ApplicationConditionExcludedResourceWarning, "Resource apps/Deployment guestbook-ui is excluded in the settings"))
 }
 
 func TestNamespacedRevisionHistoryLimit(t *testing.T) {
@@ -1455,8 +1455,8 @@ func TestNamespacedRevisionHistoryLimit(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Len(t, app.Status.History, 1)
 		}).
@@ -1464,8 +1464,8 @@ func TestNamespacedRevisionHistoryLimit(t *testing.T) {
 		AppSet("--revision-history-limit", "1").
 		Sync().
 		Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Len(t, app.Status.History, 1)
 		})
@@ -1487,8 +1487,8 @@ func TestNamespacedOrphanedResource(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		When().
 		And(func() {
 			FailOnErr(KubeClientset.CoreV1().ConfigMaps(DeploymentNamespace()).Create(context.Background(), &v1.ConfigMap{
@@ -1515,7 +1515,7 @@ func TestNamespacedOrphanedResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
+		Expect(appFixture.Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.QualifiedName())
 			require.NoError(t, err)
@@ -1531,8 +1531,8 @@ func TestNamespacedOrphanedResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.QualifiedName())
 			require.NoError(t, err)
@@ -1548,8 +1548,8 @@ func TestNamespacedOrphanedResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.QualifiedName())
 			require.NoError(t, err)
@@ -1565,8 +1565,8 @@ func TestNamespacedOrphanedResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions())
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions())
 }
 
 func TestNamespacedNotPermittedResources(t *testing.T) {
@@ -1638,7 +1638,7 @@ func TestNamespacedNotPermittedResources(t *testing.T) {
 		When().
 		CreateApp().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			statusByKind := make(map[string]ResourceStatus)
 			for _, res := range app.Status.Resources {
@@ -1654,7 +1654,7 @@ func TestNamespacedNotPermittedResources(t *testing.T) {
 		When().
 		Delete(true).
 		Then().
-		Expect(DoesNotExist())
+		Expect(appFixture.DoesNotExist())
 
 	// Make sure prohibited resources are not deleted during application deletion
 	FailOnErr(KubeClientset.NetworkingV1().Ingresses(TestNamespace()).Get(context.Background(), "sample-ingress", metav1.GetOptions{}))
@@ -1679,7 +1679,7 @@ func TestNamespacedSyncWithInfos(t *testing.T) {
 				"--info", fmt.Sprintf("%s=%s", expectedInfo[1].Name, expectedInfo[1].Value))
 			require.NoError(t, err)
 		}).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.ElementsMatch(t, app.Status.OperationState.Operation.Info, expectedInfo)
 		})
@@ -1773,8 +1773,8 @@ func TestNamespacedListResource(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		When().
 		And(func() {
 			FailOnErr(KubeClientset.CoreV1().ConfigMaps(DeploymentNamespace()).Create(context.Background(), &v1.ConfigMap{
@@ -1785,7 +1785,7 @@ func TestNamespacedListResource(t *testing.T) {
 		}).
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
+		Expect(appFixture.Condition(ApplicationConditionOrphanedResourceWarning, "Application has 1 orphaned resources")).
 		And(func(app *Application) {
 			output, err := RunCli("app", "resources", app.QualifiedName())
 			require.NoError(t, err)
@@ -1814,8 +1814,8 @@ func TestNamespacedListResource(t *testing.T) {
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions())
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions())
 }
 
 // Given application is set with --sync-option CreateNamespace=true
@@ -1843,20 +1843,20 @@ func TestNamespacedNamespaceAutoCreation(t *testing.T) {
 		When().
 		CreateApp("--sync-option", "CreateNamespace=true").
 		Then().
-		Expect(NoNamespace(updatedNamespace)).
+		Expect(appFixture.NoNamespace(updatedNamespace)).
 		When().
 		AppSet("--dest-namespace", updatedNamespace).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
+		Expect(appFixture.Success("")).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
 		When().
 		Delete(true).
 		Then().
-		Expect(Success("")).
+		Expect(appFixture.Success("")).
 		And(func(app *Application) {
 			// Verify delete app does not delete the namespace auto created
 			output, err := Run("", "kubectl", "get", "namespace", updatedNamespace)
@@ -1896,13 +1896,13 @@ func TestNamespacedNamespaceAutoCreationWithMetadata(t *testing.T) {
 			}
 		}).
 		Then().
-		Expect(NoNamespace(updatedNamespace)).
+		Expect(appFixture.NoNamespace(updatedNamespace)).
 		When().
 		AppSet("--dest-namespace", updatedNamespace).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Success("")).
+		Expect(appFixture.Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
 			assert.Empty(t, app.Status.Conditions)
 
 			delete(ns.Labels, "kubernetes.io/metadata.name")
@@ -1915,9 +1915,9 @@ func TestNamespacedNamespaceAutoCreationWithMetadata(t *testing.T) {
 			assert.Equal(t, map[string]string{"foo": "bar"}, app.Spec.SyncPolicy.ManagedNamespaceMetadata.Labels)
 			assert.Equal(t, map[string]string{"bar": "bat"}, app.Spec.SyncPolicy.ManagedNamespaceMetadata.Annotations)
 		})).
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
 		When().
 		And(func() {
 			FailOnErr(AppClientset.ArgoprojV1alpha1().Applications(AppNamespace()).Patch(context.Background(),
@@ -1925,8 +1925,8 @@ func TestNamespacedNamespaceAutoCreationWithMetadata(t *testing.T) {
 		}).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Success("")).
+		Expect(appFixture.Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
 			delete(ns.Labels, "kubernetes.io/metadata.name")
 			delete(ns.Labels, "argocd.argoproj.io/tracking-id")
 			delete(ns.Annotations, "kubectl.kubernetes.io/last-applied-configuration")
@@ -1944,8 +1944,8 @@ func TestNamespacedNamespaceAutoCreationWithMetadata(t *testing.T) {
 		}).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Success("")).
+		Expect(appFixture.Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
 			delete(ns.Labels, "kubernetes.io/metadata.name")
 			delete(ns.Labels, "argocd.argoproj.io/tracking-id")
 			delete(ns.Annotations, "argocd.argoproj.io/tracking-id")
@@ -1990,13 +1990,13 @@ func TestNamespacedNamespaceAutoCreationWithMetadataAndNsManifest(t *testing.T) 
 			}
 		}).
 		Then().
-		Expect(NoNamespace(namespace)).
+		Expect(appFixture.NoNamespace(namespace)).
 		When().
 		AppSet("--dest-namespace", namespace).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(Namespace(namespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Success("")).
+		Expect(appFixture.Namespace(namespace, func(app *Application, ns *v1.Namespace) {
 			delete(ns.Labels, "kubernetes.io/metadata.name")
 			delete(ns.Labels, "argocd.argoproj.io/tracking-id")
 			delete(ns.Labels, "kubectl.kubernetes.io/last-applied-configuration")
@@ -2007,9 +2007,9 @@ func TestNamespacedNamespaceAutoCreationWithMetadataAndNsManifest(t *testing.T) 
 			assert.Equal(t, map[string]string{"test": "true"}, ns.Labels)
 			assert.Equal(t, map[string]string{"foo": "bar", "something": "else"}, ns.Annotations)
 		})).
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", namespace, health.HealthStatusHealthy)).
-		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", namespace, health.HealthStatusHealthy)).
-		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", namespace, SyncStatusCodeSynced))
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", namespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", namespace, health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", namespace, SyncStatusCodeSynced))
 }
 
 // Given application is set with --sync-option CreateNamespace=true
@@ -2064,7 +2064,7 @@ metadata:
 			}
 		}).
 		Then().
-		Expect(Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
 			assert.Empty(t, app.Status.Conditions)
 
 			delete(ns.Labels, "kubernetes.io/metadata.name")
@@ -2077,8 +2077,8 @@ metadata:
 		AppSet("--dest-namespace", updatedNamespace).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Success("")).
+		Expect(appFixture.Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
 			assert.Empty(t, app.Status.Conditions)
 
 			delete(ns.Labels, "kubernetes.io/metadata.name")
@@ -2096,8 +2096,8 @@ metadata:
 		}).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Success("")).
+		Expect(appFixture.Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
 			assert.Empty(t, app.Status.Conditions)
 
 			delete(ns.Labels, "kubernetes.io/metadata.name")
@@ -2116,8 +2116,8 @@ metadata:
 		}).
 		Sync().
 		Then().
-		Expect(Success("")).
-		Expect(Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
+		Expect(appFixture.Success("")).
+		Expect(appFixture.Namespace(updatedNamespace, func(app *Application, ns *v1.Namespace) {
 			assert.Empty(t, app.Status.Conditions)
 
 			delete(ns.Labels, "kubernetes.io/metadata.name")
@@ -2129,7 +2129,7 @@ metadata:
 			assert.Equal(t, map[string]string{"argocd.argoproj.io/sync-options": "ServerSideApply=true", "bar": "bat"}, ns.Annotations)
 			assert.Equal(t, map[string]string{"bar": "bat"}, app.Spec.SyncPolicy.ManagedNamespaceMetadata.Annotations)
 		})).
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
 		Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
 		Expect(ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced))
 }
@@ -2147,8 +2147,8 @@ func TestNamespacedFailedSyncWithRetry(t *testing.T) {
 		IgnoreErrors().
 		Sync("--retry-limit=1", "--retry-backoff-duration=1s").
 		Then().
-		Expect(OperationPhaseIs(OperationFailed)).
-		Expect(OperationMessageContains("retried 1 times"))
+		Expect(appFixture.OperationPhaseIs(OperationFailed)).
+		Expect(appFixture.OperationMessageContains("retried 1 times"))
 }
 
 func TestNamespacedCreateDisableValidation(t *testing.T) {
@@ -2191,9 +2191,9 @@ spec:
 		// app should be auto-synced once created
 		CreateFromPartialFile(partialApp, "--path", path, "-l", "labels.local/from-args=args", "--helm-set", "foo=foo").
 		Then().
-		Expect(Success("")).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(NoConditions()).
+		Expect(appFixture.Success("")).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.NoConditions()).
 		And(func(app *Application) {
 			assert.Equal(t, map[string]string{"labels.local/from-file": "file", "labels.local/from-args": "args"}, app.ObjectMeta.Labels)
 			assert.Equal(t, map[string]string{"annotations.local/from-file": "file"}, app.ObjectMeta.Annotations)
@@ -2246,7 +2246,7 @@ definitions:
 			})
 		}).
 		When().CreateApp().Sync().Then().
-		Expect(OperationPhaseIs(OperationSucceeded)).Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
@@ -2301,7 +2301,7 @@ func TestNamespacedAppLogs(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(HealthIs(health.HealthStatusHealthy)).
+		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			out, err := RunCliWithRetry(5, "app", "logs", app.QualifiedName(), "--kind", "Deployment", "--group", "", "--name", "guestbook-ui")
 			require.NoError(t, err)
@@ -2340,7 +2340,7 @@ func TestNamespacedAppWaitOperationInProgress(t *testing.T) {
 		Sync().
 		Then().
 		// stuck in running state
-		Expect(OperationPhaseIs(OperationRunning)).
+		Expect(appFixture.OperationPhaseIs(OperationRunning)).
 		When().
 		Then().
 		And(func(app *Application) {
@@ -2359,14 +2359,14 @@ func TestNamespacedSyncOptionReplace(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "configmap/my-map created", app.Status.OperationState.SyncResult.Resources[0].Message)
 		}).
 		When().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "configmap/my-map replaced", app.Status.OperationState.SyncResult.Resources[0].Message)
 		})
@@ -2382,14 +2382,14 @@ func TestNamespacedSyncOptionReplaceFromCLI(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "configmap/my-map created", app.Status.OperationState.SyncResult.Resources[0].Message)
 		}).
 		When().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, "configmap/my-map replaced", app.Status.OperationState.SyncResult.Resources[0].Message)
 		})
@@ -2405,7 +2405,7 @@ func TestNamespacedDiscoverNewCommit(t *testing.T) {
 		CreateApp().
 		Sync().
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			sha = app.Status.Sync.Revision
 			assert.NotEmpty(t, sha)
@@ -2413,7 +2413,7 @@ func TestNamespacedDiscoverNewCommit(t *testing.T) {
 		When().
 		PatchFile("config-map.yaml", `[{"op": "replace", "path": "/data/foo", "value": "hello"}]`).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		// make sure new commit is not discovered immediately after push
 		And(func(app *Application) {
 			assert.Equal(t, sha, app.Status.Sync.Revision)
@@ -2422,7 +2422,7 @@ func TestNamespacedDiscoverNewCommit(t *testing.T) {
 		// make sure new commit is not discovered after refresh is requested
 		Refresh(RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeOutOfSync)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			assert.NotEqual(t, sha, app.Status.Sync.Revision)
 		})
@@ -2474,6 +2474,6 @@ func TestCreateAppInNotAllowedNamespace(t *testing.T) {
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(DoesNotExist()).
-		Expect(Error("", "namespace 'default' is not permitted"))
+		Expect(appFixture.DoesNotExist()).
+		Expect(appFixture.Error("", "namespace 'default' is not permitted"))
 }

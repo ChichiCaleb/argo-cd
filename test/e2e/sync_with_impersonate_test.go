@@ -13,7 +13,7 @@ import (
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
+	appFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/app"
 )
 
 func TestSyncWithImpersonateDisable(t *testing.T) {
@@ -25,7 +25,7 @@ func TestSyncWithImpersonateDisable(t *testing.T) {
 			app.Spec.SyncPolicy = &v1alpha1.SyncPolicy{Automated: &v1alpha1.SyncPolicyAutomated{}}
 		}).
 		Then().
-		Expect(SyncStatusIs(v1alpha1.SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(v1alpha1.SyncStatusCodeSynced))
 }
 
 func TestSyncWithImpersonateDefaultNamespaceServiceAccountNoRBAC(t *testing.T) {
@@ -37,7 +37,7 @@ func TestSyncWithImpersonateDefaultNamespaceServiceAccountNoRBAC(t *testing.T) {
 			app.Spec.SyncPolicy = &v1alpha1.SyncPolicy{Automated: &v1alpha1.SyncPolicyAutomated{}}
 		}).
 		Then().
-		Expect(SyncStatusIs(v1alpha1.SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(v1alpha1.SyncStatusCodeOutOfSync))
 }
 
 func TestSyncWithImpersonateDefaultNamespaceServiceAccountWithRBAC(t *testing.T) {
@@ -67,7 +67,7 @@ func TestSyncWithImpersonateDefaultNamespaceServiceAccountWithRBAC(t *testing.T)
 			require.NoError(t, err)
 		}).
 		Then().
-		Expect(SyncStatusIs(v1alpha1.SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(v1alpha1.SyncStatusCodeOutOfSync))
 }
 
 func TestSyncWithImpersonateWithSyncServiceAccount(t *testing.T) {
@@ -118,7 +118,7 @@ func TestSyncWithImpersonateWithSyncServiceAccount(t *testing.T) {
 			app.Spec.Project = projectName
 		}).
 		Then().
-		Expect(SyncStatusIs(v1alpha1.SyncStatusCodeSynced))
+		Expect(appFixture.SyncStatusIs(v1alpha1.SyncStatusCodeSynced))
 }
 
 func TestSyncWithImpersonateWithFalseServiceAccount(t *testing.T) {
@@ -169,7 +169,7 @@ func TestSyncWithImpersonateWithFalseServiceAccount(t *testing.T) {
 			app.Spec.Project = projectName
 		}).
 		Then().
-		Expect(SyncStatusIs(v1alpha1.SyncStatusCodeOutOfSync))
+		Expect(appFixture.SyncStatusIs(v1alpha1.SyncStatusCodeOutOfSync))
 }
 
 func TestSyncWithNegationApplicationDestinationNamespace(t *testing.T) {
@@ -214,7 +214,7 @@ func TestSyncWithNegationApplicationDestinationNamespace(t *testing.T) {
 			app.Spec.Project = projectName
 		}).
 		Then().
-		Expect(SyncStatusIs(v1alpha1.SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(v1alpha1.SyncStatusCodeSynced)).
 		When().
 		And(func() {
 			patch := []byte(fmt.Sprintf(`{"spec": {"destinations": [{"namespace": "%s"}]}}`, "!"+fixture.DeploymentNamespace()))
@@ -224,7 +224,7 @@ func TestSyncWithNegationApplicationDestinationNamespace(t *testing.T) {
 		}).
 		Refresh(v1alpha1.RefreshTypeNormal).
 		Then().
-		Expect(SyncStatusIs(v1alpha1.SyncStatusCodeUnknown))
+		Expect(appFixture.SyncStatusIs(v1alpha1.SyncStatusCodeUnknown))
 }
 
 // createTestAppProject creates a test AppProject resource.
