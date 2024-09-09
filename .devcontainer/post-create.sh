@@ -23,6 +23,18 @@ install_go() {
   curl -OL "${go_url}"
   sudo tar -C /usr/local -xzf "${go_tar}"
 
+   # Add Go to PATH for the current user
+  echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+
+  # Add Go to PATH for all users (including root)
+  sudo sh -c 'echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile'
+
+  # Source the updated profile for the current user
+  source ~/.profile
+
+  # Source the updated profile for the root user
+  sudo sh -c 'source /etc/profile'
+
   # Clean up downloaded tar file
   rm "${go_tar}"
 
