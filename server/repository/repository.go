@@ -44,7 +44,6 @@ type Server struct {
 	settings      *settings.SettingsManager
 	namespace     string
 	repositorypkg.UnimplementedRepositoryServiceServer
-	
 }
 
 // NewServer returns a new instance of the Repository service

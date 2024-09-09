@@ -1,5 +1,3 @@
-
-
 // go-to-protobuf generates a Protobuf IDL from a Go struct, respecting any
 // existing IDL tags on the Go struct.
 package protobuf
@@ -61,9 +59,8 @@ func (g *Generator) BindFlags(flag *flag.FlagSet) {
 	flag.StringVar(&g.Conditional, "conditional", g.Conditional, "An optional Golang build tag condition to add to the generated Go code")
 	flag.BoolVar(&g.Clean, "clean", g.Clean, "If true, remove all generated files for the specified Packages.")
 	flag.BoolVar(&g.OnlyIDL, "only-idl", g.OnlyIDL, "If true, only generate the IDL for each package.")
-    flag.StringVar(&g.DropEmbeddedFields, "drop-embedded-fields", g.DropEmbeddedFields, "Comma-delimited list of embedded Go types to omit from generated protobufs")
+	flag.StringVar(&g.DropEmbeddedFields, "drop-embedded-fields", g.DropEmbeddedFields, "Comma-delimited list of embedded Go types to omit from generated protobufs")
 }
-
 
 // This roughly models gengo/v2.Execute.
 func Run(g *Generator) {
@@ -246,7 +243,7 @@ func Run(g *Generator) {
 
 		path := filepath.Join(g.OutputDir, p.ImportPath())
 
-        cmd := exec.Command("protoc", append(args, path)...)
+		cmd := exec.Command("protoc", append(args, path)...)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Println(strings.Join(cmd.Args, " "))
@@ -275,8 +272,8 @@ func deps(c *generator.Context, pkgs []*protobufPackage) map[string][]string {
 // given a set of pkg->[]deps, return the order that ensures all deps are processed before the things that depend on them
 func importOrder(deps map[string][]string) ([]string, error) {
 	// add all nodes and edges
-	var remainingNodes = map[string]struct{}{}
-	var graph = map[edge]struct{}{}
+	remainingNodes := map[string]struct{}{}
+	graph := map[edge]struct{}{}
 	for to, froms := range deps {
 		remainingNodes[to] = struct{}{}
 		for _, from := range froms {

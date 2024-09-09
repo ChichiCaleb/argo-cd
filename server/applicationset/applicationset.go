@@ -116,7 +116,6 @@ func NewServer(
 	return s
 }
 
-
 func (s *Server) Get(ctx context.Context, q *applicationset.ApplicationSetGetQuery) (*v1alpha1.ApplicationSet, error) {
 	namespace := s.appsetNamespaceOrDefault(q.AppsetNamespace)
 

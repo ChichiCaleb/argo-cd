@@ -5,8 +5,8 @@ package main
 import (
 	goflag "flag"
 
-	flag "github.com/spf13/pflag"
 	"github.com/argoproj/argo-cd/v2/hack/go-to-protobuf/protobuf"
+	flag "github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 )
 

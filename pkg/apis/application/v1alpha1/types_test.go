@@ -1315,7 +1315,6 @@ func TestSyncStrategy_Force(t *testing.T) {
 		{"TestForceApply", fields{Apply: &SyncStrategyApply{Force: true}}, true},
 		{"TestHook", fields{Hook: &SyncStrategyHook{}}, false},
 		{"TestForceHook", fields{Hook: &SyncStrategyHook{SyncStrategyApply: SyncStrategyApply{Force: true}}}, true},
-
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1723,7 +1722,6 @@ func TestEnv_Envsubst_Overlap(t *testing.T) {
 	)
 }
 
-
 func TestEnv_Environ(t *testing.T) {
 	tests := []struct {
 		name string
@@ -1741,7 +1739,6 @@ func TestEnv_Environ(t *testing.T) {
 		})
 	}
 }
-
 
 func TestKustomizeImage_Match(t *testing.T) {
 	// no prefix
@@ -3202,7 +3199,7 @@ func TestRemoveEnvEntry(t *testing.T) {
 				&EnvEntry{Name: "gamma", Value: "delta"},
 			},
 		}
-		
+
 		require.NoError(t, plugins.RemoveEnvEntry("alpha"))
 		want := Env{&EnvEntry{Name: "foo", Value: "bar"}, &EnvEntry{Name: "gamma", Value: "delta"}}
 		assert.Equal(t, want, plugins.Env)
@@ -3235,7 +3232,6 @@ func TestRemoveEnvEntry(t *testing.T) {
 		require.EqualError(t, err, `unable to find env variable with key "key" for plugin "test"`)
 	})
 }
-
 
 func TestOrphanedResourcesMonitorSettings_IsWarn(t *testing.T) {
 	settings := OrphanedResourcesMonitorSettings{}
@@ -3340,7 +3336,6 @@ func Test_validatePolicy_ValidResource(t *testing.T) {
 
 func TestEnvsubst(t *testing.T) {
 	env := Env{
-		
 		&EnvEntry{Name: "foo", Value: "bar"},
 	}
 

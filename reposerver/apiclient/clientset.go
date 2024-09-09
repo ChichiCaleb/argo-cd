@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"time"
-	
 
 	"github.com/argoproj/argo-cd/v2/common"
 	"github.com/argoproj/argo-cd/v2/util/env"
@@ -55,45 +54,45 @@ func (c *clientSet) NewRepoServerClient() (io.Closer, RepoServerServiceClient, e
 }
 
 func NewConnection(address string, timeoutSeconds int, tlsConfig *TLSConfiguration) (*grpc.ClientConn, error) {
-    retryOpts := []grpc_retry.CallOption{
-        grpc_retry.WithMax(3),
-        grpc_retry.WithBackoff(grpc_retry.BackoffLinear(1000 * time.Millisecond)),
-    }
-    unaryInterceptors := []grpc.UnaryClientInterceptor{grpc_retry.UnaryClientInterceptor(retryOpts...)}
-    if timeoutSeconds > 0 {
-        unaryInterceptors = append(unaryInterceptors, argogrpc.WithTimeout(time.Duration(timeoutSeconds)*time.Second))
-    }
-    opts := []grpc.DialOption{
-        grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-        grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(unaryInterceptors...)),
-        grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize), grpc.MaxCallSendMsgSize(MaxGRPCMessageSize)),
-        grpc.WithUnaryInterceptor(argogrpc.OTELUnaryClientInterceptor()),
-        grpc.WithStreamInterceptor(argogrpc.OTELStreamClientInterceptor()),
-    }
+	retryOpts := []grpc_retry.CallOption{
+		grpc_retry.WithMax(3),
+		grpc_retry.WithBackoff(grpc_retry.BackoffLinear(1000 * time.Millisecond)),
+	}
+	unaryInterceptors := []grpc.UnaryClientInterceptor{grpc_retry.UnaryClientInterceptor(retryOpts...)}
+	if timeoutSeconds > 0 {
+		unaryInterceptors = append(unaryInterceptors, argogrpc.WithTimeout(time.Duration(timeoutSeconds)*time.Second))
+	}
+	opts := []grpc.DialOption{
+		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(unaryInterceptors...)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize), grpc.MaxCallSendMsgSize(MaxGRPCMessageSize)),
+		grpc.WithUnaryInterceptor(argogrpc.OTELUnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(argogrpc.OTELStreamClientInterceptor()),
+	}
 
-    tlsC := &tls.Config{}
-    if !tlsConfig.DisableTLS {
-        if !tlsConfig.StrictValidation {
-            tlsC.InsecureSkipVerify = true
-        } else {
-            tlsC.RootCAs = tlsConfig.Certificates
-        }
-        opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsC)))
-    } else {
-        opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-    }
+	tlsC := &tls.Config{}
+	if !tlsConfig.DisableTLS {
+		if !tlsConfig.StrictValidation {
+			tlsC.InsecureSkipVerify = true
+		} else {
+			tlsC.RootCAs = tlsConfig.Certificates
+		}
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsC)))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
 
-    // Replace grpc.Dial with grpc.NewClient
-    conn, err := grpc.NewClient(address, opts...)
-    if err != nil {
-        log.Errorf("Unable to create a new gRPC client for address %s", address)
-        return nil, err
-    }
+	// Replace grpc.Dial with grpc.NewClient
+	conn, err := grpc.NewClient(address, opts...)
+	if err != nil {
+		log.Errorf("Unable to create a new gRPC client for address %s", address)
+		return nil, err
+	}
 
-    // Establish the connection immediately 
-    conn.Connect()
+	// Establish the connection immediately
+	conn.Connect()
 
-    return conn, nil
+	return conn, nil
 }
 
 // NewRepoServerClientset creates a new instance of repo server Clientset

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -11,9 +12,8 @@ import (
 
 	"github.com/felixge/httpsnoop"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"log"
-	"google.golang.org/protobuf/proto"
 	"golang.org/x/net/context"
+	"google.golang.org/protobuf/proto"
 )
 
 // TODO: move to pkg repo

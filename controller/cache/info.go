@@ -147,7 +147,6 @@ func stringToResourceRef(s string) (v1alpha1.ResourceRef, error) {
 	}, nil
 }
 
-
 func populateIngressInfo(un *unstructured.Unstructured, res *ResourceInfo) {
 	ingress := getIngress(un)
 	targetsMap := make(map[string]bool)
@@ -265,72 +264,70 @@ func populateIngressInfo(un *unstructured.Unstructured, res *ResourceInfo) {
 	res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{TargetRefs: targets, Ingress: ingress, ExternalURLs: urls}
 }
 
-
 func populateIstioVirtualServiceInfo(un *unstructured.Unstructured, res *ResourceInfo) {
-    targetsMap := make(map[string]bool)
+	targetsMap := make(map[string]bool)
 
-    if rules, ok, err := unstructured.NestedSlice(un.Object, "spec", "http"); ok && err == nil {
-        for i := range rules {
-            rule, ok := rules[i].(map[string]interface{})
-            if !ok {
-                continue
-            }
-            routes, ok, err := unstructured.NestedSlice(rule, "route")
-            if !ok || err != nil {
-                continue
-            }
-            for i := range routes {
-                route, ok := routes[i].(map[string]interface{})
-                if !ok {
-                    continue
-                }
+	if rules, ok, err := unstructured.NestedSlice(un.Object, "spec", "http"); ok && err == nil {
+		for i := range rules {
+			rule, ok := rules[i].(map[string]interface{})
+			if !ok {
+				continue
+			}
+			routes, ok, err := unstructured.NestedSlice(rule, "route")
+			if !ok || err != nil {
+				continue
+			}
+			for i := range routes {
+				route, ok := routes[i].(map[string]interface{})
+				if !ok {
+					continue
+				}
 
-                if hostName, ok, err := unstructured.NestedString(route, "destination", "host"); ok && err == nil {
-                    hostSplits := strings.Split(hostName, ".")
-                    serviceName := hostSplits[0]
+				if hostName, ok, err := unstructured.NestedString(route, "destination", "host"); ok && err == nil {
+					hostSplits := strings.Split(hostName, ".")
+					serviceName := hostSplits[0]
 
-                    var namespace string
-                    if len(hostSplits) >= 2 {
-                        namespace = hostSplits[1]
-                    } else {
-                        namespace = un.GetNamespace()
-                    }
+					var namespace string
+					if len(hostSplits) >= 2 {
+						namespace = hostSplits[1]
+					} else {
+						namespace = un.GetNamespace()
+					}
 
-                    ref := v1alpha1.ResourceRef{
-                        Kind:      kube.ServiceKind,
-                        Name:      serviceName,
-                        Namespace: namespace,
-                    }
-                    key := resourceRefToString(ref)
-                    targetsMap[key] = true
-                }
-            }
-        }
-    }
+					ref := v1alpha1.ResourceRef{
+						Kind:      kube.ServiceKind,
+						Name:      serviceName,
+						Namespace: namespace,
+					}
+					key := resourceRefToString(ref)
+					targetsMap[key] = true
+				}
+			}
+		}
+	}
 
-    var targets []v1alpha1.ResourceRef
-    for key := range targetsMap {
-        parts := strings.Split(key, "/")
-        if len(parts) == 3 {
-            targets = append(targets, v1alpha1.ResourceRef{
-                Kind:      parts[0],
-                Namespace: parts[1],
-                Name:      parts[2],
-            })
-        }
-    }
+	var targets []v1alpha1.ResourceRef
+	for key := range targetsMap {
+		parts := strings.Split(key, "/")
+		if len(parts) == 3 {
+			targets = append(targets, v1alpha1.ResourceRef{
+				Kind:      parts[0],
+				Namespace: parts[1],
+				Name:      parts[2],
+			})
+		}
+	}
 
-    var urls []string
-    if res.NetworkingInfo != nil {
-        urls = res.NetworkingInfo.ExternalURLs
-    }
+	var urls []string
+	if res.NetworkingInfo != nil {
+		urls = res.NetworkingInfo.ExternalURLs
+	}
 
-    res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{
-        TargetRefs:  targets,
-        ExternalURLs: urls,
-    }
+	res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{
+		TargetRefs:   targets,
+		ExternalURLs: urls,
+	}
 }
-
 
 func populatePodInfo(un *unstructured.Unstructured, res *ResourceInfo) {
 	pod := v1.Pod{}

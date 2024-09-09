@@ -62,9 +62,6 @@ func (*AWSAuthConfig) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{0}
 }
 
-
-
-
 // AppProject provides a logical grouping of applications, providing controls for:
 // * where the apps may deploy to (cluster whitelist)
 // * what may be deployed (repository whitelist, resource whitelist/blacklist)
@@ -108,9 +105,6 @@ func (*AppProject) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{1}
 }
 
-
-
-
 // AppProjectList is list of AppProject resources
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -146,8 +140,6 @@ func (*AppProjectList) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{2}
 }
 
-
-
 // AppProjectSpec is the specification of an AppProject
 
 func (x *AppProjectSpec) Reset() {
@@ -182,20 +174,6 @@ func (*AppProjectSpec) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{3}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // AppProjectStatus contains status information for AppProject CRs
 
 func (x *AppProjectStatus) Reset() {
@@ -229,7 +207,6 @@ func (x *AppProjectStatus) ProtoReflect() protoreflect.Message {
 func (*AppProjectStatus) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{4}
 }
-
 
 // Application is a definition of Application resource.
 // +genclient
@@ -273,10 +250,6 @@ func (*Application) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{5}
 }
 
-
-
-
-
 // ApplicationCondition contains details about an application condition, which is usually an error or warning
 
 func (x *ApplicationCondition) Reset() {
@@ -310,9 +283,6 @@ func (x *ApplicationCondition) ProtoReflect() protoreflect.Message {
 func (*ApplicationCondition) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{6}
 }
-
-
-
 
 // ApplicationDestination holds information about the application's destination
 
@@ -348,9 +318,6 @@ func (*ApplicationDestination) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{7}
 }
 
-
-
-
 // ApplicationDestinationServiceAccount holds information about the service account to be impersonated for the application sync operation.
 
 func (x *ApplicationDestinationServiceAccount) Reset() {
@@ -384,9 +351,6 @@ func (x *ApplicationDestinationServiceAccount) ProtoReflect() protoreflect.Messa
 func (*ApplicationDestinationServiceAccount) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{8}
 }
-
-
-
 
 // ApplicationList is list of Application resources
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -423,9 +387,6 @@ func (*ApplicationList) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{9}
 }
 
-
-
-
 func (x *ApplicationMatchExpression) Reset() {
 	*x = ApplicationMatchExpression{}
 	if protoimpl.UnsafeEnabled {
@@ -458,10 +419,6 @@ func (*ApplicationMatchExpression) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{10}
 }
 
-
-
-
-
 func (x *ApplicationPreservedFields) Reset() {
 	*x = ApplicationPreservedFields{}
 	if protoimpl.UnsafeEnabled {
@@ -493,8 +450,6 @@ func (x *ApplicationPreservedFields) ProtoReflect() protoreflect.Message {
 func (*ApplicationPreservedFields) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{11}
 }
-
-
 
 // ApplicationSet is a set of Application resources
 // +genclient
@@ -535,9 +490,6 @@ func (*ApplicationSet) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{12}
 }
 
-
-
-
 // ApplicationSetApplicationStatus contains details about each Application managed by the ApplicationSet
 
 func (x *ApplicationSetApplicationStatus) Reset() {
@@ -571,12 +523,6 @@ func (x *ApplicationSetApplicationStatus) ProtoReflect() protoreflect.Message {
 func (*ApplicationSetApplicationStatus) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{13}
 }
-
-
-
-
-
-
 
 // ApplicationSetCondition contains details about an applicationset condition, which is usually an error or warning
 
@@ -612,11 +558,6 @@ func (*ApplicationSetCondition) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{14}
 }
 
-
-
-
-
-
 // ApplicationSetGenerator represents a generator at the top level of an ApplicationSet.
 
 func (x *ApplicationSetGenerator) Reset() {
@@ -650,16 +591,6 @@ func (x *ApplicationSetGenerator) ProtoReflect() protoreflect.Message {
 func (*ApplicationSetGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{15}
 }
-
-
-
-
-
-
-
-
-
-
 
 // ApplicationSetList contains a list of ApplicationSet
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -697,8 +628,6 @@ func (*ApplicationSetList) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{16}
 }
 
-
-
 // ApplicationSetNestedGenerator represents a generator nested within a combination-type generator (MatrixGenerator or
 // MergeGenerator).
 
@@ -733,16 +662,6 @@ func (x *ApplicationSetNestedGenerator) ProtoReflect() protoreflect.Message {
 func (*ApplicationSetNestedGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{17}
 }
-
-
-
-
-
-
-
-
-
-
 
 // ApplicationSetResourceIgnoreDifferences configures how the ApplicationSet controller will ignore differences in live
 // applications when applying changes from generated applications.
@@ -779,10 +698,6 @@ func (*ApplicationSetResourceIgnoreDifferences) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{18}
 }
 
-
-
-
-
 func (x *ApplicationSetRolloutStep) Reset() {
 	*x = ApplicationSetRolloutStep{}
 	if protoimpl.UnsafeEnabled {
@@ -815,9 +730,6 @@ func (*ApplicationSetRolloutStep) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{19}
 }
 
-
-
-
 func (x *ApplicationSetRolloutStrategy) Reset() {
 	*x = ApplicationSetRolloutStrategy{}
 	if protoimpl.UnsafeEnabled {
@@ -849,7 +761,6 @@ func (x *ApplicationSetRolloutStrategy) ProtoReflect() protoreflect.Message {
 func (*ApplicationSetRolloutStrategy) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{20}
 }
-
 
 // ApplicationSetSpec represents a class of application set state.
 
@@ -885,16 +796,6 @@ func (*ApplicationSetSpec) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{21}
 }
 
-
-
-
-
-
-
-
-
-
-
 // ApplicationSetStatus defines the observed state of ApplicationSet
 
 func (x *ApplicationSetStatus) Reset() {
@@ -929,9 +830,6 @@ func (*ApplicationSetStatus) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{22}
 }
 
-
-
-
 // ApplicationSetStrategy configures how generated Applications are updated in sequence.
 
 func (x *ApplicationSetStrategy) Reset() {
@@ -965,8 +863,6 @@ func (x *ApplicationSetStrategy) ProtoReflect() protoreflect.Message {
 func (*ApplicationSetStrategy) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{23}
 }
-
-
 
 // ApplicationSetSyncPolicy configures how generated Applications will relate to their
 // ApplicationSet.
@@ -1003,8 +899,6 @@ func (*ApplicationSetSyncPolicy) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{24}
 }
 
-
-
 // ApplicationSetTemplate represents argocd ApplicationSpec
 
 func (x *ApplicationSetTemplate) Reset() {
@@ -1038,8 +932,6 @@ func (x *ApplicationSetTemplate) ProtoReflect() protoreflect.Message {
 func (*ApplicationSetTemplate) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{25}
 }
-
-
 
 // ApplicationSetTemplateMeta represents the Argo CD application fields that may
 // be used for Applications generated from the ApplicationSet (based on metav1.ObjectMeta)
@@ -1075,11 +967,6 @@ func (x *ApplicationSetTemplateMeta) ProtoReflect() protoreflect.Message {
 func (*ApplicationSetTemplateMeta) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{26}
 }
-
-
-
-
-
 
 // ApplicationSetTerminalGenerator represents a generator nested within a nested generator (for example, a list within
 // a merge within a matrix). A generator at this level may not be a combination-type generator (MatrixGenerator or
@@ -1118,14 +1005,6 @@ func (*ApplicationSetTerminalGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{27}
 }
 
-
-
-
-
-
-
-
-
 // ApplicationSetTree holds nodes which belongs to the application
 // Used to build a tree of an ApplicationSet and its children
 
@@ -1161,7 +1040,6 @@ func (*ApplicationSetTree) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{28}
 }
 
-
 // ApplicationSource contains all required information about the source of an application
 
 func (x *ApplicationSource) Reset() {
@@ -1195,15 +1073,6 @@ func (x *ApplicationSource) ProtoReflect() protoreflect.Message {
 func (*ApplicationSource) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{29}
 }
-
-
-
-
-
-
-
-
-
 
 // ApplicationSourceDirectory holds options for applications of type plain YAML or Jsonnet
 
@@ -1239,10 +1108,6 @@ func (*ApplicationSourceDirectory) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{30}
 }
 
-
-
-
-
 // ApplicationSourceHelm holds helm specific options
 
 func (x *ApplicationSourceHelm) Reset() {
@@ -1276,19 +1141,6 @@ func (x *ApplicationSourceHelm) ProtoReflect() protoreflect.Message {
 func (*ApplicationSourceHelm) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{31}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ApplicationSourceJsonnet holds options specific to applications of type Jsonnet
 
@@ -1324,9 +1176,6 @@ func (*ApplicationSourceJsonnet) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{32}
 }
 
-
-
-
 // ApplicationSourceKustomize holds options specific to an Application source specific to Kustomize
 
 func (x *ApplicationSourceKustomize) Reset() {
@@ -1360,22 +1209,6 @@ func (x *ApplicationSourceKustomize) ProtoReflect() protoreflect.Message {
 func (*ApplicationSourceKustomize) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{33}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ApplicationSourcePlugin holds options specific to config management plugins
 
@@ -1411,10 +1244,6 @@ func (*ApplicationSourcePlugin) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{34}
 }
 
-
-
-
-
 func (x *ApplicationSourcePluginParameter) Reset() {
 	*x = ApplicationSourcePluginParameter{}
 	if protoimpl.UnsafeEnabled {
@@ -1446,10 +1275,6 @@ func (x *ApplicationSourcePluginParameter) ProtoReflect() protoreflect.Message {
 func (*ApplicationSourcePluginParameter) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{35}
 }
-
-
-
-
 
 // ApplicationSpec represents desired application state. Contains link to repository with application definition and additional parameters link definition revision.
 
@@ -1485,14 +1310,6 @@ func (*ApplicationSpec) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{36}
 }
 
-
-
-
-
-
-
-
-
 // ApplicationStatus contains status information for the application
 
 func (x *ApplicationStatus) Reset() {
@@ -1527,19 +1344,6 @@ func (*ApplicationStatus) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{37}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ApplicationSummary contains information about URLs and container images used by an application
 
 func (x *ApplicationSummary) Reset() {
@@ -1573,8 +1377,6 @@ func (x *ApplicationSummary) ProtoReflect() protoreflect.Message {
 func (*ApplicationSummary) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{38}
 }
-
-
 
 // ApplicationTree holds nodes which belongs to the application
 // TODO: describe purpose of this type
@@ -1611,10 +1413,6 @@ func (*ApplicationTree) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{39}
 }
 
-
-
-
-
 // ApplicationWatchEvent contains information about application change.
 
 func (x *ApplicationWatchEvent) Reset() {
@@ -1648,8 +1446,6 @@ func (x *ApplicationWatchEvent) ProtoReflect() protoreflect.Message {
 func (*ApplicationWatchEvent) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{40}
 }
-
-
 
 // Backoff is the backoff strategy to use on subsequent retries for failing syncs
 
@@ -1685,9 +1481,6 @@ func (*Backoff) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{41}
 }
 
-
-
-
 // BasicAuthBitbucketServer defines the username/(password or personal access token) for Basic auth.
 
 func (x *BasicAuthBitbucketServer) Reset() {
@@ -1721,8 +1514,6 @@ func (x *BasicAuthBitbucketServer) ProtoReflect() protoreflect.Message {
 func (*BasicAuthBitbucketServer) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{42}
 }
-
-
 
 // BearerTokenBitbucket defines the Bearer token for BitBucket AppToken auth.
 
@@ -1758,7 +1549,6 @@ func (*BearerTokenBitbucket) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{43}
 }
 
-
 // BearerTokenBitbucketCloud defines the Bearer token for BitBucket AppToken auth.
 
 func (x *BearerTokenBitbucketCloud) Reset() {
@@ -1792,7 +1582,6 @@ func (x *BearerTokenBitbucketCloud) ProtoReflect() protoreflect.Message {
 func (*BearerTokenBitbucketCloud) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{44}
 }
-
 
 // ChartDetails contains helm chart metadata for a specific version
 
@@ -1828,9 +1617,6 @@ func (*ChartDetails) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{45}
 }
 
-
-
-
 // Cluster is the definition of a cluster resource
 
 func (x *Cluster) Reset() {
@@ -1865,19 +1651,6 @@ func (*Cluster) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{46}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ClusterCacheInfo contains information about the cluster cache
 
 func (x *ClusterCacheInfo) Reset() {
@@ -1911,9 +1684,6 @@ func (x *ClusterCacheInfo) ProtoReflect() protoreflect.Message {
 func (*ClusterCacheInfo) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{47}
 }
-
-
-
 
 // ClusterConfig is the configuration attributes. This structure is subset of the go-client
 // rest.Config with annotations added for marshalling.
@@ -1950,12 +1720,6 @@ func (*ClusterConfig) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{48}
 }
 
-
-
-
-
-
-
 // ClusterGenerator defines a generator to match against clusters registered with ArgoCD.
 
 func (x *ClusterGenerator) Reset() {
@@ -1989,9 +1753,6 @@ func (x *ClusterGenerator) ProtoReflect() protoreflect.Message {
 func (*ClusterGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{49}
 }
-
-
-
 
 // ClusterInfo contains information about the cluster
 
@@ -2027,11 +1788,6 @@ func (*ClusterInfo) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{50}
 }
 
-
-
-
-
-
 // ClusterList is a collection of Clusters.
 
 func (x *ClusterList) Reset() {
@@ -2065,8 +1821,6 @@ func (x *ClusterList) ProtoReflect() protoreflect.Message {
 func (*ClusterList) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{51}
 }
-
-
 
 // Command holds binary path and arguments list
 
@@ -2102,8 +1856,6 @@ func (*Command) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{52}
 }
 
-
-
 // ComparedTo contains application source and target which was used for resources comparison
 
 func (x *ComparedTo) Reset() {
@@ -2137,10 +1889,6 @@ func (x *ComparedTo) ProtoReflect() protoreflect.Message {
 func (*ComparedTo) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{53}
 }
-
-
-
-
 
 // ComponentParameter contains information about component parameter value
 
@@ -2176,9 +1924,6 @@ func (*ComponentParameter) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{54}
 }
 
-
-
-
 // ConfigManagementPlugin contains config management plugin configuration
 
 func (x *ConfigManagementPlugin) Reset() {
@@ -2212,10 +1957,6 @@ func (x *ConfigManagementPlugin) ProtoReflect() protoreflect.Message {
 func (*ConfigManagementPlugin) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{55}
 }
-
-
-
-
 
 // Utility struct for a reference to a configmap key.
 
@@ -2251,8 +1992,6 @@ func (*ConfigMapKeyRef) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{56}
 }
 
-
-
 // ConnectionState contains information about remote resource connection state, currently used for clusters and repositories
 
 func (x *ConnectionState) Reset() {
@@ -2286,9 +2025,6 @@ func (x *ConnectionState) ProtoReflect() protoreflect.Message {
 func (*ConnectionState) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{57}
 }
-
-
-
 
 // DuckType defines a generator to match against clusters registered with ArgoCD.
 
@@ -2324,12 +2060,6 @@ func (*DuckTypeGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{58}
 }
 
-
-
-
-
-
-
 // EnvEntry represents an entry in the application's environment
 
 func (x *EnvEntry) Reset() {
@@ -2363,9 +2093,6 @@ func (x *EnvEntry) ProtoReflect() protoreflect.Message {
 func (*EnvEntry) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{59}
 }
-
-
-
 
 func (x *ErrApplicationNotAllowedToUseProject) Reset() {
 	*x = ErrApplicationNotAllowedToUseProject{}
@@ -2434,12 +2161,6 @@ func (*ExecProviderConfig) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{61}
 }
 
-
-
-
-
-
-
 func (x *GitDirectoryGeneratorItem) Reset() {
 	*x = GitDirectoryGeneratorItem{}
 	if protoimpl.UnsafeEnabled {
@@ -2471,9 +2192,6 @@ func (x *GitDirectoryGeneratorItem) ProtoReflect() protoreflect.Message {
 func (*GitDirectoryGeneratorItem) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{62}
 }
-
-
-
 
 func (x *GitFileGeneratorItem) Reset() {
 	*x = GitFileGeneratorItem{}
@@ -2507,8 +2225,6 @@ func (*GitFileGeneratorItem) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{63}
 }
 
-
-
 func (x *GitGenerator) Reset() {
 	*x = GitGenerator{}
 	if protoimpl.UnsafeEnabled {
@@ -2540,14 +2256,6 @@ func (x *GitGenerator) ProtoReflect() protoreflect.Message {
 func (*GitGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{64}
 }
-
-
-
-
-
-
-
-
 
 // GnuPGPublicKey is a representation of a GnuPG public key
 
@@ -2583,12 +2291,6 @@ func (*GnuPGPublicKey) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{65}
 }
 
-
-
-
-
-
-
 // GnuPGPublicKeyList is a collection of GnuPGPublicKey objects
 
 func (x *GnuPGPublicKeyList) Reset() {
@@ -2622,8 +2324,6 @@ func (x *GnuPGPublicKeyList) ProtoReflect() protoreflect.Message {
 func (*GnuPGPublicKeyList) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{66}
 }
-
-
 
 // HealthStatus contains information about the currently observed health state of an application or resource
 
@@ -2659,8 +2359,6 @@ func (*HealthStatus) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{67}
 }
 
-
-
 // HelmFileParameter is a file parameter that's passed to helm template during manifest generation
 
 func (x *HelmFileParameter) Reset() {
@@ -2694,8 +2392,6 @@ func (x *HelmFileParameter) ProtoReflect() protoreflect.Message {
 func (*HelmFileParameter) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{68}
 }
-
-
 
 // HelmOptions holds helm options
 
@@ -2731,7 +2427,6 @@ func (*HelmOptions) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{69}
 }
 
-
 // HelmParameter is a parameter that's passed to helm template during manifest generation
 
 func (x *HelmParameter) Reset() {
@@ -2765,9 +2460,6 @@ func (x *HelmParameter) ProtoReflect() protoreflect.Message {
 func (*HelmParameter) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{70}
 }
-
-
-
 
 // HostInfo holds host name and resources metrics
 // TODO: describe purpose of this type
@@ -2805,9 +2497,6 @@ func (*HostInfo) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{71}
 }
 
-
-
-
 // TODO: describe this type
 
 func (x *HostResourceInfo) Reset() {
@@ -2842,11 +2531,6 @@ func (*HostResourceInfo) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{72}
 }
 
-
-
-
-
-
 func (x *Info) Reset() {
 	*x = Info{}
 	if protoimpl.UnsafeEnabled {
@@ -2878,8 +2562,6 @@ func (x *Info) ProtoReflect() protoreflect.Message {
 func (*Info) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{73}
 }
-
-
 
 // InfoItem contains arbitrary, human readable information about an application
 
@@ -2915,8 +2597,6 @@ func (*InfoItem) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{74}
 }
 
-
-
 // JWTToken holds the issuedAt and expiresAt values of a token
 
 func (x *JWTToken) Reset() {
@@ -2950,9 +2630,6 @@ func (x *JWTToken) ProtoReflect() protoreflect.Message {
 func (*JWTToken) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{75}
 }
-
-
-
 
 // JWTTokens represents a list of JWT tokens
 
@@ -2988,7 +2665,6 @@ func (*JWTTokens) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{76}
 }
 
-
 // JsonnetVar represents a variable to be passed to jsonnet during manifest generation
 
 func (x *JsonnetVar) Reset() {
@@ -3022,9 +2698,6 @@ func (x *JsonnetVar) ProtoReflect() protoreflect.Message {
 func (*JsonnetVar) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{77}
 }
-
-
-
 
 // KnownTypeField contains mapping between CRD field and known Kubernetes type.
 // This is mainly used for unit conversion in unknown resources (e.g. 0.1 == 100mi)
@@ -3062,9 +2735,6 @@ func (*KnownTypeField) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{78}
 }
 
-
-
-
 func (x *KustomizeGvk) Reset() {
 	*x = KustomizeGvk{}
 	if protoimpl.UnsafeEnabled {
@@ -3096,9 +2766,6 @@ func (x *KustomizeGvk) ProtoReflect() protoreflect.Message {
 func (*KustomizeGvk) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{79}
 }
-
-
-
 
 // KustomizeOptions are options for kustomize to use when building manifests
 
@@ -3134,9 +2801,6 @@ func (*KustomizeOptions) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{80}
 }
 
-
-
-
 func (x *KustomizePatch) Reset() {
 	*x = KustomizePatch{}
 	if protoimpl.UnsafeEnabled {
@@ -3168,11 +2832,6 @@ func (x *KustomizePatch) ProtoReflect() protoreflect.Message {
 func (*KustomizePatch) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{81}
 }
-
-
-
-
-
 
 func (x *KustomizeReplica) Reset() {
 	*x = KustomizeReplica{}
@@ -3206,9 +2865,6 @@ func (*KustomizeReplica) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{82}
 }
 
-
-
-
 func (x *KustomizeResId) Reset() {
 	*x = KustomizeResId{}
 	if protoimpl.UnsafeEnabled {
@@ -3241,10 +2897,6 @@ func (*KustomizeResId) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{83}
 }
 
-
-
-
-
 func (x *KustomizeSelector) Reset() {
 	*x = KustomizeSelector{}
 	if protoimpl.UnsafeEnabled {
@@ -3276,9 +2928,6 @@ func (x *KustomizeSelector) ProtoReflect() protoreflect.Message {
 func (*KustomizeSelector) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{84}
 }
-
-
-
 
 // ListGenerator include items info
 
@@ -3314,10 +2963,6 @@ func (*ListGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{85}
 }
 
-
-
-
-
 func (x *ManagedNamespaceMetadata) Reset() {
 	*x = ManagedNamespaceMetadata{}
 	if protoimpl.UnsafeEnabled {
@@ -3349,8 +2994,6 @@ func (x *ManagedNamespaceMetadata) ProtoReflect() protoreflect.Message {
 func (*ManagedNamespaceMetadata) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{86}
 }
-
-
 
 // MatrixGenerator generates the cartesian product of two sets of parameters. The parameters are defined by two nested
 // generators.
@@ -3386,8 +3029,6 @@ func (x *MatrixGenerator) ProtoReflect() protoreflect.Message {
 func (*MatrixGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{87}
 }
-
-
 
 // MergeGenerator merges the output of two or more generators. Where the values for all specified merge keys are equal
 // between two sets of generated parameters, the parameter sets will be merged with the parameters from the latter
@@ -3432,9 +3073,6 @@ func (*MergeGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{88}
 }
 
-
-
-
 // NestedMatrixGenerator is a MatrixGenerator nested under another combination-type generator (MatrixGenerator or
 // MergeGenerator). NestedMatrixGenerator does not have an override template, because template overriding has no meaning
 // within the constituent generators of combination-type generators.
@@ -3474,7 +3112,6 @@ func (x *NestedMatrixGenerator) ProtoReflect() protoreflect.Message {
 func (*NestedMatrixGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{89}
 }
-
 
 // NestedMergeGenerator is a MergeGenerator nested under another combination-type generator (MatrixGenerator or
 // MergeGenerator). NestedMergeGenerator does not have an override template, because template overriding has no meaning
@@ -3516,8 +3153,6 @@ func (*NestedMergeGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{90}
 }
 
-
-
 // Operation contains information about a requested or running operation
 
 func (x *Operation) Reset() {
@@ -3551,10 +3186,6 @@ func (x *Operation) ProtoReflect() protoreflect.Message {
 func (*Operation) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{91}
 }
-
-
-
-
 
 // OperationInitiator contains information about the initiator of an operation
 
@@ -3590,8 +3221,6 @@ func (*OperationInitiator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{92}
 }
 
-
-
 // OperationState contains information about state of a running operation
 
 func (x *OperationState) Reset() {
@@ -3626,14 +3255,6 @@ func (*OperationState) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{93}
 }
 
-
-
-
-
-
-
-
-
 func (x *OptionalArray) Reset() {
 	*x = OptionalArray{}
 	if protoimpl.UnsafeEnabled {
@@ -3666,8 +3287,6 @@ func (*OptionalArray) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{94}
 }
 
-
-
 func (x *OptionalMap) Reset() {
 	*x = OptionalMap{}
 	if protoimpl.UnsafeEnabled {
@@ -3699,7 +3318,6 @@ func (x *OptionalMap) ProtoReflect() protoreflect.Message {
 func (*OptionalMap) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{95}
 }
-
 
 // OrphanedResourceKey is a reference to a resource to be ignored from
 
@@ -3735,9 +3353,6 @@ func (*OrphanedResourceKey) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{96}
 }
 
-
-
-
 // OrphanedResourcesMonitorSettings holds settings of orphaned resources monitoring
 
 func (x *OrphanedResourcesMonitorSettings) Reset() {
@@ -3771,8 +3386,6 @@ func (x *OrphanedResourcesMonitorSettings) ProtoReflect() protoreflect.Message {
 func (*OrphanedResourcesMonitorSettings) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{97}
 }
-
-
 
 // OverrideIgnoreDiff contains configurations about how fields should be ignored during diffs between
 // the desired state and live state
@@ -3809,10 +3422,6 @@ func (*OverrideIgnoreDiff) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{98}
 }
 
-
-
-
-
 func (x *PluginConfigMapRef) Reset() {
 	*x = PluginConfigMapRef{}
 	if protoimpl.UnsafeEnabled {
@@ -3844,7 +3453,6 @@ func (x *PluginConfigMapRef) ProtoReflect() protoreflect.Message {
 func (*PluginConfigMapRef) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{99}
 }
-
 
 // PluginGenerator defines connection info specific to Plugin.
 
@@ -3880,12 +3488,6 @@ func (*PluginGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{100}
 }
 
-
-
-
-
-
-
 func (x *PluginInput) Reset() {
 	*x = PluginInput{}
 	if protoimpl.UnsafeEnabled {
@@ -3917,7 +3519,6 @@ func (x *PluginInput) ProtoReflect() protoreflect.Message {
 func (*PluginInput) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{101}
 }
-
 
 // ProjectRole represents a role that has access to a project
 
@@ -3953,11 +3554,6 @@ func (*ProjectRole) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{102}
 }
 
-
-
-
-
-
 // PullRequestGenerator defines a generator that scrapes a PullRequest API to find candidate pull requests.
 
 func (x *PullRequestGenerator) Reset() {
@@ -3991,15 +3587,6 @@ func (x *PullRequestGenerator) ProtoReflect() protoreflect.Message {
 func (*PullRequestGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{103}
 }
-
-
-
-
-
-
-
-
-
 
 // PullRequestGeneratorAzureDevOps defines connection info specific to AzureDevOps.
 
@@ -4035,12 +3622,6 @@ func (*PullRequestGeneratorAzureDevOps) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{104}
 }
 
-
-
-
-
-
-
 // PullRequestGeneratorBitbucket defines connection info specific to Bitbucket.
 
 func (x *PullRequestGeneratorBitbucket) Reset() {
@@ -4075,11 +3656,6 @@ func (*PullRequestGeneratorBitbucket) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{105}
 }
 
-
-
-
-
-
 // PullRequestGeneratorBitbucketServer defines connection info specific to BitbucketServer.
 
 func (x *PullRequestGeneratorBitbucketServer) Reset() {
@@ -4113,13 +3689,6 @@ func (x *PullRequestGeneratorBitbucketServer) ProtoReflect() protoreflect.Messag
 func (*PullRequestGeneratorBitbucketServer) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{106}
 }
-
-
-
-
-
-
-
 
 // PullRequestGeneratorFilter is a single pull request filter.
 // If multiple filter types are set on a single struct, they will be AND'd together. All filters must
@@ -4157,8 +3726,6 @@ func (*PullRequestGeneratorFilter) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{107}
 }
 
-
-
 // PullRequestGeneratorGitLab defines connection info specific to GitLab.
 
 func (x *PullRequestGeneratorGitLab) Reset() {
@@ -4192,13 +3759,6 @@ func (x *PullRequestGeneratorGitLab) ProtoReflect() protoreflect.Message {
 func (*PullRequestGeneratorGitLab) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{108}
 }
-
-
-
-
-
-
-
 
 // PullRequestGeneratorGitea defines connection info specific to Gitea.
 
@@ -4234,11 +3794,6 @@ func (*PullRequestGeneratorGitea) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{109}
 }
 
-
-
-
-
-
 // PullRequestGenerator defines connection info specific to GitHub.
 
 func (x *PullRequestGeneratorGithub) Reset() {
@@ -4273,13 +3828,6 @@ func (*PullRequestGeneratorGithub) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{110}
 }
 
-
-
-
-
-
-
-
 func (x *RefTarget) Reset() {
 	*x = RefTarget{}
 	if protoimpl.UnsafeEnabled {
@@ -4311,9 +3859,6 @@ func (x *RefTarget) ProtoReflect() protoreflect.Message {
 func (*RefTarget) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{111}
 }
-
-
-
 
 // RepoCreds holds the definition for repository credentials
 
@@ -4349,22 +3894,6 @@ func (*RepoCreds) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{112}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // RepositoryList is a collection of Repositories.
 
 func (x *RepoCredsList) Reset() {
@@ -4398,8 +3927,6 @@ func (x *RepoCredsList) ProtoReflect() protoreflect.Message {
 func (*RepoCredsList) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{113}
 }
-
-
 
 // Repository is a repository holding application configurations
 
@@ -4435,29 +3962,6 @@ func (*Repository) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{114}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // A RepositoryCertificate is either SSH known hosts entry or TLS certificate
 
 func (x *RepositoryCertificate) Reset() {
@@ -4491,11 +3995,6 @@ func (x *RepositoryCertificate) ProtoReflect() protoreflect.Message {
 func (*RepositoryCertificate) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{115}
 }
-
-
-
-
-
 
 // RepositoryCertificateList is a collection of RepositoryCertificates
 
@@ -4531,8 +4030,6 @@ func (*RepositoryCertificateList) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{116}
 }
 
-
-
 // RepositoryList is a collection of Repositories.
 
 func (x *RepositoryList) Reset() {
@@ -4566,8 +4063,6 @@ func (x *RepositoryList) ProtoReflect() protoreflect.Message {
 func (*RepositoryList) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{117}
 }
-
-
 
 // TODO: describe this type
 // TODO: describe members of this type
@@ -4604,11 +4099,6 @@ func (*ResourceAction) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{118}
 }
 
-
-
-
-
-
 // TODO: describe this type
 // TODO: describe members of this type
 
@@ -4643,8 +4133,6 @@ func (x *ResourceActionDefinition) ProtoReflect() protoreflect.Message {
 func (*ResourceActionDefinition) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{119}
 }
-
-
 
 // TODO: describe this type
 // TODO: describe members of this type
@@ -4681,10 +4169,6 @@ func (*ResourceActionParam) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{120}
 }
 
-
-
-
-
 // TODO: describe this type
 // TODO: describe members of this type
 
@@ -4719,8 +4203,6 @@ func (x *ResourceActions) ProtoReflect() protoreflect.Message {
 func (*ResourceActions) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{121}
 }
-
-
 
 // ResourceDiff holds the diff of a live and target resource object
 // TODO: describe members of this type
@@ -4757,18 +4239,6 @@ func (*ResourceDiff) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{122}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 // ResourceIgnoreDifferences contains resource filter and list of json paths which should be ignored during comparison with live state.
 
 func (x *ResourceIgnoreDifferences) Reset() {
@@ -4802,13 +4272,6 @@ func (x *ResourceIgnoreDifferences) ProtoReflect() protoreflect.Message {
 func (*ResourceIgnoreDifferences) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{123}
 }
-
-
-
-
-
-
-
 
 // ResourceNetworkingInfo holds networking resource related information
 // TODO: describe members of this type
@@ -4845,11 +4308,6 @@ func (*ResourceNetworkingInfo) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{124}
 }
 
-
-
-
-
-
 // ResourceNode contains information about live resource and its children
 // TODO: describe members of this type
 
@@ -4884,14 +4342,6 @@ func (x *ResourceNode) ProtoReflect() protoreflect.Message {
 func (*ResourceNode) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{125}
 }
-
-
-
-
-
-
-
-
 
 // ResourceOverride holds configuration to customize resource diffing and health assessment
 // TODO: describe the members of this type
@@ -4928,12 +4378,6 @@ func (*ResourceOverride) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{126}
 }
 
-
-
-
-
-
-
 // ResourceRef includes fields which uniquely identify a resource
 
 func (x *ResourceRef) Reset() {
@@ -4968,12 +4412,6 @@ func (*ResourceRef) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{127}
 }
 
-
-
-
-
-
-
 // ResourceResult holds the operation result details of a specific resource
 
 func (x *ResourceResult) Reset() {
@@ -5007,16 +4445,6 @@ func (x *ResourceResult) ProtoReflect() protoreflect.Message {
 func (*ResourceResult) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{128}
 }
-
-
-
-
-
-
-
-
-
-
 
 // ResourceStatus holds the current sync and health status of a resource
 // TODO: describe members of this type
@@ -5053,16 +4481,6 @@ func (*ResourceStatus) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{129}
 }
 
-
-
-
-
-
-
-
-
-
-
 // RetryStrategy contains information about the strategy to apply when a sync failed
 
 func (x *RetryStrategy) Reset() {
@@ -5096,8 +4514,6 @@ func (x *RetryStrategy) ProtoReflect() protoreflect.Message {
 func (*RetryStrategy) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{130}
 }
-
-
 
 // RevisionHistory contains history information about a previous sync
 
@@ -5133,14 +4549,6 @@ func (*RevisionHistory) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{131}
 }
 
-
-
-
-
-
-
-
-
 // RevisionMetadata contains metadata for a specific revision in a Git repository
 
 func (x *RevisionMetadata) Reset() {
@@ -5174,11 +4582,6 @@ func (x *RevisionMetadata) ProtoReflect() protoreflect.Message {
 func (*RevisionMetadata) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{132}
 }
-
-
-
-
-
 
 // SCMProviderGenerator defines a generator that scrapes a SCMaaS API to find candidate repos.
 
@@ -5214,18 +4617,6 @@ func (*SCMProviderGenerator) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{133}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 // SCMProviderGeneratorAWSCodeCommit defines connection info specific to AWS CodeCommit.
 
 func (x *SCMProviderGeneratorAWSCodeCommit) Reset() {
@@ -5259,10 +4650,6 @@ func (x *SCMProviderGeneratorAWSCodeCommit) ProtoReflect() protoreflect.Message 
 func (*SCMProviderGeneratorAWSCodeCommit) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{134}
 }
-
-
-
-
 
 // SCMProviderGeneratorAzureDevOps defines connection info specific to Azure DevOps.
 
@@ -5298,11 +4685,6 @@ func (*SCMProviderGeneratorAzureDevOps) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{135}
 }
 
-
-
-
-
-
 // SCMProviderGeneratorBitbucket defines connection info specific to Bitbucket Cloud (API version 2).
 
 func (x *SCMProviderGeneratorBitbucket) Reset() {
@@ -5337,10 +4719,6 @@ func (*SCMProviderGeneratorBitbucket) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{136}
 }
 
-
-
-
-
 // SCMProviderGeneratorBitbucketServer defines connection info specific to Bitbucket Server.
 
 func (x *SCMProviderGeneratorBitbucketServer) Reset() {
@@ -5374,13 +4752,6 @@ func (x *SCMProviderGeneratorBitbucketServer) ProtoReflect() protoreflect.Messag
 func (*SCMProviderGeneratorBitbucketServer) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{137}
 }
-
-
-
-
-
-
-
 
 // SCMProviderGeneratorFilter is a single repository filter.
 // If multiple filter types are set on a single struct, they will be AND'd together. All filters must
@@ -5418,11 +4789,6 @@ func (*SCMProviderGeneratorFilter) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{138}
 }
 
-
-
-
-
-
 // SCMProviderGeneratorGitea defines a connection info specific to Gitea.
 
 func (x *SCMProviderGeneratorGitea) Reset() {
@@ -5456,11 +4822,6 @@ func (x *SCMProviderGeneratorGitea) ProtoReflect() protoreflect.Message {
 func (*SCMProviderGeneratorGitea) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{139}
 }
-
-
-
-
-
 
 // SCMProviderGeneratorGithub defines connection info specific to GitHub.
 
@@ -5496,11 +4857,6 @@ func (*SCMProviderGeneratorGithub) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{140}
 }
 
-
-
-
-
-
 // SCMProviderGeneratorGitlab defines connection info specific to Gitlab.
 
 func (x *SCMProviderGeneratorGitlab) Reset() {
@@ -5534,15 +4890,6 @@ func (x *SCMProviderGeneratorGitlab) ProtoReflect() protoreflect.Message {
 func (*SCMProviderGeneratorGitlab) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{141}
 }
-
-
-
-
-
-
-
-
-
 
 // Utility struct for a reference to a secret key.
 
@@ -5578,8 +4925,6 @@ func (*SecretRef) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{142}
 }
 
-
-
 // SignatureKey is the specification of a key required to verify commit signatures with
 
 func (x *SignatureKey) Reset() {
@@ -5613,7 +4958,6 @@ func (x *SignatureKey) ProtoReflect() protoreflect.Message {
 func (*SignatureKey) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{143}
 }
-
 
 // SyncOperation contains details about a sync operation.
 
@@ -5649,16 +4993,6 @@ func (*SyncOperation) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{144}
 }
 
-
-
-
-
-
-
-
-
-
-
 // SyncOperationResource contains resources to sync.
 
 func (x *SyncOperationResource) Reset() {
@@ -5692,10 +5026,6 @@ func (x *SyncOperationResource) ProtoReflect() protoreflect.Message {
 func (*SyncOperationResource) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{145}
 }
-
-
-
-
 
 // SyncOperationResult represent result of sync operation
 
@@ -5731,12 +5061,6 @@ func (*SyncOperationResult) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{146}
 }
 
-
-
-
-
-
-
 // SyncPolicy controls when a sync will be performed in response to updates in git
 
 func (x *SyncPolicy) Reset() {
@@ -5770,10 +5094,6 @@ func (x *SyncPolicy) ProtoReflect() protoreflect.Message {
 func (*SyncPolicy) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{147}
 }
-
-
-
-
 
 // SyncPolicyAutomated controls the behavior of an automated sync
 
@@ -5809,9 +5129,6 @@ func (*SyncPolicyAutomated) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{148}
 }
 
-
-
-
 // SyncStatus contains information about the currently observed live and desired states of an application
 
 func (x *SyncStatus) Reset() {
@@ -5845,10 +5162,6 @@ func (x *SyncStatus) ProtoReflect() protoreflect.Message {
 func (*SyncStatus) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{149}
 }
-
-
-
-
 
 // SyncStrategy controls the manner in which a sync is performed
 
@@ -5884,8 +5197,6 @@ func (*SyncStrategy) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{150}
 }
 
-
-
 // SyncStrategyApply uses `kubectl apply` to perform the apply
 
 func (x *SyncStrategyApply) Reset() {
@@ -5919,7 +5230,6 @@ func (x *SyncStrategyApply) ProtoReflect() protoreflect.Message {
 func (*SyncStrategyApply) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{151}
 }
-
 
 // SyncStrategyHook will perform a sync using hooks annotations.
 // If no hook annotation is specified falls back to `kubectl apply`.
@@ -5956,7 +5266,6 @@ func (*SyncStrategyHook) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{152}
 }
 
-
 // SyncWindow contains the kind, time, duration and attributes that are used to assign the syncWindows to apps
 
 func (x *SyncWindow) Reset() {
@@ -5990,14 +5299,6 @@ func (x *SyncWindow) ProtoReflect() protoreflect.Message {
 func (*SyncWindow) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{153}
 }
-
-
-
-
-
-
-
-
 
 // TLSClientConfig contains settings to enable transport layer security
 
@@ -6033,12 +5334,6 @@ func (*TLSClientConfig) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{154}
 }
 
-
-
-
-
-
-
 func (x *TagFilter) Reset() {
 	*x = TagFilter{}
 	if protoimpl.UnsafeEnabled {
@@ -6070,8 +5365,6 @@ func (x *TagFilter) ProtoReflect() protoreflect.Message {
 func (*TagFilter) Descriptor() ([]byte, []int) {
 	return file_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto_rawDescGZIP(), []int{155}
 }
-
-
 
 var File_github_com_argoproj_argo_cd_v2_pkg_apis_application_v1alpha1_generated_proto protoreflect.FileDescriptor
 

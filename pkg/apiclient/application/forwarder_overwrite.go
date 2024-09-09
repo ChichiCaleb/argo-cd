@@ -10,7 +10,7 @@ import (
 	"github.com/argoproj/argo-cd/v2/util/kube"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-    "google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 )
@@ -151,6 +151,4 @@ func init() {
 	})
 	forward_ApplicationService_List_0 = UnaryForwarderWithFieldProcessor(processApplicationListField)
 	forward_ApplicationService_ManagedResources_0 = UnaryForwarder
-
-
 }

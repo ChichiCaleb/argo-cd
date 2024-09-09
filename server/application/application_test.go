@@ -2308,7 +2308,7 @@ func TestGetAppRefresh_NormalRefresh(t *testing.T) {
 
 	_, err := appServer.Get(context.Background(), &application.ApplicationQuery{
 		Name:    testApp.Name,
-		Refresh: ptr.To(string(appsv1.RefreshTypeNormal)),
+		Refresh: string(appsv1.RefreshTypeNormal),
 	})
 	require.NoError(t, err)
 
@@ -2343,7 +2343,7 @@ func TestGetAppRefresh_HardRefresh(t *testing.T) {
 
 	_, err := appServer.Get(context.Background(), &application.ApplicationQuery{
 		Name:    testApp.Name,
-		Refresh: ptr.To(string(appsv1.RefreshTypeHard)),
+		Refresh: string(appsv1.RefreshTypeHard),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, getAppDetailsQuery)
@@ -2488,11 +2488,11 @@ func TestRunNewStyleResourceAction(t *testing.T) {
 
 		appResponse, runErr := appServer.RunResourceAction(context.Background(), &application.ResourceActionRunRequest{
 			Name:         testApp.Name,
-			Namespace:    &namespace,
-			Action:       &action,
+			Namespace:    namespace,
+			Action:       action,
 			AppNamespace: testApp.Namespace,
-			ResourceName: &resourceName,
-			Version:      &version,
+			ResourceName: resourceName,
+			Version:      version,
 			Group:        group,
 			Kind:         kind,
 		})
@@ -2514,11 +2514,11 @@ func TestRunNewStyleResourceAction(t *testing.T) {
 
 		appResponse, runErr := appServer.RunResourceAction(context.Background(), &application.ResourceActionRunRequest{
 			Name:         testApp.Name,
-			Namespace:    &namespace,
-			Action:       &action,
+			Namespace:    namespace,
+			Action:       action,
 			AppNamespace: testApp.Namespace,
-			ResourceName: &resourceName,
-			Version:      &version,
+			ResourceName: resourceName,
+			Version:      version,
 			Group:        group,
 			Kind:         kind,
 		})
@@ -2585,11 +2585,11 @@ func TestRunOldStyleResourceAction(t *testing.T) {
 
 		appResponse, runErr := appServer.RunResourceAction(context.Background(), &application.ResourceActionRunRequest{
 			Name:         testApp.Name,
-			Namespace:    &namespace,
-			Action:       &action,
+			Namespace:    namespace,
+			Action:       action,
 			AppNamespace: testApp.Namespace,
-			ResourceName: &resourceName,
-			Version:      &version,
+			ResourceName: resourceName,
+			Version:      version,
 			Group:        group,
 			Kind:         kind,
 		})
@@ -2679,7 +2679,7 @@ func TestAppNamespaceRestrictions(t *testing.T) {
 		testApp2 := newTestApp()
 		testApp2.Namespace = "argocd-1"
 		appServer := newTestAppServer(t, testApp1, testApp2)
-		apps, err := appServer.List(context.TODO(), &application.ApplicationQuery{AppNamespace: ptr.To("argocd-1")})
+		apps, err := appServer.List(context.TODO(), &application.ApplicationQuery{AppNamespace: "argocd-1"})
 		require.NoError(t, err)
 		require.Empty(t, apps.Items)
 	})
@@ -2700,7 +2700,7 @@ func TestAppNamespaceRestrictions(t *testing.T) {
 		testApp := newTestApp()
 		appServer := newTestAppServer(t, testApp)
 		app, err := appServer.Get(context.TODO(), &application.ApplicationQuery{
-			Name: ptr.To("test-app"),
+			Name: "test-app",
 		})
 		require.NoError(t, err)
 		assert.Equal(t, "test-app", app.GetName())
@@ -2711,8 +2711,8 @@ func TestAppNamespaceRestrictions(t *testing.T) {
 		testApp.Namespace = "argocd-1"
 		appServer := newTestAppServer(t, testApp)
 		app, err := appServer.Get(context.TODO(), &application.ApplicationQuery{
-			Name:         ptr.To("test-app"),
-			AppNamespace: ptr.To("argocd-1"),
+			Name:         "test-app",
+			AppNamespace: "argocd-1",
 		})
 		require.Error(t, err)
 		require.ErrorContains(t, err, "permission denied")
@@ -2734,8 +2734,8 @@ func TestAppNamespaceRestrictions(t *testing.T) {
 		appServer := newTestAppServer(t, testApp, otherNsProj)
 		appServer.enabledNamespaces = []string{"argocd-1"}
 		app, err := appServer.Get(context.TODO(), &application.ApplicationQuery{
-			Name:         ptr.To("test-app"),
-			AppNamespace: ptr.To("argocd-1"),
+			Name:         "test-app",
+			AppNamespace: "argocd-1",
 		})
 		require.NoError(t, err)
 		require.NotNil(t, app)
@@ -2758,8 +2758,8 @@ func TestAppNamespaceRestrictions(t *testing.T) {
 		appServer := newTestAppServer(t, testApp, otherNsProj)
 		appServer.enabledNamespaces = []string{"argocd-1"}
 		app, err := appServer.Get(context.TODO(), &application.ApplicationQuery{
-			Name:         ptr.To("test-app"),
-			AppNamespace: ptr.To("argocd-1"),
+			Name:         "test-app",
+			AppNamespace: "argocd-1",
 		})
 		require.Error(t, err)
 		require.Nil(t, app)
@@ -2889,8 +2889,8 @@ func TestAppNamespaceRestrictions(t *testing.T) {
 		appServer := newTestAppServer(t, testApp, otherNsProj)
 		appServer.enabledNamespaces = []string{"argocd-1"}
 		links, err := appServer.ListLinks(context.TODO(), &application.ListAppLinksRequest{
-			Name:      ptr.To("test-app"),
-			Namespace: ptr.To("argocd-1"),
+			Name:      "test-app",
+			Namespace: "argocd-1",
 		})
 		require.Error(t, err)
 		require.Nil(t, links)
@@ -2912,8 +2912,8 @@ func TestAppNamespaceRestrictions(t *testing.T) {
 		appServer := newTestAppServer(t, testApp, otherNsProj)
 		appServer.enabledNamespaces = []string{"argocd-1"}
 		links, err := appServer.ListLinks(context.TODO(), &application.ListAppLinksRequest{
-			Name:      ptr.To("test-app"),
-			Namespace: ptr.To("argocd-1"),
+			Name:      "test-app",
+			Namespace: "argocd-1",
 		})
 		require.NoError(t, err)
 		assert.Empty(t, links.Items)
@@ -2960,7 +2960,7 @@ func TestGetAmbiguousRevision_MultiSource(t *testing.T) {
 		Sources: nil,
 	}
 	syncReq = &application.ApplicationSyncRequest{
-		Revision: strToPtr("revision3"),
+		Revision: "revision3",
 	}
 	expected = "revision3"
 	result = getAmbiguousRevision(app, syncReq, sourceIndex)
@@ -2978,7 +2978,7 @@ func TestGetAmbiguousRevision_SingleSource(t *testing.T) {
 		},
 	}
 	syncReq := &application.ApplicationSyncRequest{
-		Revision: strToPtr("rev1"),
+		Revision: "rev1",
 	}
 
 	// Test when app.Spec.HasMultipleSources() is true
@@ -3031,7 +3031,7 @@ func TestServer_ResolveSourceRevisions_SingleSource(t *testing.T) {
 	}
 
 	syncReq := &application.ApplicationSyncRequest{
-		Revision: strToPtr("HEAD"),
+		Revision: "HEAD",
 	}
 
 	revision, displayRevision, sourceRevisions, displayRevisions, err := s.resolveSourceRevisions(ctx, a, syncReq)
@@ -3293,10 +3293,17 @@ func Test_RevisionMetadata(t *testing.T) {
 			s := newTestAppServer(t, app)
 
 			request := &application.RevisionMetadataQuery{
-				Name:        ptr.To(app.Name),
-				Revision:    ptr.To("HEAD"),
-				SourceIndex: tcc.sourceIndex,
-				VersionId:   tcc.versionId,
+				Name:        app.Name,
+				Revision:    "HEAD",
+				SourceIndex: 0, // Default value
+				VersionId:   0, // Default value
+			}
+
+			if tcc.sourceIndex != nil {
+				request.SourceIndex = *tcc.sourceIndex
+			}
+			if tcc.versionId != nil {
+				request.VersionId = *tcc.versionId
 			}
 
 			_, err := s.RevisionMetadata(context.Background(), request)

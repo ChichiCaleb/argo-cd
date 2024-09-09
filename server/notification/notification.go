@@ -5,7 +5,7 @@ import (
 
 	"github.com/argoproj/notifications-engine/pkg/api"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
-	
+
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/notification"
 )
 

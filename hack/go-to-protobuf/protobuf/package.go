@@ -1,5 +1,3 @@
-
-
 package protobuf
 
 import (
@@ -45,7 +43,7 @@ type protobufPackage struct {
 	// A list of types to filter to; if not specified all types will be included.
 	FilterTypes map[types.Name]struct{}
 
-    // A list of field types that will be excluded from the output struct
+	// A list of field types that will be excluded from the output struct
 	OmitFieldTypes map[types.Name]struct{}
 
 	// A list of names that this package exports
@@ -90,9 +88,9 @@ func (p *protobufPackage) filterFunc(c *generator.Context, t *types.Type) bool {
 	case types.Builtin:
 		return false
 	case types.Alias:
-		
-			return false
-		
+
+		return false
+
 	case types.Slice, types.Array, types.Map:
 		return false
 	case types.Pointer:
@@ -155,7 +153,6 @@ func (p *protobufPackage) ExtractGeneratedType(t *ast.TypeSpec) bool {
 func (p *protobufPackage) generatorsFunc(c *generator.Context) []generator.Generator {
 	generators := []generator.Generator{}
 
-
 	generators = append(generators, &genProtoIDL{
 		GoGenerator: generator.GoGenerator{
 			OutputFilename: "generated", // the extension is added later
@@ -164,7 +161,7 @@ func (p *protobufPackage) generatorsFunc(c *generator.Context) []generator.Gener
 		localGoPackage: types.Name{Package: p.Path(), Name: p.GoPackageName()},
 		imports:        p.Imports,
 		generateAll:    p.GenerateAll,
-		
+
 		omitFieldTypes: p.OmitFieldTypes,
 	})
 	return generators
@@ -182,6 +179,4 @@ func (p *protobufPackage) OutputPath() string {
 	return filepath.Join(p.Path(), "generated.pb.go")
 }
 
-var (
-	_ = generator.Target(&protobufPackage{})
-)
+var _ = generator.Target(&protobufPackage{})

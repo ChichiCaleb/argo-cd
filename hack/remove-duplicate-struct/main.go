@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"io"
 )
 
 func main() {
@@ -42,7 +42,6 @@ func main() {
 		// Process non-pb.go files
 		return collectStructAndFunctionNames(path, structPattern, funcPattern, structsInOtherFiles, functionsInOtherFiles)
 	})
-
 	if err != nil {
 		fmt.Println("Error collecting structs and functions from non-pb.go files:", err)
 		return
@@ -61,7 +60,6 @@ func main() {
 		// Process pb.go files and remove duplicates
 		return removeDuplicateStructsAndFunctions(path, structPattern, funcPattern, structsInOtherFiles, functionsInOtherFiles)
 	})
-
 	if err != nil {
 		fmt.Println("Error processing pb.go files:", err)
 		return
@@ -191,7 +189,6 @@ func removeDuplicateStructsAndFunctions(filePath string, structPattern, funcPatt
 
 	return nil
 }
-
 
 // replaceFile replaces the original file with the new file
 func replaceFile(originalPath, newPath string) error {

@@ -501,8 +501,8 @@ func (a *ArgoCDServer) Listen() (*Listeners, error) {
 		return nil, err
 	}
 
-	// Establish the connection 
-	conn.Connect() 
+	// Establish the connection
+	conn.Connect()
 
 	// Return the listeners and the gRPC connection
 	return &Listeners{Main: mainLn, Metrics: metricsLn, GatewayConn: conn}, nil
@@ -973,7 +973,6 @@ func (a *ArgoCDServer) translateGrpcCookieHeader(ctx context.Context, w http.Res
 	return nil
 }
 
-
 func (a *ArgoCDServer) setTokenCookie(token string, w http.ResponseWriter) error {
 	cookiePath := fmt.Sprintf("path=/%s", strings.TrimRight(strings.TrimLeft(a.ArgoCDServerOpts.BaseHRef, "/"), "/"))
 	flags := []string{cookiePath, "SameSite=lax", "httpOnly"}
@@ -1032,16 +1031,13 @@ func (a *ArgoCDServer) newHTTPServer(ctx context.Context, port int, grpcWebHandl
 		},
 	}
 
-
-
 	// Use grpc-gateway's JSONPb marshaler instead of the custom one
-    gwMuxOpts := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{})
+	gwMuxOpts := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{})
 	// Use the updated function in WithForwardResponseOption
-    gwCookieOpts := runtime.WithForwardResponseOption(a.translateGrpcCookieHeader)
+	gwCookieOpts := runtime.WithForwardResponseOption(a.translateGrpcCookieHeader)
 
-   // Register gRPC-gateway handlers
-    gwmux := runtime.NewServeMux(gwMuxOpts, gwCookieOpts)
-
+	// Register gRPC-gateway handlers
+	gwmux := runtime.NewServeMux(gwMuxOpts, gwCookieOpts)
 
 	var handler http.Handler = gwmux
 	if a.EnableGZip {
@@ -1338,7 +1334,6 @@ func mustRegisterGWHandler(register registerFunc, ctx context.Context, mux *runt
 		panic(err)
 	}
 }
-
 
 func replaceBaseHRef(data string, replaceWith string) string {
 	return baseHRefRegex.ReplaceAllString(data, replaceWith)

@@ -51,13 +51,12 @@ func SendApplicationManifestQueryWithFiles(ctx context.Context, stream Applicati
 	err = stream.Send(&applicationpkg.ApplicationManifestQueryWithFilesWrapper{
 		Part: &applicationpkg.ApplicationManifestQueryWithFilesWrapper_Query{
 			Query: &applicationpkg.ApplicationManifestQueryWithFiles{
-				Name:         appName,       // Use appName directly
-				Checksum:     checksum,      // Use checksum directly
-				AppNamespace: appNs,         // Use appNs directly
+				Name:         appName,  // Use appName directly
+				Checksum:     checksum, // Use checksum directly
+				AppNamespace: appNs,    // Use appNs directly
 			},
 		},
 	})
-	
 	if err != nil {
 		return fmt.Errorf("failed to send manifest stream header: %w", err)
 	}

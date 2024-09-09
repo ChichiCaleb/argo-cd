@@ -42,7 +42,6 @@ type ArgoCDRepoServer struct {
 	cache         *reposervercache.Cache
 	opts          []grpc.ServerOption
 	initConstants repository.RepoServerInitConstants
-	
 }
 
 // The hostnames to generate self-signed issues with
@@ -133,4 +132,3 @@ func (a *ArgoCDRepoServer) CreateGRPC() *grpc.Server {
 
 	return server
 }
-

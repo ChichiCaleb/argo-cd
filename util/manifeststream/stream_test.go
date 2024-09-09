@@ -100,14 +100,11 @@ func TestManifestStream(t *testing.T) {
 
 	req := &apiclient.ManifestRequest{}
 
-
-
 	go func() {
-		err = manifeststream.SendRepoStream(repoStreamMock, appStreamMock, req, query.Checksum)  // Directly pass query.Checksum
+		err = manifeststream.SendRepoStream(repoStreamMock, appStreamMock, req, query.Checksum) // Directly pass query.Checksum
 		assert.NoError(t, err)
 		repoStreamMock.done <- true
 	}()
-	
 
 	req2, meta, err := manifeststream.ReceiveManifestFileStream(context.Background(), repoStreamMock, workdir, math.MaxInt64, math.MaxInt64)
 	require.NoError(t, err)

@@ -9,7 +9,6 @@ import (
 	"github.com/argoproj/gitops-engine/pkg/utils/kube"
 	"github.com/expr-lang/expr"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	
 
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -117,8 +116,8 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 					finalLinks = append(finalLinks, &application.LinkInfo{
 						Title:       link.Title,
 						Url:         finalURL.String(),
-						Description: description,  // Use the dereferenced value
-						IconClass:   iconClass,    // Use the dereferenced value
+						Description: description, // Use the dereferenced value
+						IconClass:   iconClass,   // Use the dereferenced value
 					})
 				}
 			default:
@@ -129,8 +128,8 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 			finalLinks = append(finalLinks, &application.LinkInfo{
 				Title:       link.Title,
 				Url:         finalURL.String(),
-				Description: description,  // Use the dereferenced value
-				IconClass:   iconClass,    // Use the dereferenced value
+				Description: description, // Use the dereferenced value
+				IconClass:   iconClass,   // Use the dereferenced value
 			})
 		}
 	}
@@ -138,4 +137,3 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 		Items: finalLinks,
 	}, errors
 }
-

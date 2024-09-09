@@ -516,10 +516,9 @@ func validateSourcePermissions(source argoappv1.ApplicationSource, hasMultipleSo
 	if hasMultipleSources {
 		if source.RepoURL == "" || (source.Path == "" && source.Chart == "" && source.Ref == "") {
 			conditions = append(conditions, argoappv1.ApplicationCondition{
-				Type:    argoappv1.ApplicationConditionInvalidSpecError,
+				Type: argoappv1.ApplicationConditionInvalidSpecError,
 
 				Message: fmt.Sprintf("spec.source.repoURL and either source.path, source.chart, or source.ref are required for source %s", source.RepoURL),
-
 			})
 			return conditions
 		}

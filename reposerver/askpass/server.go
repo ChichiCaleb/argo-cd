@@ -22,7 +22,6 @@ type Server interface {
 	Run(path string) error
 }
 
-
 type server struct {
 	lock       sync.Mutex
 	creds      map[string]Creds

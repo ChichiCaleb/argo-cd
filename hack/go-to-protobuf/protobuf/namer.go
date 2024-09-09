@@ -1,4 +1,3 @@
-
 package protobuf
 
 import (
@@ -136,7 +135,6 @@ func assignGoTypeToProtoPackage(p *protobufPackage, t *types.Type, local, global
 		assignGoTypeToProtoPackage(p, t.Key, local, global, optional)
 	}
 	if t.Underlying != nil {
-		
 		assignGoTypeToProtoPackage(p, t.Underlying, local, global, optional)
 	}
 }

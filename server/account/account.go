@@ -31,17 +31,14 @@ type Server struct {
 	account.UnimplementedAccountServiceServer
 }
 
-
 // NewServer returns a new instance of the Session service
 func NewServer(sessionMgr *session.SessionManager, settingsMgr *settings.SettingsManager, enf *rbac.Enforcer) *Server {
-
 	return &Server{
 		sessionMgr:  sessionMgr,
 		settingsMgr: settingsMgr,
 		enf:         enf,
 	}
 }
-
 
 // UpdatePassword updates the password of the currently authenticated account or the account specified in the request.
 func (s *Server) UpdatePassword(ctx context.Context, q *account.UpdatePasswordRequest) (*account.UpdatePasswordResponse, error) {

@@ -14,7 +14,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	
+
 	"sigs.k8s.io/yaml"
 
 	"github.com/argoproj/argo-cd/v2/cmd/argocd/commands/headless"
@@ -95,11 +95,11 @@ func NewApplicationResourceActionsListCommand(clientOpts *argocdclient.ClientOpt
 			availActionsForResource, err := appIf.ListResourceActions(ctx, &applicationpkg.ApplicationResourceRequest{
 				Name:         appName,
 				AppNamespace: appNs,
-				Namespace:   obj.GetNamespace(),
-				ResourceName:obj.GetName(),
-				Group:       gvk.Group,
-				Kind:        gvk.Kind,
-				Version:     gvk.Version,
+				Namespace:    obj.GetNamespace(),
+				ResourceName: obj.GetName(),
+				Group:        gvk.Group,
+				Kind:         gvk.Kind,
+				Version:      gvk.Version,
 			})
 			errors.CheckError(err)
 			for _, action := range availActionsForResource.Actions {

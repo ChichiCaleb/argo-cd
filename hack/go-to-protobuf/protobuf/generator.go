@@ -179,7 +179,7 @@ func (p protobufLocator) ProtoTypeFor(t *types.Type) (*types.Type, error) {
 }
 
 type bodyGen struct {
-	locator         *protobufLocator
+	locator        *protobufLocator
 	localPackage   types.Name
 	omitFieldTypes map[types.Name]struct{}
 
@@ -292,22 +292,18 @@ func (b bodyGen) doStruct(sw *generator.SnippetWriter) error {
 	return nil
 }
 
-
 type protoField struct {
 	LocalPackage types.Name
-	Tag  int
-	Name string
-	Type *types.Type
-	Extras map[string]string
+	Tag          int
+	Name         string
+	Type         *types.Type
+	Extras       map[string]string
 	CommentLines []string
 	Repeated     bool
 	Map          bool
 }
 
-var (
-	errUnrecognizedType = fmt.Errorf("did not recognize the provided type")
-)
-
+var errUnrecognizedType = fmt.Errorf("did not recognize the provided type")
 
 func isFundamentalProtoType(t *types.Type) (*types.Type, bool) {
 	switch t.Kind {
@@ -371,28 +367,26 @@ func memberTypeToProtobufField(locator *protobufLocator, field *protoField, t *t
 			Key:  keyField.Type,
 			Elem: valueField.Type,
 		}
-		
-		
+
 		field.Map = true
 	case types.Pointer:
 		if err := memberTypeToProtobufField(locator, field, t.Elem); err != nil {
 			return err
 		}
-		
+
 	case types.Alias:
-		
-			if err := memberTypeToProtobufField(locator, field, t.Underlying); err != nil {
-				log.Printf("failed to alias: %s %s: err %v", t.Name, t.Underlying.Name, err)
-				return err
+
+		if err := memberTypeToProtobufField(locator, field, t.Underlying); err != nil {
+			log.Printf("failed to alias: %s %s: err %v", t.Name, t.Underlying.Name, err)
+			return err
+		}
+		// Handling for aliases in Proto3
+		if !field.Repeated {
+			if field.Extras == nil {
+				field.Extras = make(map[string]string)
 			}
-			// Handling for aliases in Proto3
-			if !field.Repeated {
-				if field.Extras == nil {
-					field.Extras = make(map[string]string)
-				}
-				
-			}
-		
+		}
+
 	case types.Slice:
 		if t.Elem.Name.Name == "byte" && len(t.Elem.Name.Package) == 0 {
 			// Go slice of bytes maps to `bytes` in Proto3
@@ -409,13 +403,12 @@ func memberTypeToProtobufField(locator *protobufLocator, field *protoField, t *t
 		}
 		// Proto3 does not use the `Struct` type directly in most cases
 		field.Type, err = locator.ProtoTypeFor(t)
-		
+
 	default:
 		return errUnrecognizedType
 	}
 	return err
 }
-
 
 // protobufTagToField extracts information from an existing protobuf tag
 func protobufTagToField(tag string, field *protoField, m types.Member, t *types.Type, localPackage types.Name) error {
@@ -474,7 +467,6 @@ func protobufTagToField(tag string, field *protoField, m types.Member, t *types.
 		switch parts[0] {
 		case "name":
 			protoExtra[parts[0]] = parts[1]
-	
 		}
 	}
 
@@ -535,7 +527,7 @@ func membersToFields(locator *protobufLocator, t *types.Type, localPackage types
 			field.Name = namer.IL(m.Name)
 		}
 
-	    field.CommentLines = m.CommentLines
+		field.CommentLines = m.CommentLines
 		fields = append(fields, field)
 	}
 
@@ -624,7 +616,6 @@ func assembleProtoFile(w io.Writer, f *generator.File) {
 	// Write the main body of the proto file
 	w.Write(f.Body.Bytes())
 }
-
 
 func NewProtoFile() *generator.DefaultFileType {
 	return &generator.DefaultFileType{

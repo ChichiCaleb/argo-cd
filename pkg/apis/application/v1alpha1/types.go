@@ -22,6 +22,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/runtime/protoimpl"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -34,8 +36,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/yaml"
-	"google.golang.org/protobuf/runtime/protoimpl"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/argoproj/argo-cd/v2/common"
 	"github.com/argoproj/argo-cd/v2/util/collections"
@@ -55,9 +55,9 @@ import (
 // +kubebuilder:printcolumn:name="Revision",type=string,JSONPath=`.status.sync.revision`,priority=10
 // +kubebuilder:printcolumn:name="Project",type=string,JSONPath=`.spec.project`,priority=10
 type Application struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	state             protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache         protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields     protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
 	Spec              ApplicationSpec   `json:"spec" protobuf:"bytes,2,opt,name=spec"`
@@ -67,7 +67,7 @@ type Application struct {
 
 // ApplicationSpec represents desired application state. Contains link to repository with application definition and additional parameters link definition revision.
 type ApplicationSpec struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Source is a reference to the location of the application's manifests or chart
@@ -104,15 +104,15 @@ type TrackingMethod string
 
 // ResourceIgnoreDifferences contains resource filter and list of json paths which should be ignored during comparison with live state.
 type ResourceIgnoreDifferences struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Group             string   `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
-	Kind              string   `json:"kind" protobuf:"bytes,2,opt,name=kind"`
-	Name              string   `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
-	Namespace         string   `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
-	JSONPointers      []string `json:"jsonPointers,omitempty" protobuf:"bytes,5,opt,name=jsonPointers"`
-	JQPathExpressions []string `json:"jqPathExpressions,omitempty" protobuf:"bytes,6,opt,name=jqPathExpressions"`
+	state             protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache         protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields     protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	Group             string                  `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
+	Kind              string                  `json:"kind" protobuf:"bytes,2,opt,name=kind"`
+	Name              string                  `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
+	Namespace         string                  `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
+	JSONPointers      []string                `json:"jsonPointers,omitempty" protobuf:"bytes,5,opt,name=jsonPointers"`
+	JQPathExpressions []string                `json:"jqPathExpressions,omitempty" protobuf:"bytes,6,opt,name=jqPathExpressions"`
 	// ManagedFieldsManagers is a list of trusted managers. Fields mutated by those managers will take precedence over the
 	// desired state defined in the SCM and won't be displayed in diffs
 	ManagedFieldsManagers []string `json:"managedFieldsManagers,omitempty" protobuf:"bytes,7,opt,name=managedFieldsManagers"`
@@ -120,7 +120,7 @@ type ResourceIgnoreDifferences struct {
 
 // EnvEntry represents an entry in the application's environment
 type EnvEntry struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Name is the name of the variable, usually expressed in uppercase
@@ -183,7 +183,7 @@ func (e Env) Envsubst(s string) string {
 
 // ApplicationSource contains all required information about the source of an application
 type ApplicationSource struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// RepoURL is the URL to the repository (Git or Helm) that contains the application manifests
@@ -373,19 +373,19 @@ const (
 )
 
 type RefTarget struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Repo           Repository `protobuf:"bytes,1,opt,name=repo"`
-	TargetRevision string     `protobuf:"bytes,2,opt,name=targetRevision"`
-	Chart          string     `protobuf:"bytes,3,opt,name=chart"`
+	state          protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache      protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields  protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	Repo           Repository              `protobuf:"bytes,1,opt,name=repo"`
+	TargetRevision string                  `protobuf:"bytes,2,opt,name=targetRevision"`
+	Chart          string                  `protobuf:"bytes,3,opt,name=chart"`
 }
 
 type RefTargetRevisionMapping map[string]*RefTarget
 
 // ApplicationSourceHelm holds helm specific options
 type ApplicationSourceHelm struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// ValuesFiles is a list of Helm value files to use when generating a template
@@ -422,7 +422,7 @@ type ApplicationSourceHelm struct {
 
 // HelmParameter is a parameter that's passed to helm template during manifest generation
 type HelmParameter struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Name is the name of the Helm parameter
@@ -435,7 +435,7 @@ type HelmParameter struct {
 
 // HelmFileParameter is a file parameter that's passed to helm template during manifest generation
 type HelmFileParameter struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Name is the name of the Helm parameter
@@ -544,7 +544,7 @@ func (images KustomizeImages) Find(image KustomizeImage) int {
 
 // ApplicationSourceKustomize holds options specific to an Application source specific to Kustomize
 type ApplicationSourceKustomize struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// NamePrefix is a prefix appended to resources for Kustomize apps
@@ -584,7 +584,7 @@ type ApplicationSourceKustomize struct {
 }
 
 type KustomizeReplica struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Name of Deployment or StatefulSet
@@ -631,13 +631,13 @@ func NewKustomizeReplica(text string) (*KustomizeReplica, error) {
 type KustomizePatches []KustomizePatch
 
 type KustomizePatch struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Path    string             `json:"path,omitempty" yaml:"path,omitempty" protobuf:"bytes,1,opt,name=path"`
-	Patch   string             `json:"patch,omitempty" yaml:"patch,omitempty" protobuf:"bytes,2,opt,name=patch"`
-	Target  *KustomizeSelector `json:"target,omitempty" yaml:"target,omitempty" protobuf:"bytes,3,opt,name=target"`
-	Options map[string]bool    `json:"options,omitempty" yaml:"options,omitempty" protobuf:"bytes,4,opt,name=options"`
+	Path          string                  `json:"path,omitempty" yaml:"path,omitempty" protobuf:"bytes,1,opt,name=path"`
+	Patch         string                  `json:"patch,omitempty" yaml:"patch,omitempty" protobuf:"bytes,2,opt,name=patch"`
+	Target        *KustomizeSelector      `json:"target,omitempty" yaml:"target,omitempty" protobuf:"bytes,3,opt,name=target"`
+	Options       map[string]bool         `json:"options,omitempty" yaml:"options,omitempty" protobuf:"bytes,4,opt,name=options"`
 }
 
 func (p *KustomizePatch) Equals(o KustomizePatch) bool {
@@ -659,30 +659,30 @@ func (p *KustomizePatch) Equals(o KustomizePatch) bool {
 }
 
 type KustomizeSelector struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	state              protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache          protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields      protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	KustomizeResId     `json:",inline,omitempty" yaml:",inline,omitempty" protobuf:"bytes,1,opt,name=resId"`
 	AnnotationSelector string `json:"annotationSelector,omitempty" yaml:"annotationSelector,omitempty" protobuf:"bytes,2,opt,name=annotationSelector"`
 	LabelSelector      string `json:"labelSelector,omitempty" yaml:"labelSelector,omitempty" protobuf:"bytes,3,opt,name=labelSelector"`
 }
 
 type KustomizeResId struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	KustomizeGvk `json:",inline,omitempty" yaml:",inline,omitempty" protobuf:"bytes,1,opt,name=gvk"`
-	Name         string `json:"name,omitempty" yaml:"name,omitempty" protobuf:"bytes,2,opt,name=name"`
-	Namespace    string `json:"namespace,omitempty" yaml:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
+	KustomizeGvk  `json:",inline,omitempty" yaml:",inline,omitempty" protobuf:"bytes,1,opt,name=gvk"`
+	Name          string `json:"name,omitempty" yaml:"name,omitempty" protobuf:"bytes,2,opt,name=name"`
+	Namespace     string `json:"namespace,omitempty" yaml:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
 }
 
 type KustomizeGvk struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Group   string `json:"group,omitempty" yaml:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
-	Version string `json:"version,omitempty" yaml:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
-	Kind    string `json:"kind,omitempty" yaml:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
+	Group         string                  `json:"group,omitempty" yaml:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
+	Version       string                  `json:"version,omitempty" yaml:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
+	Kind          string                  `json:"kind,omitempty" yaml:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
 }
 
 // AllowsConcurrentProcessing returns true if multiple processes can run Kustomize builds on the same source at the same time
@@ -746,12 +746,12 @@ func (rs KustomizeReplicas) FindByName(name string) int {
 
 // JsonnetVar represents a variable to be passed to jsonnet during manifest generation
 type JsonnetVar struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Name  string `json:"name" protobuf:"bytes,1,opt,name=name"`
-	Value string `json:"value" protobuf:"bytes,2,opt,name=value"`
-	Code  bool   `json:"code,omitempty" protobuf:"bytes,3,opt,name=code"`
+	Name          string                  `json:"name" protobuf:"bytes,1,opt,name=name"`
+	Value         string                  `json:"value" protobuf:"bytes,2,opt,name=value"`
+	Code          bool                    `json:"code,omitempty" protobuf:"bytes,3,opt,name=code"`
 }
 
 // NewJsonnetVar parses a Jsonnet variable from a string in the format name=value
@@ -766,7 +766,7 @@ func NewJsonnetVar(s string, code bool) JsonnetVar {
 
 // ApplicationSourceJsonnet holds options specific to applications of type Jsonnet
 type ApplicationSourceJsonnet struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// ExtVars is a list of Jsonnet External Variables
@@ -784,7 +784,7 @@ func (j *ApplicationSourceJsonnet) IsZero() bool {
 
 // ApplicationSourceDirectory holds options for applications of type plain YAML or Jsonnet
 type ApplicationSourceDirectory struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Recurse specifies whether to scan a directory recursively for manifests
@@ -803,7 +803,7 @@ func (d *ApplicationSourceDirectory) IsZero() bool {
 }
 
 type OptionalMap struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Map is the value of a map type parameter.
@@ -840,7 +840,7 @@ func (o *OptionalMap) Equals(other *OptionalMap) bool {
 }
 
 type OptionalArray struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Array is the value of an array type parameter.
@@ -877,7 +877,7 @@ func (o *OptionalArray) Equals(other *OptionalArray) bool {
 }
 
 type ApplicationSourcePluginParameter struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// We use pointers to structs because go-to-protobuf represents pointers to arrays/maps as repeated fields.
@@ -1001,12 +1001,12 @@ func escaped(paramName string) string {
 
 // ApplicationSourcePlugin holds options specific to config management plugins
 type ApplicationSourcePlugin struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Name       string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-	Env        `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
-	Parameters ApplicationSourcePluginParameters `json:"parameters,omitempty" protobuf:"bytes,3,opt,name=parameters"`
+	Name          string                  `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	Env           `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
+	Parameters    ApplicationSourcePluginParameters `json:"parameters,omitempty" protobuf:"bytes,3,opt,name=parameters"`
 }
 
 func (c *ApplicationSourcePlugin) Equals(other *ApplicationSourcePlugin) bool {
@@ -1063,7 +1063,7 @@ func (c *ApplicationSourcePlugin) RemoveEnvEntry(key string) error {
 
 // ApplicationDestination holds information about the application's destination
 type ApplicationDestination struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Server specifies the URL of the target cluster's Kubernetes control plane API. This must be set if Name is not set.
@@ -1087,7 +1087,7 @@ var (
 
 // ApplicationStatus contains status information for the application
 type ApplicationStatus struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Resources is a list of Kubernetes resources managed by this application
@@ -1150,15 +1150,15 @@ func (app *Application) BuildComparedToStatus() ComparedTo {
 
 // JWTTokens represents a list of JWT tokens
 type JWTTokens struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Items []JWTToken `json:"items,omitempty" protobuf:"bytes,1,opt,name=items"`
+	Items         []JWTToken              `json:"items,omitempty" protobuf:"bytes,1,opt,name=items"`
 }
 
 // OperationInitiator contains information about the initiator of an operation
 type OperationInitiator struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Username contains the name of a user who started operation
@@ -1169,7 +1169,7 @@ type OperationInitiator struct {
 
 // Operation contains information about a requested or running operation
 type Operation struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Sync contains parameters for the operation
@@ -1192,13 +1192,13 @@ func (o *Operation) DryRun() bool {
 
 // SyncOperationResource contains resources to sync.
 type SyncOperationResource struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Group     string `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
-	Kind      string `json:"kind" protobuf:"bytes,2,opt,name=kind"`
-	Name      string `json:"name" protobuf:"bytes,3,opt,name=name"`
-	Namespace string `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
+	Group         string                  `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
+	Kind          string                  `json:"kind" protobuf:"bytes,2,opt,name=kind"`
+	Name          string                  `json:"name" protobuf:"bytes,3,opt,name=name"`
+	Namespace     string                  `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
 	// nolint:govet
 	Exclude bool `json:"-"`
 }
@@ -1241,7 +1241,7 @@ func (r SyncOperationResource) Compare(name string, namespace string, gvk schema
 
 // SyncOperation contains details about a sync operation.
 type SyncOperation struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Revision is the revision (Git) or chart version (Helm) which to sync the application to
@@ -1277,7 +1277,7 @@ func (o *SyncOperation) IsApplyStrategy() bool {
 
 // OperationState contains information about state of a running operation
 type OperationState struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Operation is the original requested operation
@@ -1297,11 +1297,11 @@ type OperationState struct {
 }
 
 type Info struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Name  string `json:"name" protobuf:"bytes,1,name=name"`
-	Value string `json:"value" protobuf:"bytes,2,name=value"`
+	Name          string                  `json:"name" protobuf:"bytes,1,name=name"`
+	Value         string                  `json:"value" protobuf:"bytes,2,name=value"`
 }
 
 type SyncOptions []string
@@ -1339,17 +1339,17 @@ func (o SyncOptions) HasOption(option string) bool {
 }
 
 type ManagedNamespaceMetadata struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	
+
 	Labels      map[string]string `json:"labels,omitempty" protobuf:"bytes,1,opt,name=labels"`
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,2,opt,name=annotations"`
 }
 
 // SyncPolicy controls when a sync will be performed in response to updates in git
 type SyncPolicy struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Automated will keep an application synced to the target revision
@@ -1370,7 +1370,7 @@ func (p *SyncPolicy) IsZero() bool {
 
 // RetryStrategy contains information about the strategy to apply when a sync failed
 type RetryStrategy struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Limit is the maximum number of attempts for retrying a failed sync. If set to 0, no retries will be performed.
@@ -1425,7 +1425,7 @@ func (r *RetryStrategy) NextRetryAt(lastAttempt time.Time, retryCounts int64) (t
 
 // Backoff is the backoff strategy to use on subsequent retries for failing syncs
 type Backoff struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Duration is the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
@@ -1438,7 +1438,7 @@ type Backoff struct {
 
 // SyncPolicyAutomated controls the behavior of an automated sync
 type SyncPolicyAutomated struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Prune specifies whether to delete resources from the cluster that are not found in the sources anymore as part of automated sync (default: false)
@@ -1451,7 +1451,7 @@ type SyncPolicyAutomated struct {
 
 // SyncStrategy controls the manner in which a sync is performed
 type SyncStrategy struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Apply will perform a `kubectl apply` to perform the sync.
@@ -1475,7 +1475,7 @@ func (m *SyncStrategy) Force() bool {
 
 // SyncStrategyApply uses `kubectl apply` to perform the apply
 type SyncStrategyApply struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Force indicates whether or not to supply the --force flag to `kubectl apply`.
@@ -1487,7 +1487,7 @@ type SyncStrategyApply struct {
 // SyncStrategyHook will perform a sync using hooks annotations.
 // If no hook annotation is specified falls back to `kubectl apply`.
 type SyncStrategyHook struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Embed SyncStrategyApply type to inherit any `apply` options
@@ -1497,7 +1497,7 @@ type SyncStrategyHook struct {
 
 // RevisionMetadata contains metadata for a specific revision in a Git repository
 type RevisionMetadata struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// who authored this revision,
@@ -1517,10 +1517,10 @@ type RevisionMetadata struct {
 
 // ChartDetails contains helm chart metadata for a specific version
 type ChartDetails struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Description string `json:"description,omitempty" protobuf:"bytes,1,opt,name=description"`
+	Description   string                  `json:"description,omitempty" protobuf:"bytes,1,opt,name=description"`
 	// The URL of this projects home page, e.g. "http://example.com"
 	Home string `json:"home,omitempty" protobuf:"bytes,2,opt,name=home"`
 	// List of maintainer details, name and email, e.g. ["John Doe <john_doe@my-company.com>"]
@@ -1529,7 +1529,7 @@ type ChartDetails struct {
 
 // SyncOperationResult represent result of sync operation
 type SyncOperationResult struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Resources contains a list of sync result items for each individual resource in a sync operation
@@ -1548,7 +1548,7 @@ type SyncOperationResult struct {
 
 // ResourceResult holds the operation result details of a specific resource
 type ResourceResult struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Group specifies the API group of the resource
@@ -1608,7 +1608,7 @@ func (r ResourceResults) PruningRequired() (num int) {
 
 // RevisionHistory contains history information about a previous sync
 type RevisionHistory struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Revision holds the revision the sync was performed against
@@ -1631,10 +1631,10 @@ type RevisionHistory struct {
 
 // ApplicationWatchEvent contains information about application change.
 type ApplicationWatchEvent struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Type watch.EventType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=k8s.io/apimachinery/pkg/watch.EventType"`
+	Type          watch.EventType         `json:"type" protobuf:"bytes,1,opt,name=type,casttype=k8s.io/apimachinery/pkg/watch.EventType"`
 
 	// Application is:
 	//  * If Type is Added or Modified: the new state of the object.
@@ -1647,9 +1647,9 @@ type ApplicationWatchEvent struct {
 // ApplicationList is list of Application resources
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ApplicationList struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
 	Items           []Application `json:"items" protobuf:"bytes,2,rep,name=items"`
@@ -1657,12 +1657,12 @@ type ApplicationList struct {
 
 // ComponentParameter contains information about component parameter value
 type ComponentParameter struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Component string `json:"component,omitempty" protobuf:"bytes,1,opt,name=component"`
-	Name      string `json:"name" protobuf:"bytes,2,opt,name=name"`
-	Value     string `json:"value" protobuf:"bytes,3,opt,name=value"`
+	Component     string                  `json:"component,omitempty" protobuf:"bytes,1,opt,name=component"`
+	Name          string                  `json:"name" protobuf:"bytes,2,opt,name=name"`
+	Value         string                  `json:"value" protobuf:"bytes,3,opt,name=value"`
 }
 
 // SyncStatusCode is a type which represents possible comparison results
@@ -1707,7 +1707,7 @@ const (
 
 // ApplicationCondition contains details about an application condition, which is usually an error or warning
 type ApplicationCondition struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Type is an application condition type
@@ -1720,7 +1720,7 @@ type ApplicationCondition struct {
 
 // ComparedTo contains application source and target which was used for resources comparison
 type ComparedTo struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Source is a reference to the application's source used for comparison
@@ -1735,7 +1735,7 @@ type ComparedTo struct {
 
 // SyncStatus contains information about the currently observed live and desired states of an application
 type SyncStatus struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Status is the sync state of the comparison
@@ -1750,7 +1750,7 @@ type SyncStatus struct {
 
 // HealthStatus contains information about the currently observed health state of an application or resource
 type HealthStatus struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Status holds the status code of the application or resource
@@ -1761,7 +1761,7 @@ type HealthStatus struct {
 
 // InfoItem contains arbitrary, human readable information about an application
 type InfoItem struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Name is a human readable title for this piece of information.
@@ -1773,44 +1773,44 @@ type InfoItem struct {
 // ResourceNetworkingInfo holds networking resource related information
 // TODO: describe members of this type
 type ResourceNetworkingInfo struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	TargetLabels map[string]string        `json:"targetLabels,omitempty" protobuf:"bytes,1,opt,name=targetLabels"`
-	TargetRefs   []ResourceRef            `json:"targetRefs,omitempty" protobuf:"bytes,2,opt,name=targetRefs"`
-	Labels       map[string]string        `json:"labels,omitempty" protobuf:"bytes,3,opt,name=labels"`
-	Ingress      []v1.LoadBalancerIngress `json:"ingress,omitempty" protobuf:"bytes,4,opt,name=ingress"`
+	state         protoimpl.MessageState   `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache      `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields  `json:"-"` // Ignore this field in JSON
+	TargetLabels  map[string]string        `json:"targetLabels,omitempty" protobuf:"bytes,1,opt,name=targetLabels"`
+	TargetRefs    []ResourceRef            `json:"targetRefs,omitempty" protobuf:"bytes,2,opt,name=targetRefs"`
+	Labels        map[string]string        `json:"labels,omitempty" protobuf:"bytes,3,opt,name=labels"`
+	Ingress       []v1.LoadBalancerIngress `json:"ingress,omitempty" protobuf:"bytes,4,opt,name=ingress"`
 	// ExternalURLs holds list of URLs which should be available externally. List is populated for ingress resources using rules hostnames.
 	ExternalURLs []string `json:"externalURLs,omitempty" protobuf:"bytes,5,opt,name=externalURLs"`
 }
 
 // TODO: describe this type
 type HostResourceInfo struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	ResourceName         v1.ResourceName `json:"resourceName,omitempty" protobuf:"bytes,1,name=resourceName"`
-	RequestedByApp       int64           `json:"requestedByApp,omitempty" protobuf:"bytes,2,name=requestedByApp"`
-	RequestedByNeighbors int64           `json:"requestedByNeighbors,omitempty" protobuf:"bytes,3,name=requestedByNeighbors"`
-	Capacity             int64           `json:"capacity,omitempty" protobuf:"bytes,4,name=capacity"`
+	state                protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache            protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields        protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	ResourceName         v1.ResourceName         `json:"resourceName,omitempty" protobuf:"bytes,1,name=resourceName"`
+	RequestedByApp       int64                   `json:"requestedByApp,omitempty" protobuf:"bytes,2,name=requestedByApp"`
+	RequestedByNeighbors int64                   `json:"requestedByNeighbors,omitempty" protobuf:"bytes,3,name=requestedByNeighbors"`
+	Capacity             int64                   `json:"capacity,omitempty" protobuf:"bytes,4,name=capacity"`
 }
 
 // HostInfo holds host name and resources metrics
 // TODO: describe purpose of this type
 // TODO: describe members of this type
 type HostInfo struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Name          string             `json:"name,omitempty" protobuf:"bytes,1,name=name"`
-	ResourcesInfo []HostResourceInfo `json:"resourcesInfo,omitempty" protobuf:"bytes,2,name=resourcesInfo"`
-	SystemInfo    v1.NodeSystemInfo  `json:"systemInfo,omitempty" protobuf:"bytes,3,opt,name=systemInfo"`
+	Name          string                  `json:"name,omitempty" protobuf:"bytes,1,name=name"`
+	ResourcesInfo []HostResourceInfo      `json:"resourcesInfo,omitempty" protobuf:"bytes,2,name=resourcesInfo"`
+	SystemInfo    v1.NodeSystemInfo       `json:"systemInfo,omitempty" protobuf:"bytes,3,opt,name=systemInfo"`
 }
 
 // ApplicationTree holds nodes which belongs to the application
 // TODO: describe purpose of this type
 type ApplicationTree struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Nodes contains list of nodes which either directly managed by the application and children of directly managed nodes.
@@ -1891,7 +1891,7 @@ func (t *ApplicationTree) Normalize() {
 
 // ApplicationSummary contains information about URLs and container images used by an application
 type ApplicationSummary struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// ExternalURLs holds all external URLs of application child resources.
@@ -1949,23 +1949,23 @@ func (t *ApplicationTree) GetSummary(app *Application) ApplicationSummary {
 
 // ResourceRef includes fields which uniquely identify a resource
 type ResourceRef struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Group     string `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
-	Version   string `json:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
-	Kind      string `json:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
-	Namespace string `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
-	Name      string `json:"name,omitempty" protobuf:"bytes,5,opt,name=name"`
-	UID       string `json:"uid,omitempty" protobuf:"bytes,6,opt,name=uid"`
+	Group         string                  `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
+	Version       string                  `json:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
+	Kind          string                  `json:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
+	Namespace     string                  `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
+	Name          string                  `json:"name,omitempty" protobuf:"bytes,5,opt,name=name"`
+	UID           string                  `json:"uid,omitempty" protobuf:"bytes,6,opt,name=uid"`
 }
 
 // ResourceNode contains information about live resource and its children
 // TODO: describe members of this type
 type ResourceNode struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	ResourceRef     `json:",inline" protobuf:"bytes,1,opt,name=resourceRef"`
 	ParentRefs      []ResourceRef           `json:"parentRefs,omitempty" protobuf:"bytes,2,opt,name=parentRefs"`
 	Info            []InfoItem              `json:"info,omitempty" protobuf:"bytes,3,opt,name=info"`
@@ -1994,19 +1994,19 @@ func (n *ResourceNode) GroupKindVersion() schema.GroupVersionKind {
 // ResourceStatus holds the current sync and health status of a resource
 // TODO: describe members of this type
 type ResourceStatus struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Group           string         `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
-	Version         string         `json:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
-	Kind            string         `json:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
-	Namespace       string         `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
-	Name            string         `json:"name,omitempty" protobuf:"bytes,5,opt,name=name"`
-	Status          SyncStatusCode `json:"status,omitempty" protobuf:"bytes,6,opt,name=status"`
-	Health          *HealthStatus  `json:"health,omitempty" protobuf:"bytes,7,opt,name=health"`
-	Hook            bool           `json:"hook,omitempty" protobuf:"bytes,8,opt,name=hook"`
-	RequiresPruning bool           `json:"requiresPruning,omitempty" protobuf:"bytes,9,opt,name=requiresPruning"`
-	SyncWave        int64          `json:"syncWave,omitempty" protobuf:"bytes,10,opt,name=syncWave"`
+	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	Group           string                  `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
+	Version         string                  `json:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
+	Kind            string                  `json:"kind,omitempty" protobuf:"bytes,3,opt,name=kind"`
+	Namespace       string                  `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
+	Name            string                  `json:"name,omitempty" protobuf:"bytes,5,opt,name=name"`
+	Status          SyncStatusCode          `json:"status,omitempty" protobuf:"bytes,6,opt,name=status"`
+	Health          *HealthStatus           `json:"health,omitempty" protobuf:"bytes,7,opt,name=health"`
+	Hook            bool                    `json:"hook,omitempty" protobuf:"bytes,8,opt,name=hook"`
+	RequiresPruning bool                    `json:"requiresPruning,omitempty" protobuf:"bytes,9,opt,name=requiresPruning"`
+	SyncWave        int64                   `json:"syncWave,omitempty" protobuf:"bytes,10,opt,name=syncWave"`
 }
 
 // GroupVersionKind returns the GVK schema type for given resource status
@@ -2017,13 +2017,13 @@ func (r *ResourceStatus) GroupVersionKind() schema.GroupVersionKind {
 // ResourceDiff holds the diff of a live and target resource object
 // TODO: describe members of this type
 type ResourceDiff struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Group     string `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
-	Kind      string `json:"kind,omitempty" protobuf:"bytes,2,opt,name=kind"`
-	Namespace string `json:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
-	Name      string `json:"name,omitempty" protobuf:"bytes,4,opt,name=name"`
+	Group         string                  `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
+	Kind          string                  `json:"kind,omitempty" protobuf:"bytes,2,opt,name=kind"`
+	Namespace     string                  `json:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
+	Name          string                  `json:"name,omitempty" protobuf:"bytes,4,opt,name=name"`
 	// TargetState contains the JSON serialized resource manifest defined in the Git/Helm
 	TargetState string `json:"targetState,omitempty" protobuf:"bytes,5,opt,name=targetState"`
 	// TargetState contains the JSON live resource manifest
@@ -2060,7 +2060,7 @@ const (
 
 // ConnectionState contains information about remote resource connection state, currently used for clusters and repositories
 type ConnectionState struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Status contains the current status indicator for the connection
@@ -2073,7 +2073,7 @@ type ConnectionState struct {
 
 // Cluster is the definition of a cluster resource
 type Cluster struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// ID is an internal field cluster identifier. Not exposed via API.
@@ -2148,7 +2148,7 @@ func (c *Cluster) Equals(other *Cluster) bool {
 
 // ClusterInfo contains information about the cluster
 type ClusterInfo struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// ConnectionState contains information about the connection to the cluster
@@ -2173,7 +2173,7 @@ func (c *ClusterInfo) GetApiVersions() []string {
 
 // ClusterCacheInfo contains information about the cluster cache
 type ClusterCacheInfo struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// ResourcesCount holds number of observed Kubernetes resources
@@ -2186,16 +2186,16 @@ type ClusterCacheInfo struct {
 
 // ClusterList is a collection of Clusters.
 type ClusterList struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	Items           []Cluster `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // AWSAuthConfig is an AWS IAM authentication configuration
 type AWSAuthConfig struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// ClusterName contains AWS cluster name
@@ -2211,7 +2211,7 @@ type AWSAuthConfig struct {
 // ExecProviderConfig is config used to call an external command to perform cluster authentication
 // See: https://godoc.org/k8s.io/client-go/tools/clientcmd/api#ExecConfig
 type ExecProviderConfig struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Command to execute
@@ -2233,7 +2233,7 @@ type ExecProviderConfig struct {
 // ClusterConfig is the configuration attributes. This structure is subset of the go-client
 // rest.Config with annotations added for marshalling.
 type ClusterConfig struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Server requires Basic authentication
@@ -2257,7 +2257,7 @@ type ClusterConfig struct {
 
 // TLSClientConfig contains settings to enable transport layer security
 type TLSClientConfig struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Insecure specifies that the server should be accessed without verifying the TLS certificate. For testing only.
@@ -2281,17 +2281,17 @@ type TLSClientConfig struct {
 // This is mainly used for unit conversion in unknown resources (e.g. 0.1 == 100mi)
 // TODO: Describe the members of this type
 type KnownTypeField struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Field string `json:"field,omitempty" protobuf:"bytes,1,opt,name=field"`
-	Type  string `json:"type,omitempty" protobuf:"bytes,2,opt,name=type"`
+	Field         string                  `json:"field,omitempty" protobuf:"bytes,1,opt,name=field"`
+	Type          string                  `json:"type,omitempty" protobuf:"bytes,2,opt,name=type"`
 }
 
 // OverrideIgnoreDiff contains configurations about how fields should be ignored during diffs between
 // the desired state and live state
 type OverrideIgnoreDiff struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// JSONPointers is a JSON path list following the format defined in RFC4627 (https://datatracker.ietf.org/doc/html/rfc6902#section-3)
@@ -2304,7 +2304,6 @@ type OverrideIgnoreDiff struct {
 }
 
 type rawResourceOverride struct {
-	 
 	HealthLua             string           `json:"health.lua,omitempty"`
 	UseOpenLibs           bool             `json:"health.lua.useOpenLibs,omitempty"`
 	Actions               string           `json:"actions,omitempty"`
@@ -2313,21 +2312,18 @@ type rawResourceOverride struct {
 	KnownTypeFields       []KnownTypeField `json:"knownTypeFields,omitempty"`
 }
 
-
-
-
 // ResourceOverride holds configuration to customize resource diffing and health assessment
 // TODO: describe the members of this type
 type ResourceOverride struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	HealthLua             string             `protobuf:"bytes,1,opt,name=healthLua"`
-	UseOpenLibs           bool               `protobuf:"bytes,5,opt,name=useOpenLibs"`
-	Actions               string             `protobuf:"bytes,3,opt,name=actions"`
-	IgnoreDifferences     OverrideIgnoreDiff `protobuf:"bytes,2,opt,name=ignoreDifferences"`
-	IgnoreResourceUpdates OverrideIgnoreDiff `protobuf:"bytes,6,opt,name=ignoreResourceUpdates"`
-	KnownTypeFields       []KnownTypeField   `protobuf:"bytes,4,opt,name=knownTypeFields"`
+	state                 protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache             protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields         protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	HealthLua             string                  `protobuf:"bytes,1,opt,name=healthLua"`
+	UseOpenLibs           bool                    `protobuf:"bytes,5,opt,name=useOpenLibs"`
+	Actions               string                  `protobuf:"bytes,3,opt,name=actions"`
+	IgnoreDifferences     OverrideIgnoreDiff      `protobuf:"bytes,2,opt,name=ignoreDifferences"`
+	IgnoreResourceUpdates OverrideIgnoreDiff      `protobuf:"bytes,6,opt,name=ignoreResourceUpdates"`
+	KnownTypeFields       []KnownTypeField        `protobuf:"bytes,4,opt,name=knownTypeFields"`
 }
 
 // TODO: describe this method
@@ -2353,28 +2349,26 @@ func (s *ResourceOverride) UnmarshalJSON(data []byte) error {
 
 // TODO: describe this method
 func (s ResourceOverride) MarshalJSON() ([]byte, error) {
-    ignoreDifferencesData, err := yaml.Marshal(s.IgnoreDifferences)
-    if err != nil {
-        return nil, err
-    }
-    ignoreResourceUpdatesData, err := yaml.Marshal(s.IgnoreResourceUpdates)
-    if err != nil {
-        return nil, err
-    }
+	ignoreDifferencesData, err := yaml.Marshal(s.IgnoreDifferences)
+	if err != nil {
+		return nil, err
+	}
+	ignoreResourceUpdatesData, err := yaml.Marshal(s.IgnoreResourceUpdates)
+	if err != nil {
+		return nil, err
+	}
 
-    raw := rawResourceOverride{
-        HealthLua:             s.HealthLua,
-        UseOpenLibs:           s.UseOpenLibs,
-        Actions:               s.Actions,
-        IgnoreDifferences:     string(ignoreDifferencesData),
-        IgnoreResourceUpdates: string(ignoreResourceUpdatesData),
-        KnownTypeFields:       s.KnownTypeFields,
-    }
+	raw := rawResourceOverride{
+		HealthLua:             s.HealthLua,
+		UseOpenLibs:           s.UseOpenLibs,
+		Actions:               s.Actions,
+		IgnoreDifferences:     string(ignoreDifferencesData),
+		IgnoreResourceUpdates: string(ignoreResourceUpdatesData),
+		KnownTypeFields:       s.KnownTypeFields,
+	}
 
-    return json.Marshal(raw)
+	return json.Marshal(raw)
 }
-
-
 
 // TODO: describe this method
 func (o *ResourceOverride) GetActions() (ResourceActions, error) {
@@ -2389,9 +2383,9 @@ func (o *ResourceOverride) GetActions() (ResourceActions, error) {
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceActions struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	state              protoimpl.MessageState     `json:"-"` // Ignore this field in JSON
+	sizeCache          protoimpl.SizeCache        `json:"-"` // Ignore this field in JSON
+	unknownFields      protoimpl.UnknownFields    `json:"-"` // Ignore this field in JSON
 	ActionDiscoveryLua string                     `json:"discovery.lua,omitempty" yaml:"discovery.lua,omitempty" protobuf:"bytes,1,opt,name=actionDiscoveryLua"`
 	Definitions        []ResourceActionDefinition `json:"definitions,omitempty" protobuf:"bytes,2,rep,name=definitions"`
 }
@@ -2399,36 +2393,36 @@ type ResourceActions struct {
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceActionDefinition struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Name      string `json:"name" protobuf:"bytes,1,opt,name=name"`
-	ActionLua string `json:"action.lua" yaml:"action.lua" protobuf:"bytes,2,opt,name=actionLua"`
+	Name          string                  `json:"name" protobuf:"bytes,1,opt,name=name"`
+	ActionLua     string                  `json:"action.lua" yaml:"action.lua" protobuf:"bytes,2,opt,name=actionLua"`
 }
 
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceAction struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Name        string                `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-	Params      []ResourceActionParam `json:"params,omitempty" protobuf:"bytes,2,rep,name=params"`
-	Disabled    bool                  `json:"disabled,omitempty" protobuf:"varint,3,opt,name=disabled"`
-	IconClass   string                `json:"iconClass,omitempty" protobuf:"bytes,4,opt,name=iconClass"`
-	DisplayName string                `json:"displayName,omitempty" protobuf:"bytes,5,opt,name=displayName"`
+	Name          string                  `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	Params        []ResourceActionParam   `json:"params,omitempty" protobuf:"bytes,2,rep,name=params"`
+	Disabled      bool                    `json:"disabled,omitempty" protobuf:"varint,3,opt,name=disabled"`
+	IconClass     string                  `json:"iconClass,omitempty" protobuf:"bytes,4,opt,name=iconClass"`
+	DisplayName   string                  `json:"displayName,omitempty" protobuf:"bytes,5,opt,name=displayName"`
 }
 
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceActionParam struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Name    string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-	Value   string `json:"value,omitempty" protobuf:"bytes,2,opt,name=value"`
-	Type    string `json:"type,omitempty" protobuf:"bytes,3,opt,name=type"`
-	Default string `json:"default,omitempty" protobuf:"bytes,4,opt,name=default"`
+	Name          string                  `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	Value         string                  `json:"value,omitempty" protobuf:"bytes,2,opt,name=value"`
+	Type          string                  `json:"type,omitempty" protobuf:"bytes,3,opt,name=type"`
+	Default       string                  `json:"default,omitempty" protobuf:"bytes,4,opt,name=default"`
 }
 
 // TODO: refactor to use rbacpolicy.ActionGet, rbacpolicy.ActionCreate, without import cycle
@@ -2550,7 +2544,7 @@ func validateGroupName(name string) error {
 
 // OrphanedResourcesMonitorSettings holds settings of orphaned resources monitoring
 type OrphanedResourcesMonitorSettings struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Warn indicates if warning condition should be created for apps which have orphaned resources
@@ -2561,12 +2555,12 @@ type OrphanedResourcesMonitorSettings struct {
 
 // OrphanedResourceKey is a reference to a resource to be ignored from
 type OrphanedResourceKey struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Group string `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
-	Kind  string `json:"kind,omitempty" protobuf:"bytes,2,opt,name=kind"`
-	Name  string `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
+	Group         string                  `json:"group,omitempty" protobuf:"bytes,1,opt,name=group"`
+	Kind          string                  `json:"kind,omitempty" protobuf:"bytes,2,opt,name=kind"`
+	Name          string                  `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
 }
 
 // IsWarn returns true if warnings are enabled for orphan resources monitoring
@@ -2576,7 +2570,7 @@ func (s *OrphanedResourcesMonitorSettings) IsWarn() bool {
 
 // SignatureKey is the specification of a key required to verify commit signatures with
 type SignatureKey struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// The ID of the key in hexadecimal notation
@@ -2585,7 +2579,7 @@ type SignatureKey struct {
 
 // AppProjectSpec is the specification of an AppProject
 type AppProjectSpec struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// SourceRepos contains list of repository URLs which can be used for deployment
@@ -2623,7 +2617,7 @@ type SyncWindows []*SyncWindow
 
 // SyncWindow contains the kind, time, duration and attributes that are used to assign the syncWindows to apps
 type SyncWindow struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Kind defines if the window allows or blocks syncs
@@ -2989,7 +2983,7 @@ func (d AppProjectSpec) DestinationClusters() []string {
 
 // ProjectRole represents a role that has access to a project
 type ProjectRole struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Name is a name for this role
@@ -3006,45 +3000,45 @@ type ProjectRole struct {
 
 // JWTToken holds the issuedAt and expiresAt values of a token
 type JWTToken struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	IssuedAt  int64  `json:"iat" protobuf:"int64,1,opt,name=iat"`
-	ExpiresAt int64  `json:"exp,omitempty" protobuf:"int64,2,opt,name=exp"`
-	ID        string `json:"id,omitempty" protobuf:"bytes,3,opt,name=id"`
+	IssuedAt      int64                   `json:"iat" protobuf:"int64,1,opt,name=iat"`
+	ExpiresAt     int64                   `json:"exp,omitempty" protobuf:"int64,2,opt,name=exp"`
+	ID            string                  `json:"id,omitempty" protobuf:"bytes,3,opt,name=id"`
 }
 
 // Command holds binary path and arguments list
 type Command struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Command []string `json:"command,omitempty" protobuf:"bytes,1,name=command"`
-	Args    []string `json:"args,omitempty" protobuf:"bytes,2,rep,name=args"`
+	Command       []string                `json:"command,omitempty" protobuf:"bytes,1,name=command"`
+	Args          []string                `json:"args,omitempty" protobuf:"bytes,2,rep,name=args"`
 }
 
 // ConfigManagementPlugin contains config management plugin configuration
 type ConfigManagementPlugin struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	Name     string   `json:"name" protobuf:"bytes,1,name=name"`
-	Init     *Command `json:"init,omitempty" protobuf:"bytes,2,name=init"`
-	Generate Command  `json:"generate" protobuf:"bytes,3,name=generate"`
-	LockRepo bool     `json:"lockRepo,omitempty" protobuf:"bytes,4,name=lockRepo"`
+	Name          string                  `json:"name" protobuf:"bytes,1,name=name"`
+	Init          *Command                `json:"init,omitempty" protobuf:"bytes,2,name=init"`
+	Generate      Command                 `json:"generate" protobuf:"bytes,3,name=generate"`
+	LockRepo      bool                    `json:"lockRepo,omitempty" protobuf:"bytes,4,name=lockRepo"`
 }
 
 // HelmOptions holds helm options
 type HelmOptions struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	ValuesFileSchemes []string `protobuf:"bytes,1,opt,name=valuesFileSchemes"`
+	state             protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache         protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields     protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	ValuesFileSchemes []string                `protobuf:"bytes,1,opt,name=valuesFileSchemes"`
 }
 
 // KustomizeOptions are options for kustomize to use when building manifests
 type KustomizeOptions struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// BuildOptions is a string of build parameters to use when calling `kustomize build`
@@ -3055,7 +3049,7 @@ type KustomizeOptions struct {
 
 // ApplicationDestinationServiceAccount holds information about the service account to be impersonated for the application sync operation.
 type ApplicationDestinationServiceAccount struct {
-	 state         protoimpl.MessageState `json:"-"` // Ignore this field in JSON
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Server specifies the URL of the target cluster's Kubernetes control plane API.
@@ -3073,7 +3067,7 @@ func (app *Application) CascadedDeletion() bool {
 			return true
 		}
 	}
-	
+
 	return false
 }
 

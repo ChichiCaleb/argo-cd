@@ -311,8 +311,6 @@ func (s *Server) List(ctx context.Context, q *application.ApplicationQuery) (*ap
 	return &appList, nil
 }
 
-
-
 // Create creates an application
 func (s *Server) Create(ctx context.Context, q *application.ApplicationCreateRequest) (*appv1.Application, error) {
 	if q.GetApplication() == nil {
@@ -329,7 +327,7 @@ func (s *Server) Create(ctx context.Context, q *application.ApplicationCreateReq
 
 	// Handle validation default
 	validate := true
-	if q.Validate {  // Use bool directly
+	if q.Validate { // Use bool directly
 		validate = q.Validate
 	}
 
@@ -383,7 +381,7 @@ func (s *Server) Create(ctx context.Context, q *application.ApplicationCreateReq
 	}
 
 	// Check for Upsert value
-	if !q.Upsert {  // Use bool directly
+	if !q.Upsert { // Use bool directly
 		return nil, status.Errorf(codes.InvalidArgument, "existing application spec is different, use upsert flag to force update")
 	}
 
@@ -396,7 +394,6 @@ func (s *Server) Create(ctx context.Context, q *application.ApplicationCreateReq
 	}
 	return updated, nil
 }
-
 
 func (s *Server) queryRepoServer(ctx context.Context, proj *appv1.AppProject, action func(
 	client apiclient.RepoServerServiceClient,
@@ -443,8 +440,8 @@ func (s *Server) queryRepoServer(ctx context.Context, proj *appv1.AppProject, ac
 // GetManifests returns application manifests
 func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationManifestQuery) (*apiclient.ManifestResponse, error) {
 	if q.Name == "" {
-    return nil, fmt.Errorf("invalid request: application name is missing")
-    }
+		return nil, fmt.Errorf("invalid request: application name is missing")
+	}
 	a, proj, err := s.getApplicationEnforceRBACInformer(ctx, rbacpolicy.ActionGet, q.GetProject(), q.GetAppNamespace(), q.GetName())
 	if err != nil {
 		return nil, err
@@ -483,14 +480,14 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 
 		if a.Spec.HasMultipleSources() {
 			for i, source := range appSpec.GetSources() {
-				sources[i] = source 
+				sources[i] = source
 			}
 		} else {
 			source := a.Spec.GetSource()
 			if q.GetRevision() != "" {
 				source.TargetRevision = q.GetRevision()
 			}
-			sources = append(sources, source) 
+			sources = append(sources, source)
 		}
 
 		// Store the map of all sources having ref field into a map for applications with sources field
@@ -628,8 +625,7 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 		if err != nil {
 			return fmt.Errorf("error getting kustomize settings: %w", err)
 		}
-		kustomizeOptions, err := kustomizeSettings.GetOptions(a.Spec.GetSource()) 
-
+		kustomizeOptions, err := kustomizeSettings.GetOptions(a.Spec.GetSource())
 		if err != nil {
 			return fmt.Errorf("error getting kustomize settings options: %w", err)
 		}
@@ -652,17 +648,16 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 			ProjectName:        proj.Name,
 			ProjectSourceRepos: proj.Spec.SourceRepos,
 		}
-		
 
-repoStreamClient, err := client.GenerateManifestWithFiles(stream.Context())
-if err != nil {
-    return fmt.Errorf("error opening stream: %w", err)
-}
+		repoStreamClient, err := client.GenerateManifestWithFiles(stream.Context())
+		if err != nil {
+			return fmt.Errorf("error opening stream: %w", err)
+		}
 
-err = manifeststream.SendRepoStream(repoStreamClient, stream, req, query.Checksum) // No need to dereference
-if err != nil {
-    return fmt.Errorf("error sending repo stream: %w", err)
-}
+		err = manifeststream.SendRepoStream(repoStreamClient, stream, req, query.Checksum) // No need to dereference
+		if err != nil {
+			return fmt.Errorf("error sending repo stream: %w", err)
+		}
 
 		resp, err := repoStreamClient.CloseAndRecv()
 		if err != nil {
@@ -762,14 +757,14 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings: %w", err)
 			}
-			kustomizeOptions, err := kustomizeSettings.GetOptions(a.Spec.GetSource()) 
+			kustomizeOptions, err := kustomizeSettings.GetOptions(a.Spec.GetSource())
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings options: %w", err)
 			}
 
 			_, err = client.GetAppDetails(ctx, &apiclient.RepoServerAppDetailsQuery{
 				Repo:               repo,
-				Source:             &source, 
+				Source:             &source,
 				AppName:            appName,
 				KustomizeOptions:   kustomizeOptions,
 				Repos:              helmRepos,
@@ -783,7 +778,6 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 			log.Warnf("Failed to force refresh application details: %v", err)
 		}
 	}
-
 
 	minVersion := 0
 	if minVersion, err = strconv.Atoi(app.ResourceVersion); err != nil {
@@ -873,7 +867,6 @@ func (s *Server) ListResourceEvents(ctx context.Context, q *application.Applicat
 	// Wrap the list in EventListWrapper
 	return &application.EventListWrapper{EventList: list}, nil
 }
-
 
 // validateAndUpdateApp validates and updates the application. currentProject is the name of the project the app
 // currently is under. If not specified, we assume that the app is under the project specified in the app spec.
@@ -974,8 +967,7 @@ func (s *Server) Update(ctx context.Context, q *application.ApplicationUpdateReq
 	}
 
 	validate := q.Validate
-   return s.validateAndUpdateApp(ctx, q.Application, false, validate, rbacpolicy.ActionUpdate, q.GetProject())
-
+	return s.validateAndUpdateApp(ctx, q.Application, false, validate, rbacpolicy.ActionUpdate, q.GetProject())
 }
 
 // UpdateSpec updates an application spec and filters out any invalid parameter overrides
@@ -1087,23 +1079,21 @@ func (s *Server) Delete(ctx context.Context, q *application.ApplicationDeleteReq
 		return nil, status.Error(codes.InvalidArgument, "cannot set propagation policy when cascading is disabled")
 	}
 
-
 	patchFinalizer := false
-if q.Cascade || q.GetPropagationPolicy() != "" {
-    // validate the propagation policy
-    policyFinalizer := getPropagationPolicyFinalizer(q.GetPropagationPolicy())
-    if policyFinalizer == "" {
-        return nil, status.Errorf(codes.InvalidArgument, "invalid propagation policy: %s", q.GetPropagationPolicy())
-    }
-    if !a.IsFinalizerPresent(policyFinalizer) {
-        a.SetCascadedDeletion(policyFinalizer)
-        patchFinalizer = true
-    }
-} else if a.CascadedDeletion() {
-    a.UnSetCascadedDeletion()
-    patchFinalizer = true
-}
-
+	if q.Cascade || q.GetPropagationPolicy() != "" {
+		// validate the propagation policy
+		policyFinalizer := getPropagationPolicyFinalizer(q.GetPropagationPolicy())
+		if policyFinalizer == "" {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid propagation policy: %s", q.GetPropagationPolicy())
+		}
+		if !a.IsFinalizerPresent(policyFinalizer) {
+			a.SetCascadedDeletion(policyFinalizer)
+			patchFinalizer = true
+		}
+	} else if a.CascadedDeletion() {
+		a.UnSetCascadedDeletion()
+		patchFinalizer = true
+	}
 
 	if patchFinalizer {
 		// Although the cascaded deletion/propagation policy finalizer is not set when apps are created via
@@ -1319,7 +1309,6 @@ func (s *Server) getCachedAppState(ctx context.Context, a *appv1.Application, ge
 	return err
 }
 
-
 func (s *Server) getAppResources(ctx context.Context, a *appv1.Application) (*appv1.ApplicationTree, error) {
 	var tree appv1.ApplicationTree
 	err := s.getCachedAppState(ctx, a, func() error {
@@ -1381,8 +1370,7 @@ func (s *Server) GetResource(ctx context.Context, q *application.ApplicationReso
 		return nil, fmt.Errorf("error marshaling object: %w", err)
 	}
 	manifest := string(data)
-    return &application.ApplicationResourceResponse{Manifest: manifest}, nil
-
+	return &application.ApplicationResourceResponse{Manifest: manifest}, nil
 }
 
 func replaceSecretValues(obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
@@ -1437,7 +1425,6 @@ func (s *Server) PatchResource(ctx context.Context, q *application.ApplicationRe
 	return &application.ApplicationResourceResponse{
 		Manifest: m,
 	}, nil
-
 }
 
 // DeleteResource deletes a specified resource
@@ -1529,10 +1516,10 @@ func (s *Server) RevisionMetadata(ctx context.Context, q *application.RevisionMe
 	})
 }
 
-	// Helper function to get a pointer to an int32 value
- func int32Pointer(i int32) *int32 {
-		return &i
-	}
+// Helper function to get a pointer to an int32 value
+func int32Pointer(i int32) *int32 {
+	return &i
+}
 
 // RevisionChartDetails returns the helm chart metadata, as fetched from the reposerver
 func (s *Server) RevisionChartDetails(ctx context.Context, q *application.RevisionMetadataQuery) (*appv1.ChartDetails, error) {
@@ -1541,13 +1528,10 @@ func (s *Server) RevisionChartDetails(ctx context.Context, q *application.Revisi
 		return nil, err
 	}
 
-
-
-source, err := getAppSourceBySourceIndexAndVersionId(a, int32Pointer(q.SourceIndex), int32Pointer(q.VersionId))
-if err != nil {
-	return nil, fmt.Errorf("error getting app source by source index and version ID: %w", err)
-}
-
+	source, err := getAppSourceBySourceIndexAndVersionId(a, int32Pointer(q.SourceIndex), int32Pointer(q.VersionId))
+	if err != nil {
+		return nil, fmt.Errorf("error getting app source by source index and version ID: %w", err)
+	}
 
 	if source.Chart == "" {
 		return nil, fmt.Errorf("no chart found for application: %v", q.GetName())
@@ -1609,8 +1593,6 @@ func getAppSourceBySourceIndexAndVersionId(a *appv1.Application, sourceIndexMayb
 	// Return the address of the source (convert value to pointer)
 	return &source, nil
 }
-
-
 
 // getRevisionHistoryByVersionId returns the revision history for a specific version ID.
 // If the version ID is not found, it returns an empty revision history and false.
@@ -1841,7 +1823,6 @@ func (s *Server) PodLogs(q *application.ApplicationPodLogsQuery, ws application.
 		return nil
 	}
 }
-
 
 // from all of the treeNodes, get the pod who meets the criteria or whose parents meets the criteria
 func getSelectedPods(treeNodes []appv1.ResourceNode, q *application.ApplicationPodLogsQuery) []appv1.ResourceNode {
@@ -2305,7 +2286,6 @@ func (s *Server) TerminateOperation(ctx context.Context, termOpReq *application.
 		}
 		log.Warnf("failed to set operation for app %q due to update conflict. retrying again...", termOpReq.Name)
 
-
 		time.Sleep(100 * time.Millisecond)
 		a, err = s.appclientset.ArgoprojV1alpha1().Applications(appNs).Get(ctx, appName, metav1.GetOptions{})
 		if err != nil {
@@ -2630,12 +2610,11 @@ func (s *Server) GetApplicationSyncWindows(ctx context.Context, q *application.A
 	res := &application.ApplicationSyncWindowsResponse{
 		ActiveWindows:   convertSyncWindows(windows.Active()),
 		AssignedWindows: convertSyncWindows(windows),
-		CanSync:         sync,  // Use sync directly here
+		CanSync:         sync, // Use sync directly here
 	}
 
 	return res, nil
 }
-
 
 func (s *Server) inferResourcesStatusHealth(app *appv1.Application) {
 	if app.Status.ResourceHealthSource == appv1.ResourceHealthLocationAppTree {
@@ -2652,14 +2631,15 @@ func (s *Server) inferResourcesStatusHealth(app *appv1.Application) {
 		}
 	}
 }
+
 func convertSyncWindows(w *appv1.SyncWindows) []*application.ApplicationSyncWindow {
 	if w != nil {
 		var windows []*application.ApplicationSyncWindow
 		for _, w := range *w {
 			nw := &application.ApplicationSyncWindow{
-				Kind:       w.Kind,      // Use w.Kind directly
-				Schedule:   w.Schedule,  // Use w.Schedule directly
-				Duration:   w.Duration,  // Use w.Duration directly
+				Kind:       w.Kind,       // Use w.Kind directly
+				Schedule:   w.Schedule,   // Use w.Schedule directly
+				Duration:   w.Duration,   // Use w.Duration directly
 				ManualSync: w.ManualSync, // Use w.ManualSync directly
 			}
 			windows = append(windows, nw)

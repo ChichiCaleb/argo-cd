@@ -106,7 +106,6 @@ func Test_getRefreshType(t *testing.T) {
 	}
 }
 
-
 func TestFindRevisionHistoryWithoutPassedId(t *testing.T) {
 	histories := v1alpha1.RevisionHistories{}
 
@@ -1981,8 +1980,6 @@ func (c *customAcdClient) NewApplicationClientOrDie() (io.Closer, applicationpkg
 	return &fakeConnection{}, &fakeAppServiceClient{}
 }
 
-
-
 func (c *customAcdClient) NewSettingsClientOrDie() (io.Closer, settingspkg.SettingsServiceClient) {
 	return &fakeConnection{}, &fakeSettingsServiceClient{}
 }
@@ -2005,7 +2002,7 @@ func (f fakeSettingsServiceClient) GetPlugins(ctx context.Context, in *settingsp
 	return nil, nil
 }
 
-type fakeAppServiceClient struct{
+type fakeAppServiceClient struct {
 	applicationpkg.ApplicationServiceClient
 }
 

@@ -21,7 +21,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/retry"
 
-
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/project"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -41,7 +40,6 @@ const (
 	// JWTTokenSubFormat format of the JWT token subject that Argo CD vends out.
 	JWTTokenSubFormat = "proj:%s:%s"
 )
-
 
 // Server provides a Project service
 type Server struct {
@@ -521,8 +519,6 @@ func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*proj
 		EventList: eventList,
 	}, nil
 }
-
-
 
 func (s *Server) logEvent(a *v1alpha1.AppProject, ctx context.Context, reason string, action string) {
 	eventInfo := argo.EventInfo{Type: v1.EventTypeNormal, Reason: reason}
