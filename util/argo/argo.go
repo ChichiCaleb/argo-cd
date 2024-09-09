@@ -1024,14 +1024,19 @@ func mergeVirtualProject(proj *argoappv1.AppProject, globalProj *argoappv1.AppPr
 	return proj
 }
 
-func GenerateSpecIsDifferentErrorMessage(entity string, a, b interface{}) string {
-	basicMsg := fmt.Sprintf("existing %s spec is different; use upsert flag to force update", entity)
-	difference, _ := GetDifferentPathsBetweenStructs(a, b)
-	if len(difference) == 0 {
-		return basicMsg
+func GenerateSpecIsDifferentErrorMessage(resourceName string, r1, r2 interface{}) string {
+	baseMessage := fmt.Sprintf("existing %s spec is different; use upsert flag to force update", resourceName)
+	
+	// Get the differences between the two structs
+	differences, err := GetDifferentPathsBetweenStructs(r1, r2)
+	if err != nil || len(differences) == 0 {
+		return baseMessage
 	}
-	return fmt.Sprintf("%s; difference in keys \"%s\"", basicMsg, strings.Join(difference, ","))
+
+	// Format the differences and append to the base message
+	return fmt.Sprintf("%s; difference in keys %q", baseMessage, strings.Join(differences, ", "))
 }
+
 
 func GetDifferentPathsBetweenStructs(a, b interface{}) ([]string, error) {
 	var difference []string
@@ -1040,7 +1045,8 @@ func GetDifferentPathsBetweenStructs(a, b interface{}) ([]string, error) {
 		return nil, fmt.Errorf("error during diff: %w", err)
 	}
 	for _, changeItem := range changelog {
-		difference = append(difference, changeItem.Path...)
+		// Join the Path slice into a string (e.g., "Name") and append it to difference
+		difference = append(difference, strings.Join(changeItem.Path, "."))
 	}
 	return difference, nil
 }
