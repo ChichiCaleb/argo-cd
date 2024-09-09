@@ -1731,9 +1731,9 @@ func TestEnv_Environ(t *testing.T) {
 		want []string
 	}{
 		{"Nil", nil, nil},
-		{"Env", Env{{Key: "FOO", Value: "bar"}}, nil}, // Correctly initialized EnvEntry
-		{"One", Env{{Key: "FOO", Value: "bar"}}, []string{"FOO=bar"}},
-		{"Two", Env{{Key: "FOO", Value: "bar"}, {Key: "FOO", Value: "bar"}}, []string{"FOO=bar", "FOO=bar"}},
+		{"Env", Env{{Name: "FOO", Value: "bar"}}, nil}, // Correctly initialized EnvEntry
+		{"One", Env{{Name: "FOO", Value: "bar"}}, []string{"FOO=bar"}},
+		{"Two", Env{{Name: "FOO", Value: "bar"}, {Name: "FOO", Value: "bar"}}, []string{"FOO=bar", "FOO=bar"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -3197,41 +3197,45 @@ func TestRemoveEnvEntry(t *testing.T) {
 		plugins := &ApplicationSourcePlugin{
 			Name: "test",
 			Env: Env{
-				&EnvEntry{Key: "foo", Value: "bar"},   // Correctly initialized EnvEntry
-				&EnvEntry{Key: "alpha", Value: "beta"},
-				&EnvEntry{Key: "gamma", Value: "delta"},
+				&EnvEntry{Name: "foo", Value: "bar"},
+				&EnvEntry{Name: "alpha", Value: "beta"},
+				&EnvEntry{Name: "gamma", Value: "delta"},
 			},
 		}
 		
 		require.NoError(t, plugins.RemoveEnvEntry("alpha"))
-		want := Env{&EnvEntry{"foo", "bar"}, &EnvEntry{"gamma", "delta"}}
+		want := Env{&EnvEntry{Name: "foo", Value: "bar"}, &EnvEntry{Name: "gamma", Value: "delta"}}
 		assert.Equal(t, want, plugins.Env)
 	})
+
 	t.Run("Remove only element from the list", func(t *testing.T) {
 		plugins := &ApplicationSourcePlugin{
 			Name: "test",
-			Env:  Env{&EnvEntry{"foo", "bar"}},
+			Env:  Env{&EnvEntry{Name: "foo", Value: "bar"}},
 		}
 		require.NoError(t, plugins.RemoveEnvEntry("foo"))
 		assert.Equal(t, Env{}, plugins.Env)
 	})
+
 	t.Run("Remove unknown element from the list", func(t *testing.T) {
 		plugins := &ApplicationSourcePlugin{
 			Name: "test",
-			Env:  Env{&EnvEntry{"foo", "bar"}},
+			Env:  Env{&EnvEntry{Name: "foo", Value: "bar"}},
 		}
 		err := plugins.RemoveEnvEntry("key")
 		require.EqualError(t, err, `unable to find env variable with key "key" for plugin "test"`)
 		err = plugins.RemoveEnvEntry("bar")
 		require.EqualError(t, err, `unable to find env variable with key "bar" for plugin "test"`)
-		assert.Equal(t, Env{&EnvEntry{"foo", "bar"}}, plugins.Env)
+		assert.Equal(t, Env{&EnvEntry{Name: "foo", Value: "bar"}}, plugins.Env)
 	})
+
 	t.Run("Remove element from an empty list", func(t *testing.T) {
 		plugins := &ApplicationSourcePlugin{Name: "test"}
 		err := plugins.RemoveEnvEntry("key")
 		require.EqualError(t, err, `unable to find env variable with key "key" for plugin "test"`)
 	})
 }
+
 
 func TestOrphanedResourcesMonitorSettings_IsWarn(t *testing.T) {
 	settings := OrphanedResourcesMonitorSettings{}
@@ -3336,7 +3340,8 @@ func Test_validatePolicy_ValidResource(t *testing.T) {
 
 func TestEnvsubst(t *testing.T) {
 	env := Env{
-		&EnvEntry{"foo", "bar"},
+		
+		&EnvEntry{Name: "foo", Value: "bar"},
 	}
 
 	assert.Equal(t, "bar", env.Envsubst("$foo"))

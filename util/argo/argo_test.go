@@ -1166,16 +1166,14 @@ func TestGetGlobalProjects(t *testing.T) {
 }
 
 func Test_GetDifferentPathsBetweenStructs(t *testing.T) {
-    r1 := argoappv1.Repository{}
-    r2 := argoappv1.Repository{
-        Name: "SomeName",
-    }
+	r1 := argoappv1.Repository{}
+	r2 := argoappv1.Repository{
+		Name: "SomeName",
+	}
 
-    difference, err := GetDifferentPathsBetweenStructs(r1, r2)
-    assert.NoError(t, err)
-    assert.ElementsMatch(t, []string{"Name"}, difference)
+	difference, _ := GetDifferentPathsBetweenStructs(r1, r2)
+	assert.Equal(t, []string{"Name"}, difference)
 }
-
 
 func Test_GenerateSpecIsDifferentErrorMessageWithNoDiff(t *testing.T) {
 	r1 := argoappv1.Repository{}
