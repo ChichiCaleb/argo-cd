@@ -30,7 +30,7 @@ func TestKustomize2AppSource(t *testing.T) {
 		}
 	}
 
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		NamePrefix("k2-").
 		NameSuffix("-deploy1").
@@ -69,7 +69,7 @@ func TestKustomize2AppSource(t *testing.T) {
 // when we have a config map generator, AND the ignore annotation, it is ignored in the app's sync status
 func TestSyncStatusOptionIgnore(t *testing.T) {
 	var oldMap string
-	Given(t).
+	appFixture.Given(t).
 		Path("kustomize-cm-gen").
 		When().
 		CreateApp().
@@ -116,7 +116,7 @@ func TestSyncStatusOptionIgnore(t *testing.T) {
 
 // make sure we can create an app which has a SSH remote base
 func TestKustomizeSSHRemoteBase(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		// not the best test, as we should have two remote repos both with the same SSH private key
 		SSHInsecureRepoURLAdded(true).
 		RepoURLType(fixture.RepoURLTypeSSH).
@@ -131,7 +131,7 @@ func TestKustomizeSSHRemoteBase(t *testing.T) {
 
 // make sure we can create an app which has a SSH remote base
 func TestKustomizeDeclarativeInvalidApp(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("invalid-kustomize").
 		When().
 		Declarative("declarative-apps/app.yaml").
@@ -139,12 +139,12 @@ func TestKustomizeDeclarativeInvalidApp(t *testing.T) {
 		Expect(appFixture.Success("")).
 		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeUnknown)).
-		Expect(appFixture.Condition(ApplicationappFixture.ComparisonError, "invalid-kustomize/does-not-exist.yaml: no such file or directory"))
+		Expect(appFixture.Condition(ApplicationConditionComparisonError, "invalid-kustomize/does-not-exist.yaml: no such file or directory"))
 }
 
 // Flag --load_restrictor is no longer supported in Kustomize 4
 func TestKustomizeBuildOptionsLoadRestrictor(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		And(func() {
 			errors.FailOnErr(fixture.Run("", "kubectl", "patch", "cm", "argocd-cm",
@@ -169,7 +169,7 @@ func TestKustomizeBuildOptionsLoadRestrictor(t *testing.T) {
 
 // make sure we we can invoke the CLI to replace images
 func TestKustomizeImages(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("kustomize").
 		When().
 		CreateApp().
@@ -197,7 +197,7 @@ func TestKustomizeReplicas2AppSource(t *testing.T) {
 		}
 	}
 
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		When().
 		CreateApp().
@@ -222,7 +222,7 @@ func TestKustomizeReplicas2AppSource(t *testing.T) {
 
 // make sure we we can invoke the CLI to set namesuffix
 func TestKustomizeNameSuffix(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("kustomize").
 		When().
 		CreateApp().
@@ -235,7 +235,7 @@ func TestKustomizeNameSuffix(t *testing.T) {
 
 // make sure we we can invoke the CLI to set and unset namesuffix and kustomize-image
 func TestKustomizeUnsetOverride(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("kustomize").
 		When().
 		CreateApp().
@@ -269,7 +269,7 @@ func TestKustomizeUnsetOverride(t *testing.T) {
 func TestKustomizeUnsetOverrideDeployment(t *testing.T) {
 	deploymentName := "guestbook-ui"
 	deploymentReplicas := int32(2)
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		When(). // Replicas
 		CreateApp().
@@ -291,7 +291,7 @@ func TestKustomizeUnsetOverrideDeployment(t *testing.T) {
 
 // make sure kube-version gets passed down to resources
 func TestKustomizeKubeVersion(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("kustomize-kube-version").
 		And(func() {
 			errors.FailOnErr(fixture.Run("", "kubectl", "patch", "cm", "argocd-cm",
@@ -323,7 +323,7 @@ func TestKustomizeKubeVersion(t *testing.T) {
 
 // make sure api versions gets passed down to resources
 func TestKustomizeApiVersions(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("kustomize-api-versions").
 		And(func() {
 			errors.FailOnErr(fixture.Run("", "kubectl", "patch", "cm", "argocd-cm",
@@ -355,7 +355,7 @@ func TestKustomizeApiVersions(t *testing.T) {
 }
 
 func TestKustomizeNamespaceOverride(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("kustomize-kube-version").
 		And(func() {
 			errors.FailOnErr(fixture.Run("", "kubectl", "patch", "cm", "argocd-cm",

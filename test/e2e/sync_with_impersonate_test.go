@@ -17,7 +17,7 @@ import (
 )
 
 func TestSyncWithImpersonateDisable(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		When().
 		SetParamInSettingConfigMap("application.sync.impersonation.enabled", "false").
@@ -29,7 +29,7 @@ func TestSyncWithImpersonateDisable(t *testing.T) {
 }
 
 func TestSyncWithImpersonateDefaultNamespaceServiceAccountNoRBAC(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		When().
 		SetParamInSettingConfigMap("application.sync.impersonation.enabled", "true").
@@ -42,7 +42,7 @@ func TestSyncWithImpersonateDefaultNamespaceServiceAccountNoRBAC(t *testing.T) {
 
 func TestSyncWithImpersonateDefaultNamespaceServiceAccountWithRBAC(t *testing.T) {
 	roleName := "default-sa-role"
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		When().
 		SetParamInSettingConfigMap("application.sync.impersonation.enabled", "true").
@@ -74,7 +74,7 @@ func TestSyncWithImpersonateWithSyncServiceAccount(t *testing.T) {
 	projectName := "sync-test-project"
 	serviceAccountName := "test-account"
 	roleName := "test-account-sa-role"
-	Given(t).
+	appFixture.Given(t).
 		SetTrackingMethod("annotation").
 		Path("guestbook").
 		When().
@@ -125,7 +125,7 @@ func TestSyncWithImpersonateWithFalseServiceAccount(t *testing.T) {
 	projectName := "false-test-project"
 	serviceAccountName := "test-account"
 	roleName := "test-account-sa-role"
-	Given(t).
+	appFixture.Given(t).
 		SetTrackingMethod("annotation").
 		Path("guestbook").
 		When().
@@ -176,7 +176,7 @@ func TestSyncWithNegationApplicationDestinationNamespace(t *testing.T) {
 	projectName := "nagation-test-project"
 	serviceAccountName := "test-account"
 	roleName := "test-account-sa-role"
-	Given(t).
+	appFixture.Given(t).
 		SetTrackingMethod("annotation").
 		Path("guestbook").
 		When().

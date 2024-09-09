@@ -12,7 +12,7 @@ import (
 )
 
 func TestGitSubmoduleSSHSupport(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		RepoURLType(fixture.RepoURLTypeSSHSubmoduleParent).
 		Path("submodule").
 		Recurse().
@@ -27,7 +27,7 @@ func TestGitSubmoduleSSHSupport(t *testing.T) {
 }
 
 func TestGitSubmoduleHTTPSSupport(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		RepoURLType(fixture.RepoURLTypeHTTPSSubmoduleParent).
 		Path("submodule").
 		Recurse().
@@ -42,7 +42,7 @@ func TestGitSubmoduleHTTPSSupport(t *testing.T) {
 }
 
 func TestGitSubmoduleRemovalSupport(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		RepoURLType(fixture.RepoURLTypeSSHSubmoduleParent).
 		Path("submodule").
 		Recurse().

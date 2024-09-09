@@ -11,7 +11,7 @@ import (
 )
 
 func TestDeclarativeHappyApp(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		When().
 		Declarative("declarative-apps/app.yaml").
@@ -28,7 +28,7 @@ func TestDeclarativeHappyApp(t *testing.T) {
 }
 
 func TestDeclarativeInvalidPath(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("garbage").
 		When().
 		Declarative("declarative-apps/app.yaml").
@@ -45,7 +45,7 @@ func TestDeclarativeInvalidPath(t *testing.T) {
 }
 
 func TestDeclarativeInvalidProject(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		Project("garbage").
 		When().
@@ -66,7 +66,7 @@ func TestDeclarativeInvalidProject(t *testing.T) {
 }
 
 func TestDeclarativeInvalidRepoURL(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("whatever").
 		When().
 		DeclarativeWithCustomRepo("declarative-apps/app.yaml", "https://github.com").

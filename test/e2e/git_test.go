@@ -13,7 +13,7 @@ import (
 )
 
 func TestGitSemverResolutionNotUsingConstraint(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("deployment").
 		CustomSSHKnownHostsAdded().
 		SSHRepoURLAdded(true).
@@ -28,7 +28,7 @@ func TestGitSemverResolutionNotUsingConstraint(t *testing.T) {
 }
 
 func TestGitSemverResolutionNotUsingConstraintWithLeadingZero(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("deployment").
 		CustomSSHKnownHostsAdded().
 		SSHRepoURLAdded(true).
@@ -43,7 +43,7 @@ func TestGitSemverResolutionNotUsingConstraintWithLeadingZero(t *testing.T) {
 }
 
 func TestGitSemverResolutionUsingConstraint(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("deployment").
 		CustomSSHKnownHostsAdded().
 		SSHRepoURLAdded(true).
@@ -64,11 +64,11 @@ func TestGitSemverResolutionUsingConstraint(t *testing.T) {
 		Sync().
 		Then().
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(Pod(func(p v1.Pod) bool { return strings.HasPrefix(p.Name, "new-app") }))
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return strings.HasPrefix(p.Name, "new-app") }))
 }
 
 func TestGitSemverResolutionUsingConstraintWithLeadingZero(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("deployment").
 		CustomSSHKnownHostsAdded().
 		SSHRepoURLAdded(true).

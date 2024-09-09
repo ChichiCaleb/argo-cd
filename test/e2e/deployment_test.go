@@ -29,7 +29,7 @@ import (
 
 // when we have a config map generator, AND the ignore annotation, it is ignored in the app's sync status
 func TestDeployment(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("deployment").
 		When().
 		CreateApp().
@@ -50,7 +50,7 @@ func TestDeployment(t *testing.T) {
 }
 
 func TestDeploymentWithAnnotationTrackingMode(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 
 	SetTrackingMethod(string(argo.TrackingMethodAnnotation))
 	ctx.
@@ -74,7 +74,7 @@ func TestDeploymentWithAnnotationTrackingMode(t *testing.T) {
 }
 
 func TestDeploymentWithLabelTrackingMode(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	SetTrackingMethod(string(argo.TrackingMethodLabel))
 	ctx.
 		Path("deployment").
@@ -98,7 +98,7 @@ func TestDeploymentWithLabelTrackingMode(t *testing.T) {
 }
 
 func TestDeploymentWithoutTrackingMode(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		Path("deployment").
 		When().
@@ -136,7 +136,7 @@ func TestDeployToKubernetesAPIURLWithQueryParameter(t *testing.T) {
 		for _, username := range users {
 			createNamespaceScopedUser(t, username, clusterScoped)
 
-			GivenWithSameState(t).
+			appFixture.GivenWithSameState(t).
 				Name("e2e-test-app-"+username).
 				Path("deployment").
 				When().
@@ -174,7 +174,7 @@ func TestArgoCDSupportsMultipleServiceAccountsWithDifferingRBACOnSameCluster(t *
 			otherUser := users[(idx+1)%len(users)]
 
 			// e.g. Attempt to deploy to user1's namespace, with user2's cluster Secret. This should fail, as user2's cluster Secret does not have the requisite permissions.
-			consequences := GivenWithSameState(t).
+			consequences := appFixture.GivenWithSameState(t).
 				Name("e2e-test-app-"+username).
 				DestName(E2ETestPrefix+"cluster-"+otherUser).
 				Path("deployment").

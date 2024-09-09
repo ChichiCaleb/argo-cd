@@ -10,7 +10,7 @@ import (
 )
 
 func TestCanAccessInsecureSSHRepo(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		SSHInsecureRepoURLAdded(true).
 		RepoURLType(fixture.RepoURLTypeSSH).
 		Path("config-map").
@@ -22,7 +22,7 @@ func TestCanAccessInsecureSSHRepo(t *testing.T) {
 }
 
 func TestCanAccessSSHRepo(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		CustomSSHKnownHostsAdded().
 		SSHRepoURLAdded(true).
 		RepoURLType(fixture.RepoURLTypeSSH).

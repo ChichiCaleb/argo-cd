@@ -36,7 +36,7 @@ func TestPostSyncHookSuccessful(t *testing.T) {
 
 // make sure we can run a standard sync hook
 func testHookSuccessful(t *testing.T, hookType HookType) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		PatchFile("hook.yaml", fmt.Sprintf(`[{"op": "replace", "path": "/metadata/annotations", "value": {"argocd.argoproj.io/hook": "%s"}}]`, hookType)).
@@ -52,14 +52,14 @@ func testHookSuccessful(t *testing.T, hookType HookType) {
 }
 
 func TestPostDeleteHook(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("post-delete-hook").
 		When().
 		CreateApp().
 		Refresh(RefreshTypeNormal).
 		Delete(true).
 		Then().
-		Expect(DoesNotExist()).
+		Expect(appFixture.DoesNotExist()).
 		AndAction(func() {
 			hooks, err := KubeClientset.CoreV1().Pods(DeploymentNamespace()).List(context.Background(), metav1.ListOptions{})
 			CheckError(err)
@@ -70,7 +70,7 @@ func TestPostDeleteHook(t *testing.T) {
 
 // make sure that hooks do not appear in "argocd app diff"
 func TestHookDiff(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		CreateApp().
@@ -85,7 +85,7 @@ func TestHookDiff(t *testing.T) {
 
 // make sure that if pre-sync fails, we fail the app and we do not create the pod
 func TestPreSyncHookFailure(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		PatchFile("hook.yaml", `[{"op": "replace", "path": "/metadata/annotations", "value": {"argocd.argoproj.io/hook": "PreSync"}}]`).
@@ -95,9 +95,9 @@ func TestPreSyncHookFailure(t *testing.T) {
 		IgnoreErrors().
 		Sync().
 		Then().
-		Expect(Error("hook  Failed              PreSync", "")).
+		Expect(appFixture.Error("hook  Failed              PreSync", "")).
 		// make sure resource are also printed
-		Expect(Error("pod   OutOfSync  Missing", "")).
+		Expect(appFixture.Error("pod   OutOfSync  Missing", "")).
 		Expect(appFixture.OperationPhaseIs(OperationFailed)).
 		// if a pre-sync hook fails, we should not start the main sync
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
@@ -107,7 +107,7 @@ func TestPreSyncHookFailure(t *testing.T) {
 
 // make sure that if sync fails, we fail the app and we did create the pod
 func TestSyncHookFailure(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		// make hook fail
@@ -125,7 +125,7 @@ func TestSyncHookFailure(t *testing.T) {
 
 // make sure that if the deployments fails, we still get success and synced
 func TestSyncHookResourceFailure(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook-and-deployment").
 		When().
 		CreateApp().
@@ -138,7 +138,7 @@ func TestSyncHookResourceFailure(t *testing.T) {
 
 // make sure that if post-sync fails, we fail the app and we did not create the pod
 func TestPostSyncHookFailure(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		PatchFile("hook.yaml", `[{"op": "replace", "path": "/metadata/annotations", "value": {"argocd.argoproj.io/hook": "PostSync"}}]`).
@@ -156,7 +156,7 @@ func TestPostSyncHookFailure(t *testing.T) {
 
 // make sure that if the pod fails, we do not run the post-sync hook
 func TestPostSyncHookPodFailure(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		IgnoreErrors().
@@ -176,7 +176,7 @@ func TestPostSyncHookPodFailure(t *testing.T) {
 
 func TestSyncFailHookPodFailure(t *testing.T) {
 	// Tests that a SyncFail hook will successfully run upon a pod failure (which leads to a sync failure)
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		IgnoreErrors().
@@ -207,7 +207,7 @@ spec:
 
 func TestSyncFailHookPodFailureSyncFailFailure(t *testing.T) {
 	// Tests that a failing SyncFail hook will successfully be marked as failed
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		IgnoreErrors().
@@ -255,7 +255,7 @@ spec:
 
 // make sure that we delete the hook on success
 func TestHookDeletePolicyHookSucceededHookExit0(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		PatchFile("hook.yaml", `[{"op": "add", "path": "/metadata/annotations/argocd.argoproj.io~1hook-delete-policy", "value": "HookSucceeded"}]`).
@@ -268,7 +268,7 @@ func TestHookDeletePolicyHookSucceededHookExit0(t *testing.T) {
 
 // make sure that we delete the hook on failure, if policy is set
 func TestHookDeletePolicyHookSucceededHookExit1(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		PatchFile("hook.yaml", `[{"op": "add", "path": "/metadata/annotations/argocd.argoproj.io~1hook-delete-policy", "value": "HookSucceeded"}]`).
@@ -284,7 +284,7 @@ func TestHookDeletePolicyHookSucceededHookExit1(t *testing.T) {
 
 // make sure that we do NOT delete the hook on success if failure policy is set
 func TestHookDeletePolicyHookFailedHookExit0(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		PatchFile("hook.yaml", `[{"op": "add", "path": "/metadata/annotations/argocd.argoproj.io~1hook-delete-policy", "value": "HookFailed"}]`).
@@ -298,7 +298,7 @@ func TestHookDeletePolicyHookFailedHookExit0(t *testing.T) {
 
 // make sure that we do delete the hook on failure if failure policy is set
 func TestHookDeletePolicyHookFailedHookExit1(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		IgnoreErrors().
@@ -315,7 +315,7 @@ func TestHookDeletePolicyHookFailedHookExit1(t *testing.T) {
 // make sure that we can run the hook twice
 func TestHookBeforeHookCreation(t *testing.T) {
 	var creationTimestamp1 string
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		PatchFile("hook.yaml", `[{"op": "add", "path": "/metadata/annotations/argocd.argoproj.io~1hook-delete-policy", "value": "BeforeHookCreation"}]`).
@@ -327,7 +327,7 @@ func TestHookBeforeHookCreation(t *testing.T) {
 		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		Expect(appFixture.ResourceResultNumbering(2)).
 		// the app will be in health+n-sync before this hook has run
-		Expect(Pod(func(p v1.Pod) bool { return p.Name == "hook" })).
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return p.Name == "hook" })).
 		And(func(_ *Application) {
 			var err error
 			creationTimestamp1, err = getCreationTimestamp()
@@ -343,7 +343,7 @@ func TestHookBeforeHookCreation(t *testing.T) {
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		Expect(appFixture.ResourceResultNumbering(2)).
-		Expect(Pod(func(p v1.Pod) bool { return p.Name == "hook" })).
+		Expect(appFixture.Pod(func(p v1.Pod) bool { return p.Name == "hook" })).
 		And(func(_ *Application) {
 			creationTimestamp2, err := getCreationTimestamp()
 			CheckError(err)
@@ -354,7 +354,7 @@ func TestHookBeforeHookCreation(t *testing.T) {
 
 // edge-case where we are unable to delete the hook because it is still running
 func TestHookBeforeHookCreationFailure(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Timeout(1).
 		Path("hook").
 		When().
@@ -378,7 +378,7 @@ func getCreationTimestamp() (string, error) {
 
 // make sure that we never create something annotated with Skip
 func TestHookSkip(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		// should not create this pod
@@ -393,7 +393,7 @@ func TestHookSkip(t *testing.T) {
 
 // make sure that we do NOT name non-hook resources in they are unnamed
 func TestNamingNonHookResource(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Async(true).
 		Path("hook").
 		When().
@@ -406,7 +406,7 @@ func TestNamingNonHookResource(t *testing.T) {
 
 // make sure that we name hook resources in they are unnamed
 func TestAutomaticallyNamingUnnamedHook(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Async(true).
 		Path("hook").
 		When().

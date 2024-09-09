@@ -30,7 +30,7 @@ func TestNamespaceCreationWithSSA(t *testing.T) {
 		}
 	}()
 
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		SetAppNamespace(AppNamespace()).
 		Timeout(30).

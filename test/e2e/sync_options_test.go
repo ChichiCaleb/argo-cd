@@ -18,7 +18,7 @@ import (
 // TestSyncOptionsValidateFalse verifies we can disable validation during kubectl apply, using the
 // 'argocd.argoproj.io/sync-options: Validate=false' sync option
 func TestSyncOptionsValidateFalse(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("sync-options-validate-false").
 		When().
 		CreateApp().
@@ -37,7 +37,7 @@ func TestSyncOptionsValidateTrue(t *testing.T) {
 	if os.Getenv("ARGOCD_E2E_K3S") == "true" {
 		t.SkipNow()
 	}
-	Given(t).
+	appFixture.Given(t).
 		Path("sync-options-validate-false").
 		When().
 		IgnoreErrors().
@@ -49,7 +49,7 @@ func TestSyncOptionsValidateTrue(t *testing.T) {
 }
 
 func TestSyncWithStatusIgnored(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		And(func() {
@@ -82,7 +82,7 @@ func TestSyncWithStatusIgnored(t *testing.T) {
 
 func TestSyncWithApplyOutOfSyncOnly(t *testing.T) {
 	var ns string
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		ApplyOutOfSyncOnly().
 		When().
@@ -105,7 +105,7 @@ func TestSyncWithApplyOutOfSyncOnly(t *testing.T) {
 
 func TestSyncWithSkipHook(t *testing.T) {
 	fixture.SkipOnEnv(t, "OPENSHIFT")
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateFromFile(func(app *Application) {
@@ -129,7 +129,7 @@ func TestSyncWithSkipHook(t *testing.T) {
 }
 
 func TestSyncWithForceReplace(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().

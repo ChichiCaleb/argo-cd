@@ -14,7 +14,7 @@ import (
 )
 
 func TestCliAppCommand(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		CreateApp().

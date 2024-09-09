@@ -14,7 +14,7 @@ import (
 )
 
 func TestFixingDegradedApp(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("sync-waves").
 		When().
 		IgnoreErrors().
@@ -57,7 +57,7 @@ func TestFixingDegradedApp(t *testing.T) {
 }
 
 func TestOneProgressingDeploymentIsSucceededAndSynced(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("one-deployment").
 		When().
 		// make this deployment get stuck in progressing due to "invalidimagename"
@@ -78,7 +78,7 @@ func TestOneProgressingDeploymentIsSucceededAndSynced(t *testing.T) {
 }
 
 func TestDegradedDeploymentIsSucceededAndSynced(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("one-deployment").
 		When().
 		// make this deployment get stuck in progressing due to "invalidimagename"
@@ -105,7 +105,7 @@ func TestDegradedDeploymentIsSucceededAndSynced(t *testing.T) {
 
 // resources should be pruned in reverse of creation order(syncwaves order)
 func TestSyncPruneOrderWithSyncWaves(t *testing.T) {
-	ctx := Given(t).Timeout(60)
+	ctx := appFixture.Given(t).Timeout(60)
 
 	// remove finalizer to ensure proper cleanup if test fails at early stage
 	defer func() {

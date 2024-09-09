@@ -10,7 +10,7 @@ import (
 
 // check we fail with message if we delete a non-prunable resource
 func TestPruningRequired(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("two-nice-pods").
 		Prune(false).
 		When().
@@ -23,5 +23,5 @@ func TestPruningRequired(t *testing.T) {
 		DeleteFile("pod-2.yaml").
 		Sync().
 		Then().
-		Expect(Error("", "1 resources require pruning"))
+		Expect(appFixture.Error("", "1 resources require pruning"))
 }

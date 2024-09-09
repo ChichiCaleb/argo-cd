@@ -12,7 +12,7 @@ import (
 
 func TestPatch(t *testing.T) {
 	test.LocalOnly(t)
-	Given(t).
+	appFixture.Given(t).
 		Path("two-nice-pods").
 		When().
 		AddFile("pod-3.yaml", `apiVersion: v1

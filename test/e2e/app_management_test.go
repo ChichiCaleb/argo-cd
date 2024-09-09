@@ -61,7 +61,7 @@ func TestGetLogsAllowNoSwitch(t *testing.T) {
 func TestGetLogsDenySwitchOn(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
 
-	accountFixture.Given(t).
+	accountFixture.appFixture.Given(t).
 		Name("test").
 		When().
 		Create().
@@ -89,7 +89,7 @@ func TestGetLogsDenySwitchOn(t *testing.T) {
 			},
 		}, "app-creator")
 
-	GivenWithSameState(t).
+		appFixture.GivenWithSameState(t).
 		Path("guestbook-logs").
 		When().
 		CreateApp().
@@ -107,7 +107,7 @@ func TestGetLogsDenySwitchOn(t *testing.T) {
 func TestGetLogsAllowSwitchOn(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
 
-	accountFixture.Given(t).
+	accountFixture.appFixture.Given(t).
 		Name("test").
 		When().
 		Create().
@@ -140,7 +140,7 @@ func TestGetLogsAllowSwitchOn(t *testing.T) {
 			},
 		}, "app-creator")
 
-	GivenWithSameState(t).
+		appFixture.GivenWithSameState(t).
 		Path("guestbook-logs").
 		When().
 		CreateApp().
@@ -168,7 +168,7 @@ func TestGetLogsAllowSwitchOn(t *testing.T) {
 func TestGetLogsAllowSwitchOff(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
 
-	accountFixture.Given(t).
+	accountFixture.appFixture.Given(t).
 		Name("test").
 		When().
 		Create().
@@ -196,7 +196,7 @@ func TestGetLogsAllowSwitchOff(t *testing.T) {
 			},
 		}, "app-creator")
 
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook-logs").
 		When().
 		CreateApp().
@@ -223,7 +223,7 @@ func TestGetLogsAllowSwitchOff(t *testing.T) {
 
 func TestSyncToUnsignedCommit(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Path(guestbookPath).
 		When().
@@ -238,7 +238,7 @@ func TestSyncToUnsignedCommit(t *testing.T) {
 
 func TestSyncToSignedCommitWithoutKnownKey(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Path(guestbookPath).
 		When().
@@ -254,7 +254,7 @@ func TestSyncToSignedCommitWithoutKnownKey(t *testing.T) {
 
 func TestSyncToSignedCommitWithKnownKey(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Path(guestbookPath).
 		GPGPublicKeyAdded().
@@ -272,7 +272,7 @@ func TestSyncToSignedCommitWithKnownKey(t *testing.T) {
 
 func TestSyncToSignedBranchWithKnownKey(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Path(guestbookPath).
 		Revision("master").
@@ -291,7 +291,7 @@ func TestSyncToSignedBranchWithKnownKey(t *testing.T) {
 
 func TestSyncToSignedBranchWithUnknownKey(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Path(guestbookPath).
 		Revision("master").
@@ -309,7 +309,7 @@ func TestSyncToSignedBranchWithUnknownKey(t *testing.T) {
 
 func TestSyncToUnsignedBranch(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Revision("master").
 		Path(guestbookPath).
@@ -327,7 +327,7 @@ func TestSyncToUnsignedBranch(t *testing.T) {
 
 func TestSyncToSignedTagWithKnownKey(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Revision("signed-tag").
 		Path(guestbookPath).
@@ -346,7 +346,7 @@ func TestSyncToSignedTagWithKnownKey(t *testing.T) {
 
 func TestSyncToSignedTagWithUnknownKey(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Revision("signed-tag").
 		Path(guestbookPath).
@@ -364,7 +364,7 @@ func TestSyncToSignedTagWithUnknownKey(t *testing.T) {
 
 func TestSyncToUnsignedTag(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	Given(t).
+	appFixture.Given(t).
 		Project("gpg").
 		Revision("unsigned-tag").
 		Path(guestbookPath).
@@ -382,7 +382,7 @@ func TestSyncToUnsignedTag(t *testing.T) {
 }
 
 func TestAppCreation(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		Path(guestbookPath).
 		When().
@@ -396,7 +396,7 @@ func TestAppCreation(t *testing.T) {
 			assert.Equal(t, DeploymentNamespace(), app.Spec.Destination.Namespace)
 			assert.Equal(t, KubernetesInternalAPIServerAddr, app.Spec.Destination.Server)
 		}).
-		Expect(Event(EventReasonResourceCreated, "create")).
+		Expect(appFixture.Event(EventReasonResourceCreated, "create")).
 		And(func(_ *Application) {
 			// app should be listed
 			output, err := RunCli("app", "list")
@@ -425,7 +425,7 @@ func TestAppCreation(t *testing.T) {
 }
 
 func TestAppCreationWithoutForceUpdate(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 
 	ctx.
 		Path(guestbookPath).
@@ -441,7 +441,7 @@ func TestAppCreationWithoutForceUpdate(t *testing.T) {
 			assert.Equal(t, DeploymentNamespace(), app.Spec.Destination.Namespace)
 			assert.Equal(t, "in-cluster", app.Spec.Destination.Name)
 		}).
-		Expect(Event(EventReasonResourceCreated, "create")).
+		Expect(appFixture.Event(EventReasonResourceCreated, "create")).
 		And(func(_ *Application) {
 			// app should be listed
 			output, err := RunCli("app", "list")
@@ -452,7 +452,7 @@ func TestAppCreationWithoutForceUpdate(t *testing.T) {
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(Error("", "existing application spec is different, use upsert flag to force update"))
+		Expect(appFixture.Error("", "existing application spec is different, use upsert flag to force update"))
 }
 
 // Test designed to cover #15126.
@@ -460,7 +460,7 @@ func TestAppCreationWithoutForceUpdate(t *testing.T) {
 // merged/patched.
 // Note: Failure is observed by the test timing out, because the controller cannot 'merge' the patch.
 func TestPatchValuesObject(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Timeout(30).
 		Path("helm").
 		When().
@@ -495,7 +495,7 @@ func TestPatchValuesObject(t *testing.T) {
 }
 
 func TestDeleteAppResource(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 
 	ctx.
 		Path(guestbookPath).
@@ -516,7 +516,7 @@ func TestDeleteAppResource(t *testing.T) {
 
 // Fix for issue #2677, support PATCH in HTTP service
 func TestPatchHttp(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 
 	ctx.
 		Path(guestbookPath).
@@ -534,7 +534,7 @@ func TestPatchHttp(t *testing.T) {
 // demonstrate that we cannot use a standard sync when an immutable field is changed, we must use "force"
 func TestImmutableChange(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
-	Given(t).
+	appFixture.Given(t).
 		Path("secrets").
 		When().
 		CreateApp().
@@ -575,7 +575,7 @@ func TestImmutableChange(t *testing.T) {
 }
 
 func TestInvalidAppProject(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		Project("does-not-exist").
 		When().
@@ -584,11 +584,11 @@ func TestInvalidAppProject(t *testing.T) {
 		Then().
 		// We're not allowed to infer whether the project exists based on this error message. Instead, we get a generic
 		// permission denied error.
-		Expect(Error("", "is not allowed"))
+		Expect(appFixture.Error("", "is not allowed"))
 }
 
 func TestAppDeletion(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -606,7 +606,7 @@ func TestAppDeletion(t *testing.T) {
 }
 
 func TestAppLabels(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("config-map").
 		When().
 		CreateApp("-l", "foo=bar").
@@ -632,7 +632,7 @@ func TestAppLabels(t *testing.T) {
 }
 
 func TestTrackAppStateAndSyncApp(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -650,7 +650,7 @@ func TestTrackAppStateAndSyncApp(t *testing.T) {
 }
 
 func TestAppRollbackSuccessful(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -682,7 +682,7 @@ func TestAppRollbackSuccessful(t *testing.T) {
 			_, err = RunCli("app", "rollback", app.Name, "1")
 			require.NoError(t, err)
 		}).
-		Expect(Event(EventReasonOperationStarted, "rollback")).
+		Expect(appFixture.Event(EventReasonOperationStarted, "rollback")).
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Equal(t, SyncStatusCodeSynced, app.Status.Sync.Status)
@@ -694,7 +694,7 @@ func TestAppRollbackSuccessful(t *testing.T) {
 }
 
 func TestComparisonFailsIfClusterNotAdded(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		DestServer("https://not-registered-cluster/api").
 		When().
@@ -705,7 +705,7 @@ func TestComparisonFailsIfClusterNotAdded(t *testing.T) {
 }
 
 func TestCannotSetInvalidPath(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -716,7 +716,7 @@ func TestCannotSetInvalidPath(t *testing.T) {
 }
 
 func TestManipulateApplicationResources(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -745,12 +745,12 @@ func TestManipulateApplicationResources(t *testing.T) {
 			defer io.Close(closer)
 
 			_, err = client.DeleteResource(context.Background(), &applicationpkg.ApplicationResourceDeleteRequest{
-				Name:         &app.Name,
-				Group:        ptr.To(deployment.GroupVersionKind().Group),
-				Kind:         ptr.To(deployment.GroupVersionKind().Kind),
-				Version:      ptr.To(deployment.GroupVersionKind().Version),
-				Namespace:    ptr.To(deployment.GetNamespace()),
-				ResourceName: ptr.To(deployment.GetName()),
+				Name:         app.Name,
+				Group:        deployment.GroupVersionKind().Group,
+				Kind:         deployment.GroupVersionKind().Kind,
+				Version:      deployment.GroupVersionKind().Version,
+				Namespace:    deployment.GetNamespace(),
+				ResourceName: deployment.GetName(),
 			})
 			require.NoError(t, err)
 		}).
@@ -786,7 +786,7 @@ func TestAppWithSecrets(t *testing.T) {
 	require.NoError(t, err)
 	defer io.Close(closer)
 
-	Given(t).
+	appFixture.Given(t).
 		Path("secrets").
 		When().
 		CreateApp().
@@ -795,16 +795,16 @@ func TestAppWithSecrets(t *testing.T) {
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			res := FailOnErr(client.GetResource(context.Background(), &applicationpkg.ApplicationResourceRequest{
-				Namespace:    &app.Spec.Destination.Namespace,
-				Kind:         ptr.To(kube.SecretKind),
-				Group:        ptr.To(""),
-				Name:         &app.Name,
-				Version:      ptr.To("v1"),
-				ResourceName: ptr.To("test-secret"),
+				Namespace:    app.Spec.Destination.Namespace,
+				Kind:         kube.SecretKind,
+				Group:        "",
+				Name:         app.Name,
+				Version:      "v1",
+				ResourceName: "test-secret",
 			})).(*applicationpkg.ApplicationResourceResponse)
 			assetSecretDataHidden(t, res.GetManifest())
 
-			manifests, err := client.GetManifests(context.Background(), &applicationpkg.ApplicationManifestQuery{Name: &app.Name})
+			manifests, err := client.GetManifests(context.Background(), &applicationpkg.ApplicationManifestQuery{Name: app.Name})
 			errors.CheckError(err)
 
 			for _, manifest := range manifests.Manifests {
@@ -848,7 +848,7 @@ func TestAppWithSecrets(t *testing.T) {
 			app.Spec.IgnoreDifferences = []ResourceIgnoreDifferences{{
 				Kind: kube.SecretKind, JSONPointers: []string{"/data"},
 			}}
-			FailOnErr(client.UpdateSpec(context.Background(), &applicationpkg.ApplicationUpdateSpecRequest{Name: &app.Name, Spec: &app.Spec}))
+			FailOnErr(client.UpdateSpec(context.Background(), &applicationpkg.ApplicationUpdateSpecRequest{Name: app.Name, Spec: &app.Spec}))
 		}).
 		When().
 		Refresh(RefreshTypeNormal).
@@ -876,7 +876,7 @@ stringData:
 }
 
 func TestResourceDiffing(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -985,7 +985,7 @@ func TestCRDs(t *testing.T) {
 func TestKnownTypesInCRDDiffing(t *testing.T) {
 	dummiesGVR := schema.GroupVersionResource{Group: application.Group, Version: "v1alpha1", Resource: "dummies"}
 
-	Given(t).
+	appFixture.Given(t).
 		Path("crd-creation").
 		When().CreateApp().Sync().Then().
 		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
@@ -1022,7 +1022,7 @@ func TestConfigMap(t *testing.T) {
 }
 
 func testEdgeCasesApplicationResources(t *testing.T, appPath string, statusCode health.HealthStatusCode, message ...string) {
-	expect := Given(t).
+	expect := appFixture.Given(t).
 		Path(appPath).
 		When().
 		CreateApp().
@@ -1050,7 +1050,7 @@ definitions:
     return obj`
 
 func TestOldStyleResourceAction(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		ResourceOverrides(map[string]ResourceOverride{"apps/Deployment": {Actions: actionsConfig}}).
 		When().
@@ -1063,24 +1063,24 @@ func TestOldStyleResourceAction(t *testing.T) {
 			defer io.Close(closer)
 
 			actions, err := client.ListResourceActions(context.Background(), &applicationpkg.ApplicationResourceRequest{
-				Name:         &app.Name,
-				Group:        ptr.To("apps"),
-				Kind:         ptr.To("Deployment"),
-				Version:      ptr.To("v1"),
-				Namespace:    ptr.To(DeploymentNamespace()),
-				ResourceName: ptr.To("guestbook-ui"),
+				Name:         app.Name,
+				Group:        "apps",
+				Kind:         "Deployment",
+				Version:      "v1",
+				Namespace:    DeploymentNamespace(),
+				ResourceName: "guestbook-ui",
 			})
 			require.NoError(t, err)
 			assert.Equal(t, []*ResourceAction{{Name: "sample", Disabled: false}}, actions.Actions)
 
 			_, err = client.RunResourceAction(context.Background(), &applicationpkg.ResourceActionRunRequest{
-				Name:         &app.Name,
-				Group:        ptr.To("apps"),
-				Kind:         ptr.To("Deployment"),
-				Version:      ptr.To("v1"),
-				Namespace:    ptr.To(DeploymentNamespace()),
-				ResourceName: ptr.To("guestbook-ui"),
-				Action:       ptr.To("sample"),
+				Name:         app.Name,
+				Group:        "apps",
+				Kind:         "Deployment",
+				Version:      "v1",
+				Namespace:    DeploymentNamespace(),
+				ResourceName: "guestbook-ui",
+				Action:       "sample",
 			})
 			require.NoError(t, err)
 
@@ -1148,7 +1148,7 @@ definitions:
     return result`
 
 func TestNewStyleResourceActionPermitted(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(resourceActions).
 		ResourceOverrides(map[string]ResourceOverride{"batch/CronJob": {Actions: newStyleActionsConfig}}).
 		ProjectSpec(AppProjectSpec{
@@ -1169,24 +1169,24 @@ func TestNewStyleResourceActionPermitted(t *testing.T) {
 			defer io.Close(closer)
 
 			actions, err := client.ListResourceActions(context.Background(), &applicationpkg.ApplicationResourceRequest{
-				Name:         &app.Name,
-				Group:        ptr.To("batch"),
-				Kind:         ptr.To("CronJob"),
-				Version:      ptr.To("v1"),
-				Namespace:    ptr.To(DeploymentNamespace()),
-				ResourceName: ptr.To("hello"),
+				Name:         app.Name,
+				Group:        "batch",
+				Kind:         "CronJob",
+				Version:      "v1",
+				Namespace:    DeploymentNamespace(),
+				ResourceName: "hello",
 			})
 			require.NoError(t, err)
 			assert.Equal(t, []*ResourceAction{{Name: "sample", Disabled: false}}, actions.Actions)
 
 			_, err = client.RunResourceAction(context.Background(), &applicationpkg.ResourceActionRunRequest{
-				Name:         &app.Name,
-				Group:        ptr.To("batch"),
-				Kind:         ptr.To("CronJob"),
-				Version:      ptr.To("v1"),
-				Namespace:    ptr.To(DeploymentNamespace()),
-				ResourceName: ptr.To("hello"),
-				Action:       ptr.To("sample"),
+				Name:         app.Name,
+				Group:        "batch",
+				Kind:         "CronJob",
+				Version:      "v1",
+				Namespace:    DeploymentNamespace(),
+				ResourceName: "hello",
+				Action:       "sample",
 			})
 			require.NoError(t, err)
 
@@ -1259,7 +1259,7 @@ definitions:
     return result`
 
 func TestNewStyleResourceActionMixedOk(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(resourceActions).
 		ResourceOverrides(map[string]ResourceOverride{"batch/CronJob": {Actions: newStyleActionsConfigMixedOk}}).
 		ProjectSpec(AppProjectSpec{
@@ -1280,24 +1280,24 @@ func TestNewStyleResourceActionMixedOk(t *testing.T) {
 			defer io.Close(closer)
 
 			actions, err := client.ListResourceActions(context.Background(), &applicationpkg.ApplicationResourceRequest{
-				Name:         &app.Name,
-				Group:        ptr.To("batch"),
-				Kind:         ptr.To("CronJob"),
-				Version:      ptr.To("v1"),
-				Namespace:    ptr.To(DeploymentNamespace()),
-				ResourceName: ptr.To("hello"),
+				Name:         app.Name,
+				Group:        "batch",
+				Kind:         "CronJob",
+				Version:      "v1",
+				Namespace:    DeploymentNamespace(),
+				ResourceName: "hello",
 			})
 			require.NoError(t, err)
 			assert.Equal(t, []*ResourceAction{{Name: "sample", Disabled: false}}, actions.Actions)
 
 			_, err = client.RunResourceAction(context.Background(), &applicationpkg.ResourceActionRunRequest{
-				Name:         &app.Name,
-				Group:        ptr.To("batch"),
-				Kind:         ptr.To("CronJob"),
-				Version:      ptr.To("v1"),
-				Namespace:    ptr.To(DeploymentNamespace()),
-				ResourceName: ptr.To("hello"),
-				Action:       ptr.To("sample"),
+				Name:         app.Name,
+				Group:        "batch",
+				Kind:         "CronJob",
+				Version:      "v1",
+				Namespace:    DeploymentNamespace(),
+				ResourceName: "hello",
+				Action:       "sample",
 			})
 			require.NoError(t, err)
 
@@ -1312,7 +1312,7 @@ func TestNewStyleResourceActionMixedOk(t *testing.T) {
 }
 
 func TestSyncResourceByLabel(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -1330,7 +1330,7 @@ func TestSyncResourceByLabel(t *testing.T) {
 }
 
 func TestSyncResourceByProject(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -1348,7 +1348,7 @@ func TestSyncResourceByProject(t *testing.T) {
 }
 
 func TestLocalManifestSync(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -1384,7 +1384,7 @@ func TestLocalManifestSync(t *testing.T) {
 }
 
 func TestLocalSync(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		// we've got to use Helm as this uses kubeVersion
 		Path("helm").
 		When().
@@ -1396,7 +1396,7 @@ func TestLocalSync(t *testing.T) {
 }
 
 func TestNoLocalSyncWithAutosyncEnabled(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -1412,7 +1412,7 @@ func TestNoLocalSyncWithAutosyncEnabled(t *testing.T) {
 }
 
 func TestLocalSyncDryRunWithAutosyncEnabled(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -1432,7 +1432,7 @@ func TestLocalSyncDryRunWithAutosyncEnabled(t *testing.T) {
 }
 
 func TestSyncAsync(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		Async(true).
 		When().
@@ -1462,14 +1462,14 @@ func assertResourceActions(t *testing.T, appName string, successful bool) {
 	require.NoError(t, err)
 
 	logs, err := cdClient.PodLogs(context.Background(), &applicationpkg.ApplicationPodLogsQuery{
-		Group:        ptr.To("apps"),
-		Kind:         ptr.To("Deployment"),
-		Name:         &appName,
-		Namespace:    ptr.To(DeploymentNamespace()),
-		Container:    ptr.To(""),
-		SinceSeconds: ptr.To(int64(0)),
-		TailLines:    ptr.To(int64(0)),
-		Follow:       ptr.To(false),
+		Group:        "apps",
+		Kind:         "Deployment",
+		Name:         appName,
+		Namespace:    DeploymentNamespace(),
+		Container:    "",
+		SinceSeconds: int64(0),
+		TailLines:    int64(0),
+		Follow:       false,
 	})
 	require.NoError(t, err)
 	_, err = logs.Recv()
@@ -1478,50 +1478,50 @@ func assertResourceActions(t *testing.T, appName string, successful bool) {
 	expectedError := fmt.Sprintf("Deployment apps guestbook-ui not found as part of application %s", appName)
 
 	_, err = cdClient.ListResourceEvents(context.Background(), &applicationpkg.ApplicationResourceEventsQuery{
-		Name:              &appName,
-		ResourceName:      ptr.To("guestbook-ui"),
-		ResourceNamespace: ptr.To(DeploymentNamespace()),
-		ResourceUID:       ptr.To(string(deploymentResource.UID)),
+		Name:              appName,
+		ResourceName:      "guestbook-ui",
+		ResourceNamespace: DeploymentNamespace(),
+		ResourceUID:       string(deploymentResource.UID),
 	})
 	assertError(err, fmt.Sprintf("%s not found as part of application %s", "guestbook-ui", appName))
 
 	_, err = cdClient.GetResource(context.Background(), &applicationpkg.ApplicationResourceRequest{
-		Name:         &appName,
-		ResourceName: ptr.To("guestbook-ui"),
-		Namespace:    ptr.To(DeploymentNamespace()),
-		Version:      ptr.To("v1"),
-		Group:        ptr.To("apps"),
-		Kind:         ptr.To("Deployment"),
+		Name:         appName,
+		ResourceName: "guestbook-ui",
+		Namespace:    DeploymentNamespace(),
+		Version:      "v1",
+		Group:        "apps",
+		Kind:         "Deployment",
 	})
 	assertError(err, expectedError)
 
 	_, err = cdClient.RunResourceAction(context.Background(), &applicationpkg.ResourceActionRunRequest{
-		Name:         &appName,
-		ResourceName: ptr.To("guestbook-ui"),
-		Namespace:    ptr.To(DeploymentNamespace()),
-		Version:      ptr.To("v1"),
-		Group:        ptr.To("apps"),
-		Kind:         ptr.To("Deployment"),
-		Action:       ptr.To("restart"),
+		Name:         appName,
+		ResourceName: "guestbook-ui",
+		Namespace:    DeploymentNamespace(),
+		Version:      "v1",
+		Group:        "apps",
+		Kind:         "Deployment",
+		Action:       "restart",
 	})
 	assertError(err, expectedError)
 
 	_, err = cdClient.DeleteResource(context.Background(), &applicationpkg.ApplicationResourceDeleteRequest{
-		Name:         &appName,
-		ResourceName: ptr.To("guestbook-ui"),
-		Namespace:    ptr.To(DeploymentNamespace()),
-		Version:      ptr.To("v1"),
-		Group:        ptr.To("apps"),
-		Kind:         ptr.To("Deployment"),
+		Name:         appName,
+		ResourceName: "guestbook-ui",
+		Namespace:    DeploymentNamespace(),
+		Version:      "v1",
+		Group:        "apps",
+		Kind:         "Deployment",
 	})
 	assertError(err, expectedError)
 }
 
 func TestPermissions(t *testing.T) {
-	appCtx := Given(t)
+	appCtx := appFixture.Given(t)
 	projName := "argo-project"
 	projActions := projectFixture.
-		Given(t).
+		appFixture.Given(t).
 		Name(projName).
 		When().
 		Create()
@@ -1571,7 +1571,7 @@ func TestPermissions(t *testing.T) {
 			defer io.Close(closer)
 			appName, appNs := argo.ParseFromQualifiedName(app.Name, "")
 			fmt.Printf("APP NAME: %s\n", appName)
-			tree, err := cdClient.ResourceTree(context.Background(), &applicationpkg.ResourcesQuery{ApplicationName: &appName, AppNamespace: &appNs})
+			tree, err := cdClient.ResourceTree(context.Background(), &applicationpkg.ResourcesQuery{ApplicationName: appName, AppNamespace: &appNs})
 			require.NoError(t, err)
 			assert.Empty(t, tree.Nodes)
 			assert.Empty(t, tree.OrphanedNodes)
@@ -1598,7 +1598,7 @@ func TestPermissionWithScopedRepo(t *testing.T) {
 	projName := "argo-project"
 	fixture.EnsureCleanState(t)
 	projectFixture.
-		Given(t).
+		appFixture.Given(t).
 		Name(projName).
 		Destination("*,*").
 		When().
@@ -1611,7 +1611,7 @@ func TestPermissionWithScopedRepo(t *testing.T) {
 		Project(projName).
 		Create()
 
-	GivenWithSameState(t).
+		appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").
@@ -1636,7 +1636,7 @@ func TestPermissionWithScopedRepo(t *testing.T) {
 func TestPermissionDeniedWithScopedRepo(t *testing.T) {
 	projName := "argo-project"
 	projectFixture.
-		Given(t).
+		appFixture.Given(t).
 		Name(projName).
 		Destination("*,*").
 		When().
@@ -1647,7 +1647,7 @@ func TestPermissionDeniedWithScopedRepo(t *testing.T) {
 		Path(RepoURL(RepoURLTypeFile)).
 		Create()
 
-	GivenWithSameState(t).
+		appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").
@@ -1662,7 +1662,7 @@ func TestPermissionDeniedWithScopedRepo(t *testing.T) {
 func TestPermissionDeniedWithNegatedNamespace(t *testing.T) {
 	projName := "argo-project"
 	projectFixture.
-		Given(t).
+		appFixture.Given(t).
 		Name(projName).
 		Destination("*,!*test-permission-denied-with-negated-namespace*").
 		When().
@@ -1674,7 +1674,7 @@ func TestPermissionDeniedWithNegatedNamespace(t *testing.T) {
 		Project(projName).
 		Create()
 
-	GivenWithSameState(t).
+		appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").
@@ -1689,7 +1689,7 @@ func TestPermissionDeniedWithNegatedNamespace(t *testing.T) {
 func TestPermissionDeniedWithNegatedServer(t *testing.T) {
 	projName := "argo-project"
 	projectFixture.
-		Given(t).
+		appFixture.Given(t).
 		Name(projName).
 		Destination("!https://kubernetes.default.svc,*").
 		When().
@@ -1701,7 +1701,7 @@ func TestPermissionDeniedWithNegatedServer(t *testing.T) {
 		Project(projName).
 		Create()
 
-	GivenWithSameState(t).
+		appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").
@@ -1715,7 +1715,7 @@ func TestPermissionDeniedWithNegatedServer(t *testing.T) {
 
 // make sure that if we deleted a resource from the app, it is not pruned if annotated with Prune=false
 func TestSyncOptionPruneFalse(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("two-nice-pods").
 		When().
 		PatchFile("pod-1.yaml", `[{"op": "add", "path": "/metadata/annotations", "value": {"argocd.argoproj.io/sync-options": "Prune=false"}}]`).
@@ -1737,7 +1737,7 @@ func TestSyncOptionPruneFalse(t *testing.T) {
 
 // make sure that if we have an invalid manifest, we can add it if we disable validation, we get a server error rather than a client error
 func TestSyncOptionValidateFalse(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("crd-validation").
 		When().
 		CreateApp().
@@ -1759,7 +1759,7 @@ func TestSyncOptionValidateFalse(t *testing.T) {
 
 // make sure that, if we have a resource that needs pruning, but we're ignoring it, the app is in-sync
 func TestCompareOptionIgnoreExtraneous(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Prune(false).
 		Path("two-nice-pods").
 		When().
@@ -1768,12 +1768,12 @@ func TestCompareOptionIgnoreExtraneous(t *testing.T) {
 		Sync().
 		Then().
 		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		DeleteFile("pod-1.yaml").
 		Refresh(RefreshTypeHard).
 		Then().
-		Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		And(func(app *Application) {
 			assert.Len(t, app.Status.Resources, 2)
 			statusByName := map[string]SyncStatusCode{}
@@ -1791,7 +1791,7 @@ func TestCompareOptionIgnoreExtraneous(t *testing.T) {
 }
 
 func TestSourceNamespaceCanBeMigratedToManagedNamespaceWithoutBeingPrunedOrOutOfSync(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Prune(true).
 		Path("guestbook-with-plain-namespace-manifest").
 		When().
@@ -1825,7 +1825,7 @@ func TestSourceNamespaceCanBeMigratedToManagedNamespaceWithoutBeingPrunedOrOutOf
 }
 
 func TestSelfManagedApps(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("self-managed-app").
 		When().
 		PatchFile("resources.yaml", fmt.Sprintf(`[{"op": "replace", "path": "/spec/source/repoURL", "value": "%s"}]`, RepoURL(RepoURLTypeFile))).
@@ -1856,7 +1856,7 @@ func TestSelfManagedApps(t *testing.T) {
 }
 
 func TestExcludedResource(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		ResourceOverrides(map[string]ResourceOverride{"apps/Deployment": {Actions: actionsConfig}}).
 		Path(guestbookPath).
 		ResourceFilter(settings.ResourcesFilter{
@@ -1871,7 +1871,7 @@ func TestExcludedResource(t *testing.T) {
 }
 
 func TestRevisionHistoryLimit(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("config-map").
 		When().
 		CreateApp().
@@ -1895,7 +1895,7 @@ func TestRevisionHistoryLimit(t *testing.T) {
 
 func TestOrphanedResource(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
-	Given(t).
+	appFixture.Given(t).
 		ProjectSpec(AppProjectSpec{
 			SourceRepos:       []string{"*"},
 			Destinations:      []ApplicationDestination{{Namespace: "*", Server: "*"}},
@@ -1985,7 +1985,7 @@ func TestOrphanedResource(t *testing.T) {
 }
 
 func TestNotPermittedResources(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 
 	pathType := networkingv1.PathTypePrefix
 	ingress := &networkingv1.Ingress{
@@ -2080,7 +2080,7 @@ func TestSyncWithInfos(t *testing.T) {
 	expectedInfo[0] = &Info{Name: "name1", Value: "val1"}
 	expectedInfo[1] = &Info{Name: "name2", Value: "val2"}
 
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp().
@@ -2103,7 +2103,7 @@ func TestSyncWithInfos(t *testing.T) {
 //
 // Expect: no app.Status.Conditions
 func TestCreateAppWithNoNameSpaceForGlobalResource(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(globalWithNoNameSpace).
 		When().
 		CreateWithNoNameSpace().
@@ -2123,7 +2123,7 @@ func TestCreateAppWithNoNameSpaceForGlobalResource(t *testing.T) {
 //
 // Expect: app.Status.Conditions for deployment ans service which does not have namespace in manifest
 func TestCreateAppWithNoNameSpaceWhenRequired(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateWithNoNameSpace().
@@ -2147,7 +2147,7 @@ func TestCreateAppWithNoNameSpaceWhenRequired(t *testing.T) {
 //
 // Expect: app.Status.Conditions for deployment and service which does not have namespace in manifest
 func TestCreateAppWithNoNameSpaceWhenRequired2(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookWithNamespace).
 		When().
 		CreateWithNoNameSpace().
@@ -2165,7 +2165,7 @@ func TestCreateAppWithNoNameSpaceWhenRequired2(t *testing.T) {
 
 func TestListResource(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
-	Given(t).
+	appFixture.Given(t).
 		ProjectSpec(AppProjectSpec{
 			SourceRepos:       []string{"*"},
 			Destinations:      []ApplicationDestination{{Namespace: "*", Server: "*"}},
@@ -2237,7 +2237,7 @@ func TestNamespaceAutoCreation(t *testing.T) {
 			require.NoError(t, err)
 		}
 	}()
-	Given(t).
+	appFixture.Given(t).
 		Timeout(30).
 		Path("guestbook").
 		When().
@@ -2254,7 +2254,7 @@ func TestNamespaceAutoCreation(t *testing.T) {
 		Sync().
 		Then().
 		Expect(appFixture.Success("")).
-		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
 		Expect(appFixture.ResourceHealthWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, health.HealthStatusHealthy)).
 		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
 		Expect(appFixture.ResourceSyncStatusWithNamespaceIs("Deployment", "guestbook-ui", updatedNamespace, SyncStatusCodeSynced)).
@@ -2271,7 +2271,7 @@ func TestNamespaceAutoCreation(t *testing.T) {
 }
 
 func TestFailedSyncWithRetry(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		When().
 		PatchFile("hook.yaml", `[{"op": "replace", "path": "/metadata/annotations", "value": {"argocd.argoproj.io/hook": "PreSync"}}]`).
@@ -2286,7 +2286,7 @@ func TestFailedSyncWithRetry(t *testing.T) {
 }
 
 func TestCreateDisableValidation(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("baddir").
 		When().
 		CreateApp("--validate=false").
@@ -2316,7 +2316,7 @@ spec:
 `
 
 	path := "helm-values"
-	Given(t).
+	appFixture.Given(t).
 		When().
 		// app should be auto-synced once created
 		CreateFromPartialFile(partialApp, "--path", path, "-l", "labels.local/from-args=args", "--helm-set", "foo=foo").
@@ -2361,7 +2361,7 @@ definitions:
     obj.status.bar = "update-status"
     return obj
 `
-	Given(t).
+	appFixture.Given(t).
 		Path("crd-subresource").
 		And(func() {
 			SetResourceOverrides(map[string]ResourceOverride{
@@ -2374,7 +2374,7 @@ definitions:
 			})
 		}).
 		When().CreateApp().Sync().Then().
-		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(SyncStatusIs(SyncStatusCodeSynced)).
+		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		When().
 		Refresh(RefreshTypeNormal).
 		Then().
@@ -2421,7 +2421,7 @@ definitions:
 func TestAppLogs(t *testing.T) {
 	t.SkipNow() // Too flaky. https://github.com/argoproj/argo-cd/issues/13834
 	SkipOnEnv(t, "OPENSHIFT")
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook-logs").
 		When().
 		CreateApp().
@@ -2446,7 +2446,7 @@ func TestAppLogs(t *testing.T) {
 }
 
 func TestAppWaitOperationInProgress(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		And(func() {
 			SetResourceOverrides(map[string]ResourceOverride{
@@ -2474,7 +2474,7 @@ func TestAppWaitOperationInProgress(t *testing.T) {
 }
 
 func TestSyncOptionReplace(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("config-map").
 		When().
 		PatchFile("config-map.yaml", `[{"op": "add", "path": "/metadata/annotations", "value": {"argocd.argoproj.io/sync-options": "Replace=true"}}]`).
@@ -2495,7 +2495,7 @@ func TestSyncOptionReplace(t *testing.T) {
 }
 
 func TestSyncOptionReplaceFromCLI(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("config-map").
 		Replace().
 		When().
@@ -2517,7 +2517,7 @@ func TestSyncOptionReplaceFromCLI(t *testing.T) {
 
 func TestDiscoverNewCommit(t *testing.T) {
 	var sha string
-	Given(t).
+	appFixture.Given(t).
 		Path("config-map").
 		When().
 		CreateApp().
@@ -2547,7 +2547,7 @@ func TestDiscoverNewCommit(t *testing.T) {
 }
 
 func TestDisableManifestGeneration(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		When().
 		CreateApp().
@@ -2573,7 +2573,7 @@ func TestDisableManifestGeneration(t *testing.T) {
 }
 
 func TestSwitchTrackingMethod(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 
 	ctx.
 		SetTrackingMethod(string(argo.TrackingMethodAnnotation)).
@@ -2666,7 +2666,7 @@ func TestSwitchTrackingMethod(t *testing.T) {
 }
 
 func TestSwitchTrackingLabel(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 
 	ctx.
 		Path("deployment").
@@ -2759,7 +2759,7 @@ func TestSwitchTrackingLabel(t *testing.T) {
 }
 
 func TestAnnotationTrackingExtraResources(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 
 	SetTrackingMethod(string(argo.TrackingMethodAnnotation))
 	ctx.
@@ -2882,7 +2882,7 @@ func TestAnnotationTrackingExtraResources(t *testing.T) {
 }
 
 func TestCreateConfigMapsAndWaitForUpdate(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("config-map").
 		When().
 		CreateApp().

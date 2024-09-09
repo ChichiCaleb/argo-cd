@@ -11,31 +11,31 @@ import (
 
 // make sure you cannot create an app from a private repo without set-up
 func TestCannotAddAppFromPrivateRepoWithoutCfg(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		RepoURLType(fixture.RepoURLTypeHTTPS).
 		Path(fixture.GuestbookPath).
 		When().
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(Error("", "repository not accessible"))
+		Expect(appFixture.Error("", "repository not accessible"))
 }
 
 // make sure you cannot create an app from a private repo without set-up
 func TestCannotAddAppFromClientCertRepoWithoutCfg(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		RepoURLType(fixture.RepoURLTypeHTTPSClientCert).
 		Path(fixture.GuestbookPath).
 		When().
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(Error("", "repository not accessible"))
+		Expect(appFixture.Error("", "repository not accessible"))
 }
 
 // make sure you can create an app from a private repo, if the repo is set-up in the CM
 func TestCanAddAppFromPrivateRepoWithRepoCfg(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		RepoURLType(fixture.RepoURLTypeHTTPS).
 		Path(fixture.LocalOrRemotePath("https-kustomize-base")).
 		And(func() {
@@ -50,7 +50,7 @@ func TestCanAddAppFromPrivateRepoWithRepoCfg(t *testing.T) {
 
 // make sure you can create an app from a private repo, if the creds are set-up in the CM
 func TestCanAddAppFromInsecurePrivateRepoWithCredCfg(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		CustomCACertAdded().
 		RepoURLType(fixture.RepoURLTypeHTTPS).
 		Path(fixture.LocalOrRemotePath("https-kustomize-base")).
@@ -74,7 +74,7 @@ func TestCanAddAppFromInsecurePrivateRepoWithCredCfg(t *testing.T) {
 // make sure we can create an app from a private repo, in a secure manner using
 // a custom CA certificate bundle
 func TestCanAddAppFromPrivateRepoWithCredCfg(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		CustomCACertAdded().
 		HTTPSCredentialsUserPassAdded().
 		HTTPSRepoURLAdded(false).
@@ -100,7 +100,7 @@ func TestCanAddAppFromPrivateRepoWithCredCfg(t *testing.T) {
 // make sure we can create an app from a private repo, in a secure manner using
 // a custom CA certificate bundle
 func TestCanAddAppFromClientCertRepoWithCredCfg(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		CustomCACertAdded().
 		HTTPSRepoURLWithClientCertAdded().
 		RepoURLType(fixture.RepoURLTypeHTTPSClientCert).

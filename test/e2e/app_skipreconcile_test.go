@@ -9,7 +9,7 @@ import (
 )
 
 func TestAppSkipReconcileTrue(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		// app should have no status
@@ -21,7 +21,7 @@ func TestAppSkipReconcileTrue(t *testing.T) {
 }
 
 func TestAppSkipReconcileFalse(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		// app should have status
@@ -33,7 +33,7 @@ func TestAppSkipReconcileFalse(t *testing.T) {
 }
 
 func TestAppSkipReconcileNonBooleanValue(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		// app should have status

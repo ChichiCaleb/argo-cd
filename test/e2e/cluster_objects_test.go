@@ -15,7 +15,7 @@ import (
 )
 
 func TestClusterRoleBinding(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("cluster-role").
 		When().
 		CreateApp().
@@ -45,7 +45,7 @@ func TestClusterRoleBinding(t *testing.T) {
 
 // ensure that cluster scoped objects, like a cluster role, as a hook, can be successfully deployed
 func TestClusterRoleBindingHook(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("cluster-role-hook").
 		When().
 		CreateApp().

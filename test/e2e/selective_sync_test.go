@@ -19,7 +19,7 @@ import (
 
 // when you selectively sync, only selected resources should be synced, but the app will be out of sync
 func TestSelectiveSync(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("guestbook").
 		SelectedResource(":Service:guestbook-ui").
 		When().
@@ -36,7 +36,7 @@ func TestSelectiveSync(t *testing.T) {
 // when running selective sync, hooks do not run
 // hooks don't run even if all resources are selected
 func TestSelectiveSyncDoesNotRunHooks(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("hook").
 		SelectedResource(":Pod:pod").
 		When().
@@ -47,7 +47,7 @@ func TestSelectiveSyncDoesNotRunHooks(t *testing.T) {
 		Expect(appFixture.OperationPhaseIs(OperationSucceeded)).
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
-		Expect(appFixture.ResourceappFixture.("Pod", "pod", health.HealthStatusHealthy)).
+		Expect(appFixture.ResourceHealthIs("Pod", "pod", health.HealthStatusHealthy)).
 		Expect(appFixture.ResourceResultNumbering(1))
 }
 
@@ -58,7 +58,7 @@ func TestSelectiveSyncWithoutNamespace(t *testing.T) {
 			FailOnErr(Run("", "kubectl", "delete", "namespace", selectedResourceNamespace))
 		}
 	}()
-	Given(t).
+	appFixture.Given(t).
 		Prune(true).
 		Path("guestbook-with-namespace").
 		And(func() {
@@ -88,7 +88,7 @@ func TestSelectiveSyncWithNamespace(t *testing.T) {
 			FailOnErr(Run("", "kubectl", "delete", "namespace", selectedResourceNamespace))
 		}
 	}()
-	Given(t).
+	appFixture.Given(t).
 		Prune(true).
 		Path("guestbook-with-namespace").
 		And(func() {

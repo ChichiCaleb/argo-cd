@@ -21,7 +21,7 @@ import (
 
 // make sure we can echo back the Git creds
 func TestCustomToolWithGitCreds(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-gitcreds")
@@ -44,7 +44,7 @@ func TestCustomToolWithGitCreds(t *testing.T) {
 
 // make sure we can echo back the Git creds
 func TestCustomToolWithGitCredsTemplate(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-gitcredstemplate")
@@ -79,7 +79,7 @@ func TestCustomToolWithGitCredsTemplate(t *testing.T) {
 
 // make sure we can echo back the env
 func TestCustomToolWithEnv(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-fileName")
@@ -139,7 +139,7 @@ func TestCustomToolWithEnv(t *testing.T) {
 func TestCustomToolSyncAndDiffLocal(t *testing.T) {
 	testdataPath, err := filepath.Abs("testdata")
 	require.NoError(t, err)
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	appPath := filepath.Join(testdataPath, "guestbook")
 	ctx.
 		And(func() {
@@ -183,7 +183,7 @@ func startCMPServer(t *testing.T, configFile string) {
 // Discover by fileName
 func TestCMPDiscoverWithFileName(t *testing.T) {
 	pluginName := "cmp-fileName"
-	Given(t).
+	appFixture.Given(t).
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-fileName")
 			time.Sleep(1 * time.Second)
@@ -201,7 +201,7 @@ func TestCMPDiscoverWithFileName(t *testing.T) {
 
 // Discover by Find glob
 func TestCMPDiscoverWithFindGlob(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-find-glob")
 			time.Sleep(1 * time.Second)
@@ -241,7 +241,7 @@ func TestCMPDiscoverWithPluginName(t *testing.T) {
 // Discover by Find command
 func TestCMPDiscoverWithFindCommandWithEnv(t *testing.T) {
 	pluginName := "cmp-find-command"
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-find-command")
@@ -285,7 +285,7 @@ func TestCMPDiscoverWithFindCommandWithEnv(t *testing.T) {
 }
 
 func TestPruneResourceFromCMP(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-find-glob")
 			time.Sleep(1 * time.Second)
@@ -308,7 +308,7 @@ func TestPruneResourceFromCMP(t *testing.T) {
 }
 
 func TestPreserveFileModeForCMP(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-preserve-file-mode")
 			time.Sleep(1 * time.Second)
@@ -328,7 +328,7 @@ func TestPreserveFileModeForCMP(t *testing.T) {
 }
 
 func TestCMPWithSymlinkPartialFiles(t *testing.T) {
-	Given(t, WithTestData("testdata2")).
+	appFixture.Given(t, WithTestData("testdata2")).
 		And(func() {
 			go startCMPServer(t, "./testdata2/cmp-symlink")
 			time.Sleep(1 * time.Second)
@@ -345,7 +345,7 @@ func TestCMPWithSymlinkPartialFiles(t *testing.T) {
 }
 
 func TestCMPWithSymlinkFiles(t *testing.T) {
-	Given(t, WithTestData("testdata2")).
+	appFixture.Given(t, WithTestData("testdata2")).
 		And(func() {
 			go startCMPServer(t, "./testdata2/cmp-symlink")
 			time.Sleep(1 * time.Second)
@@ -362,7 +362,7 @@ func TestCMPWithSymlinkFiles(t *testing.T) {
 }
 
 func TestCMPWithSymlinkFolder(t *testing.T) {
-	Given(t, WithTestData("testdata2")).
+	appFixture.Given(t, WithTestData("testdata2")).
 		And(func() {
 			go startCMPServer(t, "./testdata2/cmp-symlink")
 			time.Sleep(1 * time.Second)

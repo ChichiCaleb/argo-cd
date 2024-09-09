@@ -21,7 +21,7 @@ func TestMultiSourceAppCreation(t *testing.T) {
 		RepoURL: RepoURL(RepoURLTypeFile),
 		Path:    "two-nice-pods",
 	}}
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		Sources(sources).
 		When().
@@ -76,7 +76,7 @@ func TestMultiSourceAppWithHelmExternalValueFiles(t *testing.T) {
 		},
 	}}
 	fmt.Printf("sources: %v\n", sources)
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		Sources(sources).
 		When().
@@ -124,7 +124,7 @@ func TestMultiSourceAppWithSourceOverride(t *testing.T) {
 		RepoURL: RepoURL(RepoURLTypeFile),
 		Path:    "multiple-source-values",
 	}}
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		Sources(sources).
 		When().

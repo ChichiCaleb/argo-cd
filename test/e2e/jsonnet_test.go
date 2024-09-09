@@ -15,7 +15,7 @@ import (
 )
 
 func TestJsonnetAppliedCorrectly(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("jsonnet-tla").
 		When().
 		CreateApp().
@@ -45,7 +45,7 @@ func TestJsonnetAppliedCorrectly(t *testing.T) {
 }
 
 func TestJsonnetTlaParameterAppliedCorrectly(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("jsonnet-tla").
 		When().
 		CreateApp("--jsonnet-tla-str", "name=testing-tla", "--jsonnet-tla-code", "replicas=0").
@@ -75,7 +75,7 @@ func TestJsonnetTlaParameterAppliedCorrectly(t *testing.T) {
 }
 
 func TestJsonnetTlaEnv(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("jsonnet-tla-cm").
 		When().
 		CreateApp("--jsonnet-tla-str", "foo=$ARGOCD_APP_NAME", "--jsonnet-tla-code", "bar='$ARGOCD_APP_NAME'").
@@ -90,7 +90,7 @@ func TestJsonnetTlaEnv(t *testing.T) {
 }
 
 func TestJsonnetExtVarEnv(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("jsonnet-ext-var").
 		When().
 		CreateApp("--jsonnet-ext-var-str", "foo=$ARGOCD_APP_NAME", "--jsonnet-ext-var-code", "bar='$ARGOCD_APP_NAME'").
@@ -106,7 +106,7 @@ func TestJsonnetExtVarEnv(t *testing.T) {
 
 // Jsonnet file located in nested sub directory uses import
 func TestJsonnetNestedDirWithImports(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path("jsonnet-nested-dir-with-imports/apps").
 		When().
 		CreateApp("--directory-recurse").

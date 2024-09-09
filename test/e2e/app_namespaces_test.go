@@ -18,7 +18,7 @@ import (
 )
 
 func TestAppCreationInOtherNamespace(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		Path(guestbookPath).
 		SetAppNamespace(AppNamespace()).
@@ -34,7 +34,7 @@ func TestAppCreationInOtherNamespace(t *testing.T) {
 			assert.Equal(t, DeploymentNamespace(), app.Spec.Destination.Namespace)
 			assert.Equal(t, KubernetesInternalAPIServerAddr, app.Spec.Destination.Server)
 		}).
-		Expect(NamespacedEvent(ctx.AppNamespace(), EventReasonResourceCreated, "create")).
+		Expect(appFixture.NamespacedEvent(ctx.AppNamespace(), EventReasonResourceCreated, "create")).
 		And(func(_ *Application) {
 			// app should be listed
 			output, err := RunCli("app", "list")
@@ -63,7 +63,7 @@ func TestAppCreationInOtherNamespace(t *testing.T) {
 }
 
 func TestForbiddenNamespace(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		Path(guestbookPath).
 		SetAppNamespace("forbidden").
@@ -71,11 +71,11 @@ func TestForbiddenNamespace(t *testing.T) {
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(DoesNotExist())
+		Expect(appFixture.DoesNotExist())
 }
 
 func TestDeletingNamespacedAppStuckInSync(t *testing.T) {
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.And(func() {
 		SetResourceOverrides(map[string]ResourceOverride{
 			"ConfigMap": {
