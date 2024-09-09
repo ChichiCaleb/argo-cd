@@ -61,7 +61,7 @@ func TestGetLogsAllowNoSwitch(t *testing.T) {
 func TestGetLogsDenySwitchOn(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
 
-	accountFixture.appFixture.Given(t).
+	accountFixture.Given(t).
 		Name("test").
 		When().
 		Create().
@@ -107,7 +107,7 @@ func TestGetLogsDenySwitchOn(t *testing.T) {
 func TestGetLogsAllowSwitchOn(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
 
-	accountFixture.appFixture.Given(t).
+	accountFixture.Given(t).
 		Name("test").
 		When().
 		Create().
@@ -168,7 +168,7 @@ func TestGetLogsAllowSwitchOn(t *testing.T) {
 func TestGetLogsAllowSwitchOff(t *testing.T) {
 	SkipOnEnv(t, "OPENSHIFT")
 
-	accountFixture.appFixture.Given(t).
+	accountFixture.Given(t).
 		Name("test").
 		When().
 		Create().
@@ -1521,7 +1521,7 @@ func TestPermissions(t *testing.T) {
 	appCtx := appFixture.Given(t)
 	projName := "argo-project"
 	projActions := projectFixture.
-		appFixture.Given(t).
+		Given(t).
 		Name(projName).
 		When().
 		Create()
@@ -1537,8 +1537,8 @@ func TestPermissions(t *testing.T) {
 		// ensure app is not created if project permissions are missing
 		CreateApp().
 		Then().
-		Expect(Error("", sourceError)).
-		Expect(Error("", destinationError)).
+		Expect(appFixture.Error("", sourceError)).
+		Expect(appFixture.Error("", destinationError)).
 		When().
 		DoNotIgnoreErrors().
 		// add missing permissions, create and sync app
@@ -1571,7 +1571,7 @@ func TestPermissions(t *testing.T) {
 			defer io.Close(closer)
 			appName, appNs := argo.ParseFromQualifiedName(app.Name, "")
 			fmt.Printf("APP NAME: %s\n", appName)
-			tree, err := cdClient.ResourceTree(context.Background(), &applicationpkg.ResourcesQuery{ApplicationName: appName, AppNamespace: &appNs})
+			tree, err := cdClient.ResourceTree(context.Background(), &applicationpkg.ResourcesQuery{ApplicationName: appName, AppNamespace: appNs})
 			require.NoError(t, err)
 			assert.Empty(t, tree.Nodes)
 			assert.Empty(t, tree.OrphanedNodes)
@@ -1598,7 +1598,7 @@ func TestPermissionWithScopedRepo(t *testing.T) {
 	projName := "argo-project"
 	fixture.EnsureCleanState(t)
 	projectFixture.
-		appFixture.Given(t).
+		Given(t).
 		Name(projName).
 		Destination("*,*").
 		When().
@@ -1636,7 +1636,7 @@ func TestPermissionWithScopedRepo(t *testing.T) {
 func TestPermissionDeniedWithScopedRepo(t *testing.T) {
 	projName := "argo-project"
 	projectFixture.
-		appFixture.Given(t).
+		Given(t).
 		Name(projName).
 		Destination("*,*").
 		When().
@@ -1656,13 +1656,13 @@ func TestPermissionDeniedWithScopedRepo(t *testing.T) {
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(Error("", "is not permitted in project"))
+		Expect(appFixture.Error("", "is not permitted in project"))
 }
 
 func TestPermissionDeniedWithNegatedNamespace(t *testing.T) {
 	projName := "argo-project"
 	projectFixture.
-		appFixture.Given(t).
+		Given(t).
 		Name(projName).
 		Destination("*,!*test-permission-denied-with-negated-namespace*").
 		When().
@@ -1683,13 +1683,13 @@ func TestPermissionDeniedWithNegatedNamespace(t *testing.T) {
 		IgnoreErrors().
 		CreateApp().
 		Then().
-		Expect(Error("", "do not match any of the allowed destinations in project"))
+		Expect(appFixture.Error("", "do not match any of the allowed destinations in project"))
 }
 
 func TestPermissionDeniedWithNegatedServer(t *testing.T) {
 	projName := "argo-project"
 	projectFixture.
-		appFixture.Given(t).
+		Given(t).
 		Name(projName).
 		Destination("!https://kubernetes.default.svc,*").
 		When().

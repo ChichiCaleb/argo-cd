@@ -16,7 +16,7 @@ import (
 )
 
 func TestAutoSyncSelfHealDisabled(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		// app should be auto-synced once created
@@ -43,7 +43,7 @@ func TestAutoSyncSelfHealDisabled(t *testing.T) {
 }
 
 func TestAutoSyncSelfHealEnabled(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		// app should be auto-synced once created

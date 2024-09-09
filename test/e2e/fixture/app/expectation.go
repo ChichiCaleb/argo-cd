@@ -182,16 +182,30 @@ func ResourceResultNumbering(num int) Expectation {
 	}
 }
 
-func ResourceResultIs(result ResourceResult) Expectation {
+func ResourceResultIs(expectedResult ResourceResult) Expectation {
 	return func(c *Consequences) (state, string) {
 		results := c.app().Status.OperationState.SyncResult.Resources
 		for _, res := range results {
-			if *res == result {
-				return succeeded, fmt.Sprintf("found resource result %v", result)
+			if compareResourceResults(*res, expectedResult) {
+				return succeeded, fmt.Sprintf("found resource result %v", expectedResult)
 			}
 		}
-		return pending, fmt.Sprintf("waiting for resource result %v in %v", result, results)
+		return pending, fmt.Sprintf("waiting for resource result %v in %v", expectedResult, results)
 	}
+}
+
+func compareResourceResults(res, expected ResourceResult) bool {
+	// Compare all the fields that are safe to compare
+	return res.Group == expected.Group &&
+		res.Version == expected.Version &&
+		res.Kind == expected.Kind &&
+		res.Namespace == expected.Namespace &&
+		res.Name == expected.Name &&
+		res.Status == expected.Status &&
+		res.Message == expected.Message &&
+		res.HookType == expected.HookType &&
+		res.HookPhase == expected.HookPhase &&
+		res.SyncPhase == expected.SyncPhase
 }
 
 func sameResourceResult(res1, res2 ResourceResult) bool {

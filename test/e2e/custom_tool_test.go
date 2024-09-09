@@ -219,7 +219,7 @@ func TestCMPDiscoverWithFindGlob(t *testing.T) {
 
 // Discover by Plugin Name
 func TestCMPDiscoverWithPluginName(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		And(func() {
 			go startCMPServer(t, "./testdata/cmp-find-glob")
 			time.Sleep(1 * time.Second)

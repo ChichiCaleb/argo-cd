@@ -14,7 +14,7 @@ import (
 // when a app gets stuck in sync, and we try to delete it, it won't delete, instead we must then terminate it
 // and deletion will then just happen
 func TestDeletingAppStuckInSync(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		And(func() {
 			SetResourceOverrides(map[string]ResourceOverride{
 				"ConfigMap": {
@@ -44,7 +44,7 @@ func TestDeletingAppStuckInSync(t *testing.T) {
 }
 
 func TestDeletingAppByLabel(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp("--label=foo=bar").
@@ -69,7 +69,7 @@ func TestDeletingAppByLabel(t *testing.T) {
 }
 
 func TestDeletingAppByLabelWait(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Path(guestbookPath).
 		When().
 		CreateApp("--label=foo=bar").

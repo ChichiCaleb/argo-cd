@@ -9,7 +9,7 @@ import (
 
 func TestAppSyncWrongVersion(t *testing.T) {
 	// Make sure the error messages are good when there are group or version mismatches between CRDs and resources.
-	ctx := Given(t)
+	ctx := appFixture.Given(t)
 	ctx.
 		Path("crd-version-differences").
 		When().

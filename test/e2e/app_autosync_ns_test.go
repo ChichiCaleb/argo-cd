@@ -17,7 +17,7 @@ import (
 )
 
 func TestNSAutoSyncSelfHealDisabled(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		SetTrackingMethod("annotation").
 		Path(guestbookPath).
 		SetAppNamespace(fixture.AppNamespace()).
@@ -47,7 +47,7 @@ func TestNSAutoSyncSelfHealDisabled(t *testing.T) {
 }
 
 func TestNSAutoSyncSelfHealEnabled(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		SetTrackingMethod("annotation").
 		Path(guestbookPath).
 		SetAppNamespace(fixture.AppNamespace()).

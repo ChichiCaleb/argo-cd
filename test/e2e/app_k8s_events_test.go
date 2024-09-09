@@ -18,7 +18,7 @@ import (
 func TestLabelsOnAppK8sEvents(t *testing.T) {
 	expectedLabels := map[string]string{"app": "test", "environment": "dev"}
 
-	Given(t).
+	appFixture.Given(t).
 		Timeout(60).
 		Path("two-nice-pods").
 		When().
@@ -45,7 +45,7 @@ func TestLabelsOnAppK8sEvents(t *testing.T) {
 
 // resource.includeEventLabelKeys keys not set in argocd-cm
 func TestNoLabelsOnAppK8sEvents(t *testing.T) {
-	Given(t).
+	appFixture.Given(t).
 		Timeout(60).
 		Path("two-nice-pods").
 		When().
