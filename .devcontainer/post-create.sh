@@ -28,8 +28,16 @@ install_go() {
 
 }
 
+install_format_tools() {
+  go install mvdan.cc/gofumpt@latest
+  echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+  source ~/.profile
+}
+
 # Run installation functions
 install_go
+
+install_format_tools
 
 # Install and configure nginx ingress for kind cluster
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
