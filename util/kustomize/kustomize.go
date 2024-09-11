@@ -175,7 +175,6 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 		}
 
 		if len(opts.Replicas) > 0 {
-			// set replicas my-development=2 my-statefulset=4
 			args := []string{"edit", "set", "replicas"}
 			for _, replica := range opts.Replicas {
 				count, err := replica.GetIntCount()
@@ -185,7 +184,7 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 				arg := fmt.Sprintf("%s=%d", replica.Name, count)
 				args = append(args, arg)
 			}
-
+		
 			cmd := exec.Command(k.getBinaryPath(), args...)
 			cmd.Dir = k.path
 			commands = append(commands, executil.GetCommandArgsToLog(cmd))
@@ -194,6 +193,7 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 				return nil, nil, nil, err
 			}
 		}
+		
 
 		if len(opts.CommonLabels) > 0 {
 			//  edit add label foo:bar
@@ -257,35 +257,25 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("failed to load kustomization.yaml: %w", err)
 			}
-			var kustomization interface{}
+			var kustomization map[string]interface{}
 			err = yaml.Unmarshal(b, &kustomization)
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("failed to unmarshal kustomization.yaml: %w", err)
 			}
-			kMap, ok := kustomization.(map[string]interface{})
-			if !ok {
-				return nil, nil, nil, fmt.Errorf("expected kustomization.yaml to be type map[string]interface{}, but got %T", kMap)
-			}
-			patches, ok := kMap["patches"]
-			if ok {
-				// The kustomization.yaml already had a patches field, so we need to append to it.
-				patchesList, ok := patches.([]interface{})
-				if !ok {
-					return nil, nil, nil, fmt.Errorf("expected 'patches' field in kustomization.yaml to be []interface{}, but got %T", patches)
-				}
-				// Since the patches from the Application manifest are typed, we need to convert them to a type which
-				// can be appended to the existing list.
+			
+			if patches, ok := kustomization["patches"].([]interface{}); ok {
+				// Convert opts.Patches to interface{} to append
 				untypedPatches := make([]interface{}, len(opts.Patches))
-				for i := range opts.Patches {
-					untypedPatches[i] = opts.Patches[i]
+				for i, patch := range opts.Patches {
+					untypedPatches[i] = patch // Ensure that 'patch' is of type that does not involve copylocks
 				}
-				patchesList = append(patchesList, untypedPatches...)
-				// Update the kustomization.yaml with the appended patches list.
-				kMap["patches"] = patchesList
+				patches = append(patches, untypedPatches...)
+				kustomization["patches"] = patches
 			} else {
-				kMap["patches"] = opts.Patches
+				kustomization["patches"] = opts.Patches
 			}
-			updatedKustomization, err := yaml.Marshal(kMap)
+			
+			updatedKustomization, err := yaml.Marshal(kustomization)
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("failed to marshal kustomization.yaml after adding patches: %w", err)
 			}
@@ -299,6 +289,7 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 			}
 			commands = append(commands, "# kustomization.yaml updated with patches. There is no `kustomize edit` command for adding patches. In order to generate the manifests in your local environment, you will need to copy the patches into kustomization.yaml manually.")
 		}
+		
 
 		if len(opts.Components) > 0 {
 			// components only supported in kustomize >= v3.7.0

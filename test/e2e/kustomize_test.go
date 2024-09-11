@@ -8,6 +8,8 @@ import (
 	. "github.com/argoproj/gitops-engine/pkg/sync/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/google/go-cmp/cmp"
+    "github.com/google/go-cmp/cmp/cmpopts"
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
@@ -79,7 +81,7 @@ func TestSyncStatusOptionIgnore(t *testing.T) {
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeSynced)).
 		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
-			resourceStatus := app.Status.Resources[0]
+			resourceStatus := &app.Status.Resources[0]
 			assert.Contains(t, resourceStatus.Name, "my-map-")
 			assert.Equal(t, SyncStatusCodeSynced, resourceStatus.Status)
 
@@ -101,7 +103,8 @@ func TestSyncStatusOptionIgnore(t *testing.T) {
 		Expect(appFixture.HealthIs(health.HealthStatusHealthy)).
 		And(func(app *Application) {
 			assert.Len(t, app.Status.Resources, 2)
-			for _, resourceStatus := range app.Status.Resources {
+			for i := range app.Status.Resources {
+				resourceStatus := &app.Status.Resources[i] 
 				// new map in-sync
 				if resourceStatus.Name != oldMap {
 					assert.Contains(t, resourceStatus.Name, "my-map-")
@@ -112,6 +115,7 @@ func TestSyncStatusOptionIgnore(t *testing.T) {
 				}
 			}
 		})
+		
 }
 
 // make sure we can create an app which has a SSH remote base

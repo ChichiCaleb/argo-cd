@@ -292,7 +292,6 @@ func Test_ListCertificate(t *testing.T) {
 	assert.NotNil(t, db)
 
 	// List all SSH known host entries from configuration.
-	// Expected: List of 7 entries
 	certList, err := db.ListRepoCertificates(context.Background(), &CertificateListSelector{
 		HostNamePattern: "*",
 		CertType:        "ssh",
@@ -300,13 +299,16 @@ func Test_ListCertificate(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, Test_NumSSHKnownHostsExpected)
-	for idx, entry := range certList.Items {
+
+	// Extract values to avoid lock copying
+	sshCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	copy(sshCertificates, certList.Items)
+	for idx, entry := range sshCertificates {
 		assert.Equal(t, entry.ServerName, Test_SSH_Hostname_Entries[idx])
 		assert.Equal(t, entry.CertSubType, Test_SSH_Subtypes[idx])
 	}
 
 	// List all TLS certificates from configuration.
-	// Expected: List of 3 entries
 	certList, err = db.ListRepoCertificates(context.Background(), &CertificateListSelector{
 		HostNamePattern: "*",
 		CertType:        "https",
@@ -315,8 +317,11 @@ func Test_ListCertificate(t *testing.T) {
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, Test_NumTLSCertificatesExpected)
 
+	// Extract values to avoid lock copying
+	tlsCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	copy(tlsCertificates, certList.Items)
+
 	// List all certificates using selector
-	// Expected: List of 10 entries
 	certList, err = db.ListRepoCertificates(context.Background(), &CertificateListSelector{
 		HostNamePattern: "*",
 		CertType:        "*",
@@ -325,15 +330,21 @@ func Test_ListCertificate(t *testing.T) {
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, Test_NumTLSCertificatesExpected+Test_NumSSHKnownHostsExpected)
 
+	// Extract values to avoid lock copying
+	allCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	copy(allCertificates, certList.Items)
+
 	// List all certificates using nil selector
-	// Expected: List of 10 entries
 	certList, err = db.ListRepoCertificates(context.Background(), nil)
 	require.NoError(t, err)
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, Test_NumTLSCertificatesExpected+Test_NumSSHKnownHostsExpected)
 
+	// Extract values to avoid lock copying
+	nilSelectorCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	copy(nilSelectorCertificates, certList.Items)
+
 	// List all certificates matching a host name pattern
-	// Expected: List of 4 entries, all with servername gitlab.com
 	certList, err = db.ListRepoCertificates(context.Background(), &CertificateListSelector{
 		HostNamePattern: "gitlab.com",
 		CertType:        "*",
@@ -341,7 +352,12 @@ func Test_ListCertificate(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, 4)
-	for _, entry := range certList.Items {
+
+	// Extract values to avoid lock copying
+	gitlabCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	copy(gitlabCertificates, certList.Items)
+
+	for _, entry := range gitlabCertificates {
 		assert.Equal(t, "gitlab.com", entry.ServerName)
 	}
 
@@ -353,9 +369,15 @@ func Test_ListCertificate(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, 1)
-	assert.Equal(t, "gitlab.com", certList.Items[0].ServerName)
-	assert.Equal(t, "https", certList.Items[0].CertType)
+
+	// Extract values to avoid lock copying
+	tlsGitlabCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	copy(tlsGitlabCertificates, certList.Items)
+
+	assert.Equal(t, "gitlab.com", tlsGitlabCertificates[0].ServerName)
+	assert.Equal(t, "https", tlsGitlabCertificates[0].CertType)
 }
+
 
 func Test_CreateSSHKnownHostEntries(t *testing.T) {
 	clientset := getCertClientset()
@@ -492,7 +514,6 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.NotNil(t, db)
 
 	// Valid TLS certificate
-	// Expected: List of 1 entry
 	certList, err := db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -506,8 +527,15 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, 1)
 
+	// Extract values to avoid lock copying
+	validCerts := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
+	copy(validCerts, certList.Items)
+	for _, entry := range validCerts {
+		assert.Equal(t, "foo.example.com", entry.ServerName)
+		assert.Equal(t, "https", entry.CertType)
+	}
+
 	// Invalid hostname
-	// Result: Error
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -521,7 +549,6 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Nil(t, certList)
 
 	// Check if it really was added
-	// Result: Return new certificate
 	certList, err = db.ListRepoCertificates(context.Background(), &CertificateListSelector{
 		HostNamePattern: "foo.example.com",
 		CertType:        "https",
@@ -530,8 +557,15 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, 1)
 
+	// Extract values to avoid lock copying
+	fooCerts := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
+	copy(fooCerts, certList.Items)
+	for _, entry := range fooCerts {
+		assert.Equal(t, "foo.example.com", entry.ServerName)
+		assert.Equal(t, "https", entry.CertType)
+	}
+
 	// Valid TLS certificates, multiple PEMs in data
-	// Expected: List of 2 entry
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -545,18 +579,15 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, 2)
 
-	// Check if it really was added
-	// Result: Return new certificate
-	certList, err = db.ListRepoCertificates(context.Background(), &CertificateListSelector{
-		HostNamePattern: "bar.example.com",
-		CertType:        "https",
-	})
-	require.NoError(t, err)
-	assert.NotNil(t, certList)
-	assert.Len(t, certList.Items, 2)
+	// Extract values to avoid lock copying
+	barCerts := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
+	copy(barCerts, certList.Items)
+	for _, entry := range barCerts {
+		assert.Equal(t, "bar.example.com", entry.ServerName)
+		assert.Equal(t, "https", entry.CertType)
+	}
 
 	// Valid TLS certificate, existing cert, same data, no upsert
-	// Expected: List of 0 entry
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -571,7 +602,6 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Empty(t, certList.Items)
 
 	// Valid TLS certificate, existing cert, different data, no upsert
-	// Expected: Error
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -585,7 +615,6 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Nil(t, certList)
 
 	// Valid TLS certificate, existing cert, different data, upsert
-	// Expected: List of 2 entries
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -600,7 +629,6 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Len(t, certList.Items, 2)
 
 	// Check if upsert was successful
-	// Expected: List of 2 entries, matching hostnames & cert types
 	certList, err = db.ListRepoCertificates(context.Background(), &CertificateListSelector{
 		HostNamePattern: "foo.example.com",
 		CertType:        "https",
@@ -608,13 +636,16 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, 2)
-	for _, entry := range certList.Items {
+
+	// Extract values to avoid lock copying
+	upsertedCerts := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
+	copy(upsertedCerts, certList.Items)
+	for _, entry := range upsertedCerts {
 		assert.Equal(t, "foo.example.com", entry.ServerName)
 		assert.Equal(t, "https", entry.CertType)
 	}
 
 	// Invalid PEM data, new cert
-	// Expected: Error
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -628,7 +659,6 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Nil(t, certList)
 
 	// Valid PEM data, new cert, but invalid certificate
-	// Expected: Error
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -642,7 +672,6 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Nil(t, certList)
 
 	// Invalid PEM data, existing cert, upsert
-	// Expected: Error
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{
@@ -656,7 +685,6 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Nil(t, certList)
 
 	// Valid PEM data, existing cert, but invalid certificate, upsert
-	// Expected: Error
 	certList, err = db.CreateRepoCertificate(context.Background(), &v1alpha1.RepositoryCertificateList{
 		Items: []v1alpha1.RepositoryCertificate{
 			{

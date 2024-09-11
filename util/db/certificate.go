@@ -165,18 +165,12 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 	}
 
 	// This will hold the final list of certificates that have been created
-	created := make([]appsv1.RepositoryCertificate, 0)
+	created := make([]*appsv1.RepositoryCertificate, 0) // Use pointers
 
-	// Each request can contain multiple certificates of different types, so we
-	// make sure to handle each request accordingly.
 	for _, certificate := range certificates.Items {
-		// Ensure valid repo server name was given only for https certificates.
-		// For SSH known host entries, we let Go's ssh library do the validation
-		// later on.
 		if certificate.CertType == "https" && !certutil.IsValidHostname(certificate.ServerName, false) {
 			return nil, fmt.Errorf("Invalid hostname in request: %s", certificate.ServerName)
 		} else if certificate.CertType == "ssh" {
-			// Matches "[hostname]:port" format
 			reExtract := regexp.MustCompile(`^\[(.*)\]\:[0-9]+$`)
 			matches := reExtract.FindStringSubmatch(certificate.ServerName)
 			var hostnameToCheck string
@@ -191,21 +185,14 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 		}
 
 		if certificate.CertType == "ssh" {
-			// Whether we have a new certificate entry
 			newEntry := true
-			// Whether we have upserted an existing certificate entry
 			upserted := false
 
-			// Check whether known hosts entry already exists. Must match hostname
-			// and the key sub type (e.g. ssh-rsa). It is considered an error if we
-			// already have a corresponding key and upsert was not specified.
 			for _, entry := range sshKnownHostsList {
 				if entry.Host == certificate.ServerName && entry.SubType == certificate.CertSubType {
 					if !upsert && entry.Data != string(certificate.CertData) {
 						return nil, fmt.Errorf("Key for '%s' (subtype: '%s') already exist and upsert was not specified.", entry.Host, entry.SubType)
 					} else {
-						// Do not add an entry on upsert, but remember if we actual did an
-						// upsert.
 						newEntry = false
 						if entry.Data != string(certificate.CertData) {
 							entry.Data = string(certificate.CertData)
@@ -216,7 +203,6 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 				}
 			}
 
-			// Make sure that we received a valid public host key by parsing it
 			_, hostnames, rawKeyData, _, _, err := ssh.ParseKnownHosts([]byte(fmt.Sprintf("%s %s %s", certificate.ServerName, certificate.CertSubType, certificate.CertData)))
 			if err != nil {
 				return nil, err
@@ -234,11 +220,9 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 				})
 			}
 
-			// If we created a new entry, or if we upserted an existing one, we need
-			// to save the data and notify the consumer about the operation.
 			if newEntry || upserted {
 				certificate.CertInfo = certutil.SSHFingerprintSHA256(rawKeyData)
-				created = append(created, certificate)
+				created = append(created, &certificate) // Use pointer
 				saveSSHData = true
 			}
 		} else if certificate.CertType == "https" {
@@ -248,7 +232,6 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 			pemCreated := make([]string, 0)
 
 			for _, entry := range tlsCertificates {
-				// We have an entry for this server already. Check for upsert.
 				if entry.Subject == certificate.ServerName {
 					newEntry = false
 					if entry.Data != string(certificate.CertData) {
@@ -256,24 +239,20 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 							return nil, fmt.Errorf("TLS certificate for server '%s' already exist and upsert was not specified.", entry.Subject)
 						}
 					}
-					// Store pointer to this entry for later use.
 					tlsCertificate = entry
 					break
 				}
 			}
 
-			// Check for validity of data received
 			pemData, err := certutil.ParseTLSCertificatesFromData(string(certificate.CertData))
 			if err != nil {
 				return nil, err
 			}
 
-			// We should have at least one valid PEM entry
 			if len(pemData) == 0 {
 				return nil, fmt.Errorf("No valid PEM data received.")
 			}
 
-			// Make sure we have valid X509 certificates in the data
 			for _, entry := range pemData {
 				_, err := certutil.DecodePEMCertificateToX509(entry)
 				if err != nil {
@@ -282,7 +261,6 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 				pemCreated = append(pemCreated, entry)
 			}
 
-			// New certificate if pointer to existing cert is nil
 			if tlsCertificate == nil {
 				tlsCertificate = &TLSCertificate{
 					Subject: certificate.ServerName,
@@ -290,17 +268,13 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 				}
 				tlsCertificates = append(tlsCertificates, tlsCertificate)
 			} else if tlsCertificate.Data != string(certificate.CertData) {
-				// We have made sure the upsert flag was set above. Now just figure out
-				// again if we have to actually update the data in the existing cert.
 				tlsCertificate.Data = string(certificate.CertData)
 				upserted = true
 			}
 
 			if newEntry || upserted {
-				// We append the certificate for every PEM entry in the request, so the
-				// caller knows that we processed each single item.
 				for _, entry := range pemCreated {
-					created = append(created, appsv1.RepositoryCertificate{
+					created = append(created, &appsv1.RepositoryCertificate{ // Use pointer
 						ServerName: certificate.ServerName,
 						CertType:   "https",
 						CertData:   []byte(entry),
@@ -309,7 +283,6 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 				saveTLSData = true
 			}
 		} else {
-			// Invalid/unknown certificate type
 			return nil, fmt.Errorf("Unknown certificate type: %s", certificate.CertType)
 		}
 	}

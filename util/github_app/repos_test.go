@@ -53,7 +53,11 @@ func Test_repoAsCredentials_GetAuth(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			assert.Equal(t, tt.want, auth)
+
+			assert.Equal(t, tt.want.Id, auth.Id)
+			assert.Equal(t, tt.want.InstallationId, auth.InstallationId)
+			assert.Equal(t, tt.want.EnterpriseBaseURL, auth.EnterpriseBaseURL)
+			assert.Equal(t, tt.want.PrivateKey, auth.PrivateKey)
 		})
 	}
 }

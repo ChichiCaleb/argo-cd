@@ -6,6 +6,8 @@ import (
 
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -16,6 +18,12 @@ import (
 )
 
 func TestListMatrixGenerator(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	generateExpectedApp := func(cluster, name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -105,7 +113,7 @@ func TestListMatrixGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps)).
+		}).Then().Expect(ApplicationsExist(expectedApps, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -118,7 +126,7 @@ func TestListMatrixGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -133,11 +141,11 @@ func TestListMatrixGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
 }
 
 func TestClusterMatrixGenerator(t *testing.T) {
@@ -233,7 +241,7 @@ func TestClusterMatrixGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps)).
+		}).Then().Expect(ApplicationsExist(expectedApps, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -246,7 +254,7 @@ func TestClusterMatrixGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -261,11 +269,11 @@ func TestClusterMatrixGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace. opts))
 }
 
 func TestMatrixTerminalMatrixGeneratorSelector(t *testing.T) {
@@ -375,7 +383,7 @@ func TestMatrixTerminalMatrixGeneratorSelector(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps1)).Expect(ApplicationsDoNotExist(expectedApps2)).
+		}).Then().Expect(ApplicationsExist(expectedApps1)).Expect(ApplicationsDoNotExist(expectedApps2, opts)).
 
 		// Update the ApplicationSetTerminalGenerator LabelSelector, and verify the Applications are deleted and created
 		When().
@@ -407,17 +415,17 @@ func TestMatrixTerminalMatrixGeneratorSelector(t *testing.T) {
 					},
 				},
 			})
-		}).Then().Expect(ApplicationsExist(expectedApps2)).Expect(ApplicationsDoNotExist(expectedApps1)).
+		}).Then().Expect(ApplicationsExist(expectedApps2)).Expect(ApplicationsDoNotExist(expectedApps1, opts)).
 
 		// Set ApplyNestedSelector to false and verify all Applications are created
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.ApplyNestedSelectors = false
-		}).Then().Expect(ApplicationsExist(expectedApps1)).Expect(ApplicationsExist(expectedApps2)).
+		}).Then().Expect(ApplicationsExist(expectedApps1)).Expect(ApplicationsExist(expectedApps2, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps1)).Expect(ApplicationsDoNotExist(expectedApps2))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps1)).Expect(ApplicationsDoNotExist(expectedApps2, opts))
 }
 
 func TestMatrixTerminalMergeGeneratorSelector(t *testing.T) {
@@ -524,7 +532,7 @@ func TestMatrixTerminalMergeGeneratorSelector(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps1)).Expect(ApplicationsDoNotExist(expectedApps2)).
+		}).Then().Expect(ApplicationsExist(expectedApps1)).Expect(ApplicationsDoNotExist(expectedApps2, opts)).
 
 		// Update the ApplicationSetTerminalGenerator LabelSelector, and verify the Applications are deleted and created
 		When().
@@ -557,15 +565,15 @@ func TestMatrixTerminalMergeGeneratorSelector(t *testing.T) {
 					},
 				},
 			})
-		}).Then().Expect(ApplicationsExist(expectedApps2)).Expect(ApplicationsDoNotExist(expectedApps1)).
+		}).Then().Expect(ApplicationsExist(expectedApps2)).Expect(ApplicationsDoNotExist(expectedApps1, opts)).
 
 		// Set ApplyNestedSelector to false and verify all Applications are created
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.ApplyNestedSelectors = false
-		}).Then().Expect(ApplicationsExist(expectedApps1)).Expect(ApplicationsExist(expectedApps2)).
+		}).Then().Expect(ApplicationsExist(expectedApps1)).Expect(ApplicationsExist(expectedApps2, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps1)).Expect(ApplicationsDoNotExist(expectedApps2))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps1)).Expect(ApplicationsDoNotExist(expectedApps2, opts))
 }

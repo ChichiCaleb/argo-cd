@@ -94,11 +94,12 @@ func ApplicationSetHasConditions(applicationSetName string, expectedConditions [
 			if err != nil {
 				return failed, err.Error()
 			}
-			return pending, fmt.Sprintf("application set conditions are not equal: '%s', diff: %s\n", expectedConditions, diff)
+			return pending, fmt.Sprintf("application set conditions are not equal: expected: %v, diff: %s\n", expectedConditions, diff) // Updated here
 		}
 		return succeeded, "application set successfully found"
 	}
 }
+
 
 // ApplicationsDoNotExist checks that each of the 'expectedApps' no longer exist in the namespace
 func ApplicationsDoNotExist(expectedApps []v1alpha1.Application) Expectation {

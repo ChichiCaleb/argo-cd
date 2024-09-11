@@ -20,7 +20,7 @@ func TestNormalize(t *testing.T) {
 		lives      []*unstructured.Unstructured
 		targets    []*unstructured.Unstructured
 	}
-	setup := func(t *testing.T, ignores []v1alpha1.ResourceIgnoreDifferences) *fixture {
+	setup := func(t *testing.T, ignores []*v1alpha1.ResourceIgnoreDifferences) *fixture {
 		t.Helper()
 		dc, err := diff.NewDiffConfigBuilder().
 			WithDiffSettings(ignores, nil, true, normalizers.IgnoreNormalizerOpts{}).
@@ -42,7 +42,7 @@ func TestNormalize(t *testing.T) {
 			Kind:                  "*",
 			ManagedFieldsManagers: []string{"revision-history-manager"},
 		}
-		ignores := []v1alpha1.ResourceIgnoreDifferences{ignore}
+		ignores := []*v1alpha1.ResourceIgnoreDifferences{ignore}
 		f := setup(t, ignores)
 
 		// when
@@ -60,7 +60,7 @@ func TestNormalize(t *testing.T) {
 	})
 	t.Run("will correctly normalize with multiple ignore configurations", func(t *testing.T) {
 		// given
-		ignores := []v1alpha1.ResourceIgnoreDifferences{
+		ignores := []*v1alpha1.ResourceIgnoreDifferences{
 			{
 				Group:        "apps",
 				Kind:         "Deployment",
@@ -95,7 +95,7 @@ func TestNormalize(t *testing.T) {
 	})
 	t.Run("will not modify resources if ignore difference is not configured", func(t *testing.T) {
 		// given
-		ignores := []v1alpha1.ResourceIgnoreDifferences{}
+		ignores := []*v1alpha1.ResourceIgnoreDifferences{}
 		f := setup(t, ignores)
 
 		// when

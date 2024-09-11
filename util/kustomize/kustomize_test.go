@@ -184,7 +184,7 @@ func TestGetSemver(t *testing.T) {
 func TestKustomizeBuildForceCommonLabels(t *testing.T) {
 	type testCase struct {
 		TestData        string
-		KustomizeSource v1alpha1.ApplicationSourceKustomize
+		KustomizeSource *v1alpha1.ApplicationSourceKustomize // Pass by reference
 		ExpectedLabels  map[string]string
 		ExpectErr       bool
 		Env             *v1alpha1.Env
@@ -192,7 +192,7 @@ func TestKustomizeBuildForceCommonLabels(t *testing.T) {
 	testCases := []testCase{
 		{
 			TestData: kustomization3,
-			KustomizeSource: v1alpha1.ApplicationSourceKustomize{
+			KustomizeSource: &v1alpha1.ApplicationSourceKustomize{
 				ForceCommonLabels: true,
 				CommonLabels: map[string]string{
 					"foo":  "edited",
@@ -213,7 +213,7 @@ func TestKustomizeBuildForceCommonLabels(t *testing.T) {
 		},
 		{
 			TestData: kustomization3,
-			KustomizeSource: v1alpha1.ApplicationSourceKustomize{
+			KustomizeSource: &v1alpha1.ApplicationSourceKustomize{
 				ForceCommonLabels: false,
 				CommonLabels: map[string]string{
 					"foo": "edited",
@@ -232,7 +232,7 @@ func TestKustomizeBuildForceCommonLabels(t *testing.T) {
 		appPath, err := testDataDir(t, tc.TestData)
 		require.NoError(t, err)
 		kustomize := NewKustomizeApp(appPath, appPath, git.NopCreds{}, "", "", "", "")
-		objs, _, _, err := kustomize.Build(&tc.KustomizeSource, nil, tc.Env, nil)
+		objs, _, _, err := kustomize.Build(tc.KustomizeSource, nil, tc.Env, nil) // Pass by reference
 		switch tc.ExpectErr {
 		case true:
 			require.Error(t, err)
@@ -245,10 +245,11 @@ func TestKustomizeBuildForceCommonLabels(t *testing.T) {
 	}
 }
 
+
 func TestKustomizeBuildForceCommonAnnotations(t *testing.T) {
 	type testCase struct {
 		TestData            string
-		KustomizeSource     v1alpha1.ApplicationSourceKustomize
+		KustomizeSource     *v1alpha1.ApplicationSourceKustomize // Pass by reference
 		ExpectedAnnotations map[string]string
 		ExpectErr           bool
 		Env                 *v1alpha1.Env
@@ -256,7 +257,7 @@ func TestKustomizeBuildForceCommonAnnotations(t *testing.T) {
 	testCases := []testCase{
 		{
 			TestData: kustomization3,
-			KustomizeSource: v1alpha1.ApplicationSourceKustomize{
+			KustomizeSource: &v1alpha1.ApplicationSourceKustomize{
 				ForceCommonAnnotations: true,
 				CommonAnnotations: map[string]string{
 					"one":   "edited",
@@ -280,7 +281,7 @@ func TestKustomizeBuildForceCommonAnnotations(t *testing.T) {
 		},
 		{
 			TestData: kustomization3,
-			KustomizeSource: v1alpha1.ApplicationSourceKustomize{
+			KustomizeSource: &v1alpha1.ApplicationSourceKustomize{
 				ForceCommonAnnotations: true,
 				CommonAnnotations: map[string]string{
 					"one":   "edited",
@@ -304,7 +305,7 @@ func TestKustomizeBuildForceCommonAnnotations(t *testing.T) {
 		},
 		{
 			TestData: kustomization3,
-			KustomizeSource: v1alpha1.ApplicationSourceKustomize{
+			KustomizeSource: &v1alpha1.ApplicationSourceKustomize{
 				ForceCommonAnnotations: false,
 				CommonAnnotations: map[string]string{
 					"one": "edited",
@@ -324,7 +325,7 @@ func TestKustomizeBuildForceCommonAnnotations(t *testing.T) {
 		appPath, err := testDataDir(t, tc.TestData)
 		require.NoError(t, err)
 		kustomize := NewKustomizeApp(appPath, appPath, git.NopCreds{}, "", "", "", "")
-		objs, _, _, err := kustomize.Build(&tc.KustomizeSource, nil, tc.Env, nil)
+		objs, _, _, err := kustomize.Build(tc.KustomizeSource, nil, tc.Env, nil) // Pass by reference
 		switch tc.ExpectErr {
 		case true:
 			require.Error(t, err)
@@ -337,10 +338,11 @@ func TestKustomizeBuildForceCommonAnnotations(t *testing.T) {
 	}
 }
 
+
 func TestKustomizeLabelWithoutSelector(t *testing.T) {
 	type testCase struct {
 		TestData               string
-		KustomizeSource        v1alpha1.ApplicationSourceKustomize
+		KustomizeSource        *v1alpha1.ApplicationSourceKustomize // Pass by reference
 		ExpectedMetadataLabels map[string]string
 		ExpectedSelectorLabels map[string]string
 		ExpectedTemplateLabels map[string]string
@@ -350,7 +352,7 @@ func TestKustomizeLabelWithoutSelector(t *testing.T) {
 	testCases := []testCase{
 		{
 			TestData: kustomization7,
-			KustomizeSource: v1alpha1.ApplicationSourceKustomize{
+			KustomizeSource: &v1alpha1.ApplicationSourceKustomize{
 				CommonLabels: map[string]string{
 					"foo": "bar",
 				},
@@ -368,7 +370,7 @@ func TestKustomizeLabelWithoutSelector(t *testing.T) {
 		},
 		{
 			TestData: kustomization7,
-			KustomizeSource: v1alpha1.ApplicationSourceKustomize{
+			KustomizeSource: &v1alpha1.ApplicationSourceKustomize{
 				CommonLabels: map[string]string{
 					"managed-by": "argocd",
 				},
@@ -391,7 +393,7 @@ func TestKustomizeLabelWithoutSelector(t *testing.T) {
 		appPath, err := testDataDir(t, tc.TestData)
 		require.NoError(t, err)
 		kustomize := NewKustomizeApp(appPath, appPath, git.NopCreds{}, "", "", "", "")
-		objs, _, _, err := kustomize.Build(&tc.KustomizeSource, nil, tc.Env, nil)
+		objs, _, _, err := kustomize.Build(tc.KustomizeSource, nil, tc.Env, nil) // Pass by reference
 
 		switch tc.ExpectErr {
 		case true:
@@ -413,6 +415,7 @@ func TestKustomizeLabelWithoutSelector(t *testing.T) {
 		}
 	}
 }
+
 
 func TestKustomizeCustomVersion(t *testing.T) {
 	appPath, err := testDataDir(t, kustomization1)

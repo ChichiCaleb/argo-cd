@@ -118,29 +118,44 @@ func (opts *IgnoreNormalizerOpts) getJQExecutionTimeout() time.Duration {
 }
 
 // NewIgnoreNormalizer creates diff normalizer which removes ignored fields according to given application spec and resource overrides
+// NewIgnoreNormalizer creates diff normalizer which removes ignored fields according to given application spec and resource overrides
 func NewIgnoreNormalizer(ignore []v1alpha1.ResourceIgnoreDifferences, overrides map[string]v1alpha1.ResourceOverride, opts IgnoreNormalizerOpts) (diff.Normalizer, error) {
+	// Make a new slice for the ignore differences
+	ignore = append([]v1alpha1.ResourceIgnoreDifferences{}, ignore...)
+
+	// Process the overrides
 	for key, override := range overrides {
 		group, kind, err := getGroupKindForOverrideKey(key)
 		if err != nil {
 			log.Warn(err)
+			continue
 		}
-		if len(override.IgnoreDifferences.JSONPointers) > 0 || len(override.IgnoreDifferences.JQPathExpressions) > 0 {
-			resourceIgnoreDifference := v1alpha1.ResourceIgnoreDifferences{
-				Group: group,
-				Kind:  kind,
-			}
-			if len(override.IgnoreDifferences.JSONPointers) > 0 {
-				resourceIgnoreDifference.JSONPointers = override.IgnoreDifferences.JSONPointers
-			}
-			if len(override.IgnoreDifferences.JQPathExpressions) > 0 {
-				resourceIgnoreDifference.JQPathExpressions = override.IgnoreDifferences.JQPathExpressions
-			}
+
+		// Create a new ResourceIgnoreDifferences from override
+		resourceIgnoreDifference := v1alpha1.ResourceIgnoreDifferences{
+			Group: group,
+			Kind:  kind,
+		}
+
+		// Only copy necessary fields
+		if len(override.IgnoreDifferences.JSONPointers) > 0 {
+			resourceIgnoreDifference.JSONPointers = make([]string, len(override.IgnoreDifferences.JSONPointers))
+			copy(resourceIgnoreDifference.JSONPointers, override.IgnoreDifferences.JSONPointers)
+		}
+		if len(override.IgnoreDifferences.JQPathExpressions) > 0 {
+			resourceIgnoreDifference.JQPathExpressions = make([]string, len(override.IgnoreDifferences.JQPathExpressions))
+			copy(resourceIgnoreDifference.JQPathExpressions, override.IgnoreDifferences.JQPathExpressions)
+		}
+
+		if len(resourceIgnoreDifference.JSONPointers) > 0 || len(resourceIgnoreDifference.JQPathExpressions) > 0 {
 			ignore = append(ignore, resourceIgnoreDifference)
 		}
 	}
+
+	// Create a slice for patches
 	patches := make([]normalizerPatch, 0)
-	for i := range ignore {
-		for _, path := range ignore[i].JSONPointers {
+	for _, ignoreDiff := range ignore {
+		for _, path := range ignoreDiff.JSONPointers {
 			patchData, err := json.Marshal([]map[string]string{{"op": "remove", "path": path}})
 			if err != nil {
 				return nil, err
@@ -151,14 +166,14 @@ func NewIgnoreNormalizer(ignore []v1alpha1.ResourceIgnoreDifferences, overrides 
 			}
 			patches = append(patches, &jsonPatchNormalizerPatch{
 				baseNormalizerPatch: baseNormalizerPatch{
-					groupKind: schema.GroupKind{Group: ignore[i].Group, Kind: ignore[i].Kind},
-					name:      ignore[i].Name,
-					namespace: ignore[i].Namespace,
+					groupKind: schema.GroupKind{Group: ignoreDiff.Group, Kind: ignoreDiff.Kind},
+					name:      ignoreDiff.Name,
+					namespace: ignoreDiff.Namespace,
 				},
 				patch: &patch,
 			})
 		}
-		for _, pathExpression := range ignore[i].JQPathExpressions {
+		for _, pathExpression := range ignoreDiff.JQPathExpressions {
 			jqDeletionQuery, err := gojq.Parse(fmt.Sprintf("del(%s)", pathExpression))
 			if err != nil {
 				return nil, err
@@ -169,17 +184,19 @@ func NewIgnoreNormalizer(ignore []v1alpha1.ResourceIgnoreDifferences, overrides 
 			}
 			patches = append(patches, &jqNormalizerPatch{
 				baseNormalizerPatch: baseNormalizerPatch{
-					groupKind: schema.GroupKind{Group: ignore[i].Group, Kind: ignore[i].Kind},
-					name:      ignore[i].Name,
-					namespace: ignore[i].Namespace,
+					groupKind: schema.GroupKind{Group: ignoreDiff.Group, Kind: ignoreDiff.Kind},
+					name:      ignoreDiff.Name,
+					namespace: ignoreDiff.Namespace,
 				},
 				code:               jqDeletionCode,
 				jqExecutionTimeout: opts.getJQExecutionTimeout(),
 			})
 		}
 	}
+
 	return &ignoreNormalizer{patches: patches}, nil
 }
+
 
 // Normalize removes fields from supplied resource using json paths from matching items of specified resources ignored differences list
 func (n *ignoreNormalizer) Normalize(un *unstructured.Unstructured) error {

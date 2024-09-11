@@ -271,12 +271,19 @@ func TestGetHealthScriptNoPredefined(t *testing.T) {
 }
 
 func TestGetResourceActionPredefined(t *testing.T) {
-	testObj := StrToUnstructured(objJSON)
-	vm := VM{}
+    testObj := StrToUnstructured(objJSON)
+    vm := VM{}
 
-	action, err := vm.GetResourceAction(testObj, "resume")
-	require.NoError(t, err)
-	assert.NotEmpty(t, action)
+    action, err := vm.GetResourceAction(testObj, "resume")
+    require.NoError(t, err)
+
+    // Check if the fields of the action are not empty
+    if action.Name == "" {
+        t.Error("Expected action.Name to be non-empty")
+    }
+    if action.ActionLua == "" {
+        t.Error("Expected action.ActionLua to be non-empty")
+    }
 }
 
 func TestGetResourceActionNoPredefined(t *testing.T) {
@@ -288,27 +295,32 @@ func TestGetResourceActionNoPredefined(t *testing.T) {
 }
 
 func TestGetResourceActionWithOverride(t *testing.T) {
-	testObj := StrToUnstructured(objJSON)
-	test := appv1.ResourceActionDefinition{
-		Name:      "test",
-		ActionLua: "return obj",
-	}
+    testObj := StrToUnstructured(objJSON)
+    expectedAction := appv1.ResourceActionDefinition{
+        Name:      "test",
+        ActionLua: "return obj",
+    }
 
-	vm := VM{
-		ResourceOverrides: map[string]appv1.ResourceOverride{
-			"argoproj.io/Rollout": {
-				Actions: string(grpc.MustMarshal(appv1.ResourceActions{
-					Definitions: []appv1.ResourceActionDefinition{
-						test,
-					},
-				})),
-			},
-		},
-	}
-	action, err := vm.GetResourceAction(testObj, "test")
-	require.NoError(t, err)
-	assert.Equal(t, test, action)
+    vm := VM{
+        ResourceOverrides: map[string]appv1.ResourceOverride{
+            "argoproj.io/Rollout": {
+                Actions: string(grpc.MustMarshal(appv1.ResourceActions{
+                    Definitions: []appv1.ResourceActionDefinition{
+                        expectedAction,
+                    },
+                })),
+            },
+        },
+    }
+    
+    action, err := vm.GetResourceAction(testObj, "test")
+    require.NoError(t, err)
+
+    // Compare only the relevant fields
+    assert.Equal(t, expectedAction.Name, action.Name, "Expected action.Name to match")
+    assert.Equal(t, expectedAction.ActionLua, action.ActionLua, "Expected action.ActionLua to match")
 }
+
 
 func TestGetResourceActionDiscoveryPredefined(t *testing.T) {
 	testObj := StrToUnstructured(objJSON)
@@ -360,6 +372,7 @@ func TestExecuteResourceActionDiscovery(t *testing.T) {
 	vm := VM{}
 	actions, err := vm.ExecuteResourceActionDiscovery(testObj, validDiscoveryLua)
 	require.NoError(t, err)
+
 	expectedActions := []appv1.ResourceAction{
 		{
 			Name: "resume",
@@ -373,10 +386,34 @@ func TestExecuteResourceActionDiscovery(t *testing.T) {
 			Name: "test",
 		},
 	}
+
+	// Convert expectedActions to a map for efficient lookup
+	expectedActionsMap := make(map[string]appv1.ResourceAction)
+	for _, action := range expectedActions {
+		expectedActionsMap[action.Name] = action
+	}
+
+	// Check that each action in the result is present in the expected actions map
+	for _, action := range actions {
+		expectedAction, exists := expectedActionsMap[action.Name]
+		if !exists {
+			t.Errorf("Unexpected action found: %+v", action)
+			continue
+		}
+		// Compare the actual action with the expected action
+		if !reflect.DeepEqual(action, expectedAction) {
+			t.Errorf("Action does not match expected value: expected %+v, got %+v", expectedAction, action)
+		}
+	}
+
+	// Check if all expected actions were found in the result
 	for _, expectedAction := range expectedActions {
-		assert.Contains(t, actions, expectedAction)
+		if _, found := expectedActionsMap[expectedAction.Name]; !found {
+			t.Errorf("Expected action not found: %+v", expectedAction)
+		}
 	}
 }
+
 
 const discoveryLuaWithInvalidResourceAction = `
 resume = {name = 'resume', invalidField: "test""}

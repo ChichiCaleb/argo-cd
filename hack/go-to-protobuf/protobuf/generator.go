@@ -213,9 +213,7 @@ func (b bodyGen) doStruct(sw *generator.SnippetWriter) error {
 			key := strings.TrimPrefix(k, "protobuf.options.")
 			switch key {
 			case "marshal":
-				if v[0] == "false" {
-					// Ignore marshal option in Proto3.
-				}
+				
 			default:
 				options = append(options, fmt.Sprintf("%s = %s", key, v[0]))
 			}

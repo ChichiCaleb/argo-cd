@@ -283,7 +283,7 @@ var (
 	}
 )
 
-func (ks *KustomizeSettings) GetOptions(source v1alpha1.ApplicationSource) (*v1alpha1.KustomizeOptions, error) {
+func (ks *KustomizeSettings) GetOptions(source *v1alpha1.ApplicationSource) (*v1alpha1.KustomizeOptions, error) {
 	binaryPath := ""
 	buildOptions := ""
 	if source.Kustomize != nil && source.Kustomize.Version != "" {
@@ -307,6 +307,7 @@ func (ks *KustomizeSettings) GetOptions(source v1alpha1.ApplicationSource) (*v1a
 		BinaryPath:   binaryPath,
 	}, nil
 }
+
 
 // Credentials for accessing a Git repository
 type Repository struct {
@@ -864,7 +865,7 @@ func (mgr *SettingsManager) GetEnabledSourceTypes() (map[string]bool, error) {
 	return res, nil
 }
 
-func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]v1alpha1.ResourceOverride, error) {
+func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]*v1alpha1.ResourceOverride, error) {
 	compareOptions, err := mgr.GetResourceCompareOptions()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get compare options: %w", err)
@@ -876,6 +877,10 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]v1al
 	}
 
 	for k, v := range resourceOverrides {
+		if v == nil {
+			continue
+		}
+
 		resourceUpdates := v.IgnoreResourceUpdates
 		if compareOptions.IgnoreDifferencesOnResourceUpdates {
 			resourceUpdates.JQPathExpressions = append(resourceUpdates.JQPathExpressions, v.IgnoreDifferences.JQPathExpressions...)
@@ -898,6 +903,7 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]v1al
 
 	return resourceOverrides, nil
 }
+
 
 func (mgr *SettingsManager) GetIsIgnoreResourceUpdatesEnabled() (bool, error) {
 	argoCDCM, err := mgr.getConfigMap()
@@ -961,29 +967,43 @@ func (mgr *SettingsManager) GetResourceOverrides() (map[string]v1alpha1.Resource
 	return resourceOverrides, nil
 }
 
-func addStatusOverrideToGK(resourceOverrides map[string]v1alpha1.ResourceOverride, groupKind string) {
-	if val, ok := resourceOverrides[groupKind]; ok {
-		val.IgnoreDifferences.JSONPointers = append(val.IgnoreDifferences.JSONPointers, "/status")
-		resourceOverrides[groupKind] = val
-	} else {
-		resourceOverrides[groupKind] = v1alpha1.ResourceOverride{
-			IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{"/status"}},
-		}
-	}
+func addStatusOverrideToGK(resourceOverrides map[string]*v1alpha1.ResourceOverride, groupKind string) {
+    if val, ok := resourceOverrides[groupKind]; ok {
+        if val != nil {
+            val.IgnoreDifferences.JSONPointers = append(val.IgnoreDifferences.JSONPointers, "/status")
+        } else {
+            // If val is nil, initialize a new ResourceOverride with the status path
+            resourceOverrides[groupKind] = &v1alpha1.ResourceOverride{
+                IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{"/status"}},
+            }
+        }
+    } else {
+        // Create a new ResourceOverride if not present
+        resourceOverrides[groupKind] = &v1alpha1.ResourceOverride{
+            IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{"/status"}},
+        }
+    }
 }
 
-func addIgnoreDiffItemOverrideToGK(resourceOverrides map[string]v1alpha1.ResourceOverride, groupKind, ignoreItem string) {
+func addIgnoreDiffItemOverrideToGK(resourceOverrides map[string]*v1alpha1.ResourceOverride, groupKind, ignoreItem string) {
 	if val, ok := resourceOverrides[groupKind]; ok {
-		val.IgnoreDifferences.JSONPointers = append(val.IgnoreDifferences.JSONPointers, ignoreItem)
-		resourceOverrides[groupKind] = val
+		if val != nil {
+			val.IgnoreDifferences.JSONPointers = append(val.IgnoreDifferences.JSONPointers, ignoreItem)
+		} else {
+			// If val is nil, initialize a new ResourceOverride with the ignoreItem
+			resourceOverrides[groupKind] = &v1alpha1.ResourceOverride{
+				IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{ignoreItem}},
+			}
+		}
 	} else {
-		resourceOverrides[groupKind] = v1alpha1.ResourceOverride{
+		// Create a new ResourceOverride if not present
+		resourceOverrides[groupKind] = &v1alpha1.ResourceOverride{
 			IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{ignoreItem}},
 		}
 	}
 }
 
-func (mgr *SettingsManager) appendResourceOverridesFromSplitKeys(cmData map[string]string, resourceOverrides map[string]v1alpha1.ResourceOverride) error {
+func (mgr *SettingsManager) appendResourceOverridesFromSplitKeys(cmData map[string]string, resourceOverrides map[string]*v1alpha1.ResourceOverride) error {
 	for k, v := range cmData {
 		if !strings.HasPrefix(k, resourceCustomizationsKey) {
 			continue
@@ -1006,7 +1026,7 @@ func (mgr *SettingsManager) appendResourceOverridesFromSplitKeys(cmData map[stri
 
 		overrideVal, ok := resourceOverrides[overrideKey]
 		if !ok {
-			overrideVal = v1alpha1.ResourceOverride{}
+			overrideVal = &v1alpha1.ResourceOverride{}
 		}
 
 		customizationType := parts[2]
@@ -1045,10 +1065,12 @@ func (mgr *SettingsManager) appendResourceOverridesFromSplitKeys(cmData map[stri
 		default:
 			return fmt.Errorf("resource customization type %s not supported", customizationType)
 		}
+
 		resourceOverrides[overrideKey] = overrideVal
 	}
 	return nil
 }
+
 
 // Convert group-kind format to <group/kind>, allowed key format examples
 // resource.customizations.health.cert-manager.io_Certificate

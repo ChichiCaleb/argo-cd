@@ -246,17 +246,17 @@ func TestIncludeResource(t *testing.T) {
 func TestContainsSyncResource(t *testing.T) {
 	var (
 		blankUnstructured unstructured.Unstructured
-		blankResource     argoappv1.SyncOperationResource
-		helloResource     = argoappv1.SyncOperationResource{Name: "hello"}
+		blankResource     = &argoappv1.SyncOperationResource{}
+		helloResource     = &argoappv1.SyncOperationResource{Name: "hello"}
 	)
 	tables := []struct {
 		u        *unstructured.Unstructured
-		rr       []argoappv1.SyncOperationResource
+		rr       []*argoappv1.SyncOperationResource
 		expected bool
 	}{
-		{&blankUnstructured, []argoappv1.SyncOperationResource{}, false},
-		{&blankUnstructured, []argoappv1.SyncOperationResource{blankResource}, true},
-		{&blankUnstructured, []argoappv1.SyncOperationResource{helloResource}, false},
+		{&blankUnstructured, []*argoappv1.SyncOperationResource{}, false},
+		{&blankUnstructured, []*argoappv1.SyncOperationResource{blankResource}, true},
+		{&blankUnstructured, []*argoappv1.SyncOperationResource{helloResource}, false},
 	}
 
 	for _, table := range tables {
@@ -265,6 +265,7 @@ func TestContainsSyncResource(t *testing.T) {
 		}
 	}
 }
+
 
 // TestNilOutZerValueAppSources verifies we will nil out app source specs when they are their zero-value
 func TestNilOutZerValueAppSources(t *testing.T) {
@@ -1166,8 +1167,8 @@ func TestGetGlobalProjects(t *testing.T) {
 }
 
 func Test_GetDifferentPathsBetweenStructs(t *testing.T) {
-	r1 := argoappv1.Repository{}
-	r2 := argoappv1.Repository{
+	r1 := &argoappv1.Repository{} // Use pointers instead of values
+	r2 := &argoappv1.Repository{
 		Name: "SomeName",
 	}
 
@@ -1176,16 +1177,17 @@ func Test_GetDifferentPathsBetweenStructs(t *testing.T) {
 }
 
 func Test_GenerateSpecIsDifferentErrorMessageWithNoDiff(t *testing.T) {
-	r1 := argoappv1.Repository{}
-	r2 := argoappv1.Repository{}
+	r1 := &argoappv1.Repository{} // Use pointers instead of values
+	r2 := &argoappv1.Repository{}
 
 	msg := GenerateSpecIsDifferentErrorMessage("application", r1, r2)
 	assert.Equal(t, "existing application spec is different; use upsert flag to force update", msg)
 }
 
+
 func Test_GenerateSpecIsDifferentErrorMessageWithDiff(t *testing.T) {
-	r1 := argoappv1.Repository{}
-	r2 := argoappv1.Repository{
+	r1 := &argoappv1.Repository{} // Use pointers instead of values
+	r2 := &argoappv1.Repository{
 		Name: "test",
 	}
 
@@ -1308,7 +1310,7 @@ func Test_GetRefSources(t *testing.T) {
 
 		expectedRefSource := argoappv1.RefTargetRevisionMapping{
 			"$source-1_2": &argoappv1.RefTarget{
-				Repo: *repo,
+				Repo: repo, // Use pointer to avoid copying value
 			},
 		}
 		require.NoError(t, err)
@@ -1358,6 +1360,7 @@ func Test_GetRefSources(t *testing.T) {
 		assert.Empty(t, refSources)
 	})
 }
+
 
 func TestValidatePermissionsMultipleSources(t *testing.T) {
 	t.Run("Empty Repo URL result in condition", func(t *testing.T) {

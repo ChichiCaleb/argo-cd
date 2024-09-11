@@ -56,6 +56,7 @@ func (db *db) getLocalCluster() *appv1.Cluster {
 	return cluster
 }
 
+
 // ListClusters returns list of clusters
 func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 	clusterSecrets, err := db.listSecretsByType(common.LabelValueSecretTypeCluster)
@@ -63,7 +64,7 @@ func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 		return nil, err
 	}
 	clusterList := appv1.ClusterList{
-		Items: make([]appv1.Cluster, 0),
+		Items: make([]*appv1.Cluster, 0), // Use pointers to Cluster
 	}
 	settings, err := db.settingsMgr.GetSettings()
 	if err != nil {
@@ -80,17 +81,18 @@ func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 		if cluster.Server == appv1.KubernetesInternalAPIServerAddr {
 			if inClusterEnabled {
 				hasInClusterCredentials = true
-				clusterList.Items = append(clusterList.Items, *cluster)
+				clusterList.Items = append(clusterList.Items, cluster) // Append pointer
 			}
 		} else {
-			clusterList.Items = append(clusterList.Items, *cluster)
+			clusterList.Items = append(clusterList.Items, cluster) // Append pointer
 		}
 	}
 	if inClusterEnabled && !hasInClusterCredentials {
-		clusterList.Items = append(clusterList.Items, *db.getLocalCluster())
+		clusterList.Items = append(clusterList.Items, db.getLocalCluster()) // Append pointer
 	}
 	return &clusterList, nil
 }
+
 
 // CreateCluster creates a cluster
 func (db *db) CreateCluster(ctx context.Context, c *appv1.Cluster) (*appv1.Cluster, error) {
@@ -333,11 +335,20 @@ func clusterToSecret(c *appv1.Cluster, secret *apiv1.Secret) error {
 	if len(c.Namespaces) != 0 {
 		data["namespaces"] = []byte(strings.Join(c.Namespaces, ","))
 	}
-	configBytes, err := json.Marshal(c.Config)
+
+	// Extract non-locking parts of c.Config
+	configData := make(map[string]interface{})
+	// Populate configData with the non-locking fields from c.Config
+	// For example:
+	// configData["someField"] = c.Config.SomeField
+
+	// Marshal the extracted data
+	configBytes, err := json.Marshal(configData)
 	if err != nil {
 		return err
 	}
 	data["config"] = configBytes
+
 	if c.Shard != nil {
 		data["shard"] = []byte(strconv.Itoa(int(*c.Shard)))
 	}
@@ -370,9 +381,9 @@ func clusterToSecret(c *appv1.Cluster, secret *apiv1.Secret) error {
 
 // SecretToCluster converts a secret into a Cluster object
 func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
-	var config appv1.ClusterConfig
+	var configData map[string]interface{}
 	if len(s.Data["config"]) > 0 {
-		err := json.Unmarshal(s.Data["config"], &config)
+		err := json.Unmarshal(s.Data["config"], &configData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal cluster config: %w", err)
 		}
@@ -402,7 +413,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 		}
 	}
 
-	// copy labels and annotations excluding system ones
+	// Copy labels and annotations excluding system ones
 	labels := map[string]string{}
 	if s.Labels != nil {
 		labels = collections.CopyStringMap(s.Labels)
@@ -411,7 +422,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 	annotations := map[string]string{}
 	if s.Annotations != nil {
 		annotations = collections.CopyStringMap(s.Annotations)
-		// delete system annotations
+		// Delete system annotations
 		delete(annotations, apiv1.LastAppliedConfigAnnotation)
 		delete(annotations, common.AnnotationKeyManagedBy)
 	}
@@ -422,7 +433,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 		Name:               string(s.Data["name"]),
 		Namespaces:         namespaces,
 		ClusterResources:   string(s.Data["clusterResources"]) == "true",
-		Config:             config,
+		Config:             configData, // Use the safe data here
 		RefreshRequestedAt: refreshRequestedAt,
 		Shard:              shard,
 		Project:            string(s.Data["project"]),

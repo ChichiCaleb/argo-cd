@@ -220,7 +220,7 @@ func TestNamespacedGetLogsAllowSwitchOff(t *testing.T) {
 
 func TestNamespacedSyncToUnsignedCommit(t *testing.T) {
 	SkipOnEnv(t, "GPG")
-	GivenWithNamespace(t, AppNamespace()).
+	appFixture.GivenWithNamespace(t, AppNamespace()).
 		SetTrackingMethod("annotation").
 		Project("gpg").
 		Path(guestbookPath).
@@ -1169,7 +1169,7 @@ func TestNamespacedPermissions(t *testing.T) {
 	appCtx := appFixture.Given(t)
 	projName := "argo-project"
 	projActions := projectFixture.
-	appFixture.Given(t).
+	Given(t).
 		Name(projName).
 		SourceNamespaces([]string{AppNamespace()}).
 		When().
@@ -1188,8 +1188,8 @@ func TestNamespacedPermissions(t *testing.T) {
 		// ensure app is not created if project permissions are missing
 		CreateApp().
 		Then().
-		Expect(Error("", sourceError)).
-		Expect(Error("", destinationError)).
+		Expect(appFixture.Error("", sourceError)).
+		Expect(appFixture.Error("", destinationError)).
 		When().
 		DoNotIgnoreErrors().
 		// add missing permissions, create and sync app
@@ -1247,7 +1247,7 @@ func TestNamespacedPermissionWithScopedRepo(t *testing.T) {
 	projName := "argo-project"
 	fixture.EnsureCleanState(t)
 	projectFixture.
-	appFixture.Given(t).
+	Given(t).
 		Name(projName).
 		SourceNamespaces([]string{AppNamespace()}).
 		Destination("*,*").
@@ -1287,7 +1287,7 @@ func TestNamespacedPermissionWithScopedRepo(t *testing.T) {
 func TestNamespacedPermissionDeniedWithScopedRepo(t *testing.T) {
 	projName := "argo-project"
 	projectFixture.
-	appFixture.Given(t).
+	Given(t).
 		Name(projName).
 		Destination("*,*").
 		SourceNamespaces([]string{AppNamespace()}).
@@ -1505,7 +1505,7 @@ func TestNamespacedOrphanedResource(t *testing.T) {
 			require.NoError(t, err)
 			assert.Contains(t, output, "orphaned-configmap")
 		}).
-		appFixture.Given().
+		Given().
 		ProjectSpec(AppProjectSpec{
 			SourceRepos:       []string{"*"},
 			Destinations:      []ApplicationDestination{{Namespace: "*", Server: "*"}},

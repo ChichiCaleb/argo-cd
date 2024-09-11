@@ -14,6 +14,8 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/argoproj/pkg/rand"
 
@@ -117,7 +119,7 @@ func TestSimpleListGeneratorExternalNamespace(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -127,7 +129,7 @@ func TestSimpleListGeneratorExternalNamespace(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -143,17 +145,24 @@ func TestSimpleListGeneratorExternalNamespace(t *testing.T) {
 			appset.Spec.Template.Labels = map[string]string{
 				"label-key": "label-value",
 			}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-list-generator-external", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("simple-list-generator-external", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts))
 }
 
 func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
+   
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	externalNamespace := string(utils.ArgoCDExternalNamespace)
 	externalNamespace2 := string(utils.ArgoCDExternalNamespace2)
 
@@ -244,7 +253,7 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2}, opts)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace).
 		CreateNamespace(externalNamespace).Create(v1alpha1.ApplicationSet{
@@ -279,11 +288,11 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
-		Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+		Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2}, opts)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace).
 		Then().
@@ -295,11 +304,11 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
-		Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+		Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2}, opts)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace).
 		Then().
@@ -317,29 +326,36 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 			appset.Spec.Template.Labels = map[string]string{
 				"label-key": "label-value",
 			}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-list-generator-external", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("simple-list-generator-external", ExpectedConditions, opts)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
-		Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+		Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2}, opts)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace).
 		Then().
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
 		Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppExternalNamespace2}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppExternalNamespace2}, opts))
 }
 
 func TestSimpleListGenerator(t *testing.T) {
+
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -398,7 +414,7 @@ func TestSimpleListGenerator(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -408,7 +424,7 @@ func TestSimpleListGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -420,17 +436,23 @@ func TestSimpleListGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-list-generator", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("simple-list-generator", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts))
 }
 
 func TestSimpleListGeneratorGoTemplate(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -490,7 +512,7 @@ func TestSimpleListGeneratorGoTemplate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -500,7 +522,7 @@ func TestSimpleListGeneratorGoTemplate(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -512,17 +534,23 @@ func TestSimpleListGeneratorGoTemplate(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-list-generator", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("simple-list-generator", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts))
 }
 
 func TestRenderHelmValuesObject(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -591,13 +619,19 @@ func TestRenderHelmValuesObject(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}, opts))
 }
 
 func TestTemplatePatch(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -692,7 +726,7 @@ func TestTemplatePatch(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -702,7 +736,7 @@ func TestTemplatePatch(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -714,17 +748,23 @@ func TestTemplatePatch(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("patch-template", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("patch-template", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts))
 }
 
 func TestUpdateHelmValuesObject(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+	
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -794,7 +834,7 @@ func TestUpdateHelmValuesObject(t *testing.T) {
 			},
 		},
 	}).Then().
-		Expect(ApplicationSetHasConditions("test-values-object-patch", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("test-values-object-patch", ExpectedConditions, opts)).
 		When().
 		// Update the app spec with some knew ValuesObject to force a merge
 		Update(func(as *argov1alpha1.ApplicationSet) {
@@ -803,13 +843,20 @@ func TestUpdateHelmValuesObject(t *testing.T) {
 			}
 		}).
 		Then().
-		Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+		Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 		When().
 		// Delete the ApplicationSet, and verify it deletes the Applications
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}, opts))
 }
 
 func TestSyncPolicyCreateUpdate(t *testing.T) {
+
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Application",
@@ -872,7 +919,7 @@ func TestSyncPolicyCreateUpdate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -882,7 +929,7 @@ func TestSyncPolicyCreateUpdate(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template
 		// Update as well the policy
@@ -904,26 +951,33 @@ func TestSyncPolicyCreateUpdate(t *testing.T) {
 			appset.Spec.SyncPolicy = &argov1alpha1.ApplicationSetSyncPolicy{
 				ApplicationsSync: &applicationsSyncPolicy,
 			}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// Update the list and remove element
 		// As policy is create-update, app deletion must not be reflected
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Generators = []v1alpha1.ApplicationSetGenerator{}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("sync-policy-create-update", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("sync-policy-create-update", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it not deletes the Applications
 		// As policy is create-update, AppSet controller will remove all generated applications's ownerReferences on delete AppSet
 		// So AppSet deletion will be reflected, but all the applications it generates will still exist
 		When().
-		Delete().Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts))
 }
 
 func TestSyncPolicyCreateDelete(t *testing.T) {
+
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Application",
@@ -982,7 +1036,7 @@ func TestSyncPolicyCreateDelete(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -992,7 +1046,7 @@ func TestSyncPolicyCreateDelete(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template
 		// Update as well the policy
@@ -1005,24 +1059,30 @@ func TestSyncPolicyCreateDelete(t *testing.T) {
 			appset.Spec.SyncPolicy = &argov1alpha1.ApplicationSetSyncPolicy{
 				ApplicationsSync: &applicationsSyncPolicy,
 			}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the list and remove element
 		// As policy is create-delete, app deletion must be reflected
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Generators = []v1alpha1.ApplicationSetGenerator{}
-		}).Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("sync-policy-create-delete", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("sync-policy-create-delete", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts))
 }
 
 func TestSyncPolicyCreateOnly(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Application",
@@ -1084,7 +1144,7 @@ func TestSyncPolicyCreateOnly(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -1094,7 +1154,7 @@ func TestSyncPolicyCreateOnly(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template
 		// Update as well the policy
@@ -1107,26 +1167,32 @@ func TestSyncPolicyCreateOnly(t *testing.T) {
 			appset.Spec.SyncPolicy = &argov1alpha1.ApplicationSetSyncPolicy{
 				ApplicationsSync: &applicationsSyncPolicy,
 			}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the list and remove element
 		// As policy is create-only, app deletion must not be reflected
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Generators = []v1alpha1.ApplicationSetGenerator{}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("sync-policy-create-only", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("sync-policy-create-only", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it not deletes the Applications
 		// As policy is create-update, AppSet controller will remove all generated applications's ownerReferences on delete AppSet
 		// So AppSet deletion will be reflected, but all the applications it generates will still exist
 		When().
-		Delete().Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}))
+		Delete().Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts))
 }
 
 func TestSimpleGitDirectoryGenerator(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	generateExpectedApp := func(name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -1198,7 +1264,7 @@ func TestSimpleGitDirectoryGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps)).
+		}).Then().Expect(ApplicationsExist(expectedApps, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -1211,7 +1277,7 @@ func TestSimpleGitDirectoryGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -1226,17 +1292,24 @@ func TestSimpleGitDirectoryGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-git-generator", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("simple-git-generator", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
 }
 
 func TestSimpleGitDirectoryGeneratorGoTemplate(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
+
 	generateExpectedApp := func(name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -1309,7 +1382,7 @@ func TestSimpleGitDirectoryGeneratorGoTemplate(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps)).
+		}).Then().Expect(ApplicationsExist(expectedApps, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -1322,7 +1395,7 @@ func TestSimpleGitDirectoryGeneratorGoTemplate(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -1337,17 +1410,23 @@ func TestSimpleGitDirectoryGeneratorGoTemplate(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-git-generator", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("simple-git-generator", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
 }
 
 func TestSimpleGitDirectoryGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	fixture.SkipOnEnv(t, "GPG")
 	expectedErrorMessage := `error generating params from git: error getting directories from repo: error retrieving Git Directories: rpc error: code = Unknown desc = permission denied`
 	expectedConditionsParamsError := []v1alpha1.ApplicationSetCondition{
@@ -1440,14 +1519,20 @@ func TestSimpleGitDirectoryGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
 				},
 			},
 		}).
-		Then().Expect(ApplicationsDoNotExist(expectedApps)).
+		Then().Expect(ApplicationsDoNotExist(expectedApps, opts)).
 		// verify the ApplicationSet error status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-git-generator", expectedConditionsParamsError)).
+		Expect(ApplicationSetHasConditions("simple-git-generator", expectedConditionsParamsError, opts)).
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps, opts))
 }
 
 func TestSimpleGitDirectoryGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	fixture.SkipOnEnv(t, "GPG")
 	expectedErrorMessage := `error generating params from git: error getting directories from repo: error retrieving Git Directories: rpc error: code = Unknown desc = permission denied`
 	expectedConditionsParamsError := []v1alpha1.ApplicationSetCondition{
@@ -1550,13 +1635,19 @@ func TestSimpleGitDirectoryGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
 			},
 		}).Then().
 		// verify the ApplicationSet error status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-git-generator", expectedConditionsParamsError)).
-		Expect(ApplicationsDoNotExist(expectedApps)).
+		Expect(ApplicationSetHasConditions("simple-git-generator", expectedConditionsParamsError, opts)).
+		Expect(ApplicationsDoNotExist(expectedApps, opts)).
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps, opts))
 }
 
 func TestSimpleGitFilesGenerator(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	generateExpectedApp := func(name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -1627,7 +1718,7 @@ func TestSimpleGitFilesGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps)).
+		}).Then().Expect(ApplicationsExist(expectedApps, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -1640,7 +1731,7 @@ func TestSimpleGitFilesGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -1655,17 +1746,23 @@ func TestSimpleGitFilesGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-git-generator", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("simple-git-generator", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
 }
 
 func TestSimpleGitFilesGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	fixture.SkipOnEnv(t, "GPG")
 	expectedErrorMessage := `error generating params from git: error retrieving Git files: rpc error: code = Unknown desc = permission denied`
 	expectedConditionsParamsError := []v1alpha1.ApplicationSetCondition{
@@ -1758,14 +1855,20 @@ func TestSimpleGitFilesGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsDoNotExist(expectedApps)).
+		}).Then().Expect(ApplicationsDoNotExist(expectedApps, opts)).
 		// verify the ApplicationSet error status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-git-generator", expectedConditionsParamsError)).
+		Expect(ApplicationSetHasConditions("simple-git-generator", expectedConditionsParamsError, opts)).
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps, opts))
 }
 
 func TestSimpleGitFilesGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	fixture.SkipOnEnv(t, "GPG")
 	expectedErrorMessage := `error generating params from git: error retrieving Git files: rpc error: code = Unknown desc = permission denied`
 	expectedConditionsParamsError := []v1alpha1.ApplicationSetCondition{
@@ -1865,13 +1968,19 @@ func TestSimpleGitFilesGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
 			},
 		}).Then().
 		// verify the ApplicationSet error status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-git-generator", expectedConditionsParamsError)).
-		Expect(ApplicationsDoNotExist(expectedApps)).
+		Expect(ApplicationSetHasConditions("simple-git-generator", expectedConditionsParamsError, opts)).
+		Expect(ApplicationsDoNotExist(expectedApps, opts)).
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedApps, opts))
 }
 
 func TestSimpleGitFilesGeneratorGoTemplate(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	generateExpectedApp := func(name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -1943,7 +2052,7 @@ func TestSimpleGitFilesGeneratorGoTemplate(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps)).
+		}).Then().Expect(ApplicationsExist(expectedApps, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -1956,7 +2065,7 @@ func TestSimpleGitFilesGeneratorGoTemplate(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewNamespace, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -1971,17 +2080,23 @@ func TestSimpleGitFilesGeneratorGoTemplate(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata)).
+		}).Then().Expect(ApplicationsExist(expectedAppsNewMetadata, opts)).
 
 		// verify the ApplicationSet status conditions were set correctly
-		Expect(ApplicationSetHasConditions("simple-git-generator", ExpectedConditions)).
+		Expect(ApplicationSetHasConditions("simple-git-generator", ExpectedConditions, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
 }
 
 func TestSimpleGitFilesPreserveResourcesOnDeletion(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	Given(t).
 		When().
 		CreateNamespace(utils.ApplicationsResourcesNamespace).
@@ -2042,6 +2157,12 @@ func TestSimpleGitFilesPreserveResourcesOnDeletion(t *testing.T) {
 }
 
 func TestSimpleGitFilesPreserveResourcesOnDeletionGoTemplate(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	Given(t).
 		When().
 		CreateNamespace(utils.ApplicationsResourcesNamespace).
@@ -2103,6 +2224,8 @@ func TestSimpleGitFilesPreserveResourcesOnDeletionGoTemplate(t *testing.T) {
 }
 
 func githubSCMMockHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
+	
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.RequestURI {
@@ -2307,6 +2430,12 @@ func testServerWithPort(t *testing.T, port int, handler http.Handler) *httptest.
 }
 
 func TestSimpleSCMProviderGenerator(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	ts := testServerWithPort(t, 8341, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		githubSCMMockHandler(t)(w, r)
 	}))
@@ -2378,10 +2507,16 @@ func TestSimpleSCMProviderGenerator(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}))
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts))
 }
 
 func TestSimpleSCMProviderGeneratorGoTemplate(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	ts := testServerWithPort(t, 8342, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		githubSCMMockHandler(t)(w, r)
 	}))
@@ -2454,10 +2589,16 @@ func TestSimpleSCMProviderGeneratorGoTemplate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}))
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts))
 }
 
 func TestSCMProviderGeneratorSCMProviderNotAllowed(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -2524,7 +2665,7 @@ func TestSCMProviderGeneratorSCMProviderNotAllowed(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}, opts)).
 		And(func() {
 			// app should be listed
 			output, err := fixture.RunCli("appset", "get", "scm-provider-generator-scm-provider-not-allowed")
@@ -2534,6 +2675,12 @@ func TestSCMProviderGeneratorSCMProviderNotAllowed(t *testing.T) {
 }
 
 func TestCustomApplicationFinalizers(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -2593,14 +2740,20 @@ func TestCustomApplicationFinalizers(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}, opts))
 }
 
 func TestCustomApplicationFinalizersGoTemplate(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -2661,11 +2814,11 @@ func TestCustomApplicationFinalizersGoTemplate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}, opts))
 }
 
 func githubPullMockHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
@@ -2705,6 +2858,12 @@ func githubPullMockHandler(t *testing.T) func(http.ResponseWriter, *http.Request
 }
 
 func TestSimplePullRequestGenerator(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	ts := testServerWithPort(t, 8343, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		githubPullMockHandler(t)(w, r)
 	}))
@@ -2779,10 +2938,16 @@ func TestSimplePullRequestGenerator(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}))
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts))
 }
 
 func TestSimplePullRequestGeneratorGoTemplate(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	ts := testServerWithPort(t, 8344, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		githubPullMockHandler(t)(w, r)
 	}))
@@ -2862,10 +3027,16 @@ func TestSimplePullRequestGeneratorGoTemplate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}))
+	}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts))
 }
 
 func TestPullRequestGeneratorNotAllowedSCMProvider(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -2940,7 +3111,7 @@ func TestPullRequestGeneratorNotAllowedSCMProvider(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}, opts)).
 		And(func() {
 			// app should be listed
 			output, err := fixture.RunCli("appset", "get", "pull-request-generator-not-allowed-scm")
@@ -2950,6 +3121,12 @@ func TestPullRequestGeneratorNotAllowedSCMProvider(t *testing.T) {
 }
 
 func TestGitGeneratorPrivateRepo(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	FailOnErr(fixture.RunCli("repo", "add", fixture.RepoURL(fixture.RepoURLTypeHTTPS), "--username", fixture.GitUsername, "--password", fixture.GitPassword, "--insecure-skip-server-verification"))
 	generateExpectedApp := func(name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
@@ -3019,13 +3196,19 @@ func TestGitGeneratorPrivateRepo(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps)).
+		}).Then().Expect(ApplicationsExist(expectedApps, opts)).
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
 }
 
 func TestGitGeneratorPrivateRepoGoTemplate(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	FailOnErr(fixture.RunCli("repo", "add", fixture.RepoURL(fixture.RepoURLTypeHTTPS), "--username", fixture.GitUsername, "--password", fixture.GitPassword, "--insecure-skip-server-verification"))
 	generateExpectedApp := func(name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
@@ -3096,8 +3279,8 @@ func TestGitGeneratorPrivateRepoGoTemplate(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist(expectedApps)).
+		}).Then().Expect(ApplicationsExist(expectedApps, opts)).
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
 }

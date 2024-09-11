@@ -445,36 +445,37 @@ func TestUnknownEvent(t *testing.T) {
 }
 
 func TestAppRevisionHasChanged(t *testing.T) {
-	getSource := func(targetRevision string) v1alpha1.ApplicationSource {
-		return v1alpha1.ApplicationSource{TargetRevision: targetRevision}
-	}
+    getSource := func(targetRevision string) *v1alpha1.ApplicationSource {
+        return &v1alpha1.ApplicationSource{TargetRevision: targetRevision}
+    }
 
-	testCases := []struct {
-		name             string
-		source           v1alpha1.ApplicationSource
-		revision         string
-		touchedHead      bool
-		expectHasChanged bool
-	}{
-		{"no target revision, master, touched head", getSource(""), "master", true, true},
-		{"no target revision, master, did not touch head", getSource(""), "master", false, false},
-		{"dev target revision, master, touched head", getSource("dev"), "master", true, false},
-		{"dev target revision, dev, did not touch head", getSource("dev"), "dev", false, true},
-		{"refs/heads/dev target revision, master, touched head", getSource("refs/heads/dev"), "master", true, false},
-		{"refs/heads/dev target revision, dev, did not touch head", getSource("refs/heads/dev"), "dev", false, true},
-		{"env/test target revision, env/test, did not touch head", getSource("env/test"), "env/test", false, true},
-		{"refs/heads/env/test target revision, env/test, did not touch head", getSource("refs/heads/env/test"), "env/test", false, true},
-	}
+    testCases := []struct {
+        name             string
+        source           *v1alpha1.ApplicationSource // Use pointer here
+        revision         string
+        touchedHead      bool
+        expectHasChanged bool
+    }{
+        {"no target revision, master, touched head", getSource(""), "master", true, true},
+        {"no target revision, master, did not touch head", getSource(""), "master", false, false},
+        {"dev target revision, master, touched head", getSource("dev"), "master", true, false},
+        {"dev target revision, dev, did not touch head", getSource("dev"), "dev", false, true},
+        {"refs/heads/dev target revision, master, touched head", getSource("refs/heads/dev"), "master", true, false},
+        {"refs/heads/dev target revision, dev, did not touch head", getSource("refs/heads/dev"), "dev", false, true},
+        {"env/test target revision, env/test, did not touch head", getSource("env/test"), "env/test", false, true},
+        {"refs/heads/env/test target revision, env/test, did not touch head", getSource("refs/heads/env/test"), "env/test", false, true},
+    }
 
-	for _, tc := range testCases {
-		tcc := tc
-		t.Run(tcc.name, func(t *testing.T) {
-			t.Parallel()
-			changed := sourceRevisionHasChanged(tcc.source, tcc.revision, tcc.touchedHead)
-			assert.Equal(t, tcc.expectHasChanged, changed)
-		})
-	}
+    for _, tc := range testCases {
+        tcc := tc
+        t.Run(tcc.name, func(t *testing.T) {
+            t.Parallel()
+            changed := sourceRevisionHasChanged(*tcc.source, tcc.revision, tcc.touchedHead) // Dereference pointer when calling function
+            assert.Equal(t, tcc.expectHasChanged, changed)
+        })
+    }
 }
+
 
 func Test_affectedRevisionInfo_appRevisionHasChanged(t *testing.T) {
 	sourceWithRevision := func(targetRevision string) v1alpha1.ApplicationSource {

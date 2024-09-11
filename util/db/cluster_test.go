@@ -65,9 +65,11 @@ func Test_secretToCluster(t *testing.T) {
 			"config": []byte("{\"username\":\"foo\"}"),
 		},
 	}
+
 	cluster, err := SecretToCluster(secret)
 	require.NoError(t, err)
-	assert.Equal(t, v1alpha1.Cluster{
+
+	expectedCluster := v1alpha1.Cluster{
 		Name:   "test",
 		Server: "http://mycluster",
 		Config: v1alpha1.ClusterConfig{
@@ -75,8 +77,15 @@ func Test_secretToCluster(t *testing.T) {
 		},
 		Labels:      labels,
 		Annotations: annotations,
-	}, *cluster)
+	}
+
+	assert.Equal(t, expectedCluster.Name, cluster.Name)
+	assert.Equal(t, expectedCluster.Server, cluster.Server)
+	assert.Equal(t, expectedCluster.Config.Username, cluster.Config.Username)
+	assert.Equal(t, expectedCluster.Labels, cluster.Labels)
+	assert.Equal(t, expectedCluster.Annotations, cluster.Annotations)
 }
+
 
 func Test_secretToCluster_LastAppliedConfigurationDropped(t *testing.T) {
 	secret := &v1.Secret{
@@ -144,14 +153,22 @@ func Test_secretToCluster_NoConfig(t *testing.T) {
 			"server": []byte("http://mycluster"),
 		},
 	}
+
 	cluster, err := SecretToCluster(secret)
 	require.NoError(t, err)
-	assert.Equal(t, v1alpha1.Cluster{
+
+	expectedCluster := v1alpha1.Cluster{
 		Name:        "test",
 		Server:      "http://mycluster",
 		Labels:      map[string]string{},
 		Annotations: map[string]string{},
-	}, *cluster)
+	}
+
+	assert.Equal(t, expectedCluster.Name, cluster.Name)
+	assert.Equal(t, expectedCluster.Server, cluster.Server)
+	assert.Equal(t, expectedCluster.Config, cluster.Config) // Empty config should match
+	assert.Equal(t, expectedCluster.Labels, cluster.Labels)
+	assert.Equal(t, expectedCluster.Annotations, cluster.Annotations)
 }
 
 func Test_secretToCluster_InvalidConfig(t *testing.T) {

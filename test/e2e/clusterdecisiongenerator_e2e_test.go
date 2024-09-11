@@ -6,6 +6,8 @@ import (
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -18,6 +20,12 @@ import (
 var tenSec = int64(10)
 
 func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	externalNamespace := string(utils.ArgoCDExternalNamespace)
 
 	expectedApp := argov1alpha1.Application{
@@ -94,7 +102,7 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -104,7 +112,7 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -120,14 +128,20 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 			appset.Spec.Template.Labels = map[string]string{
 				"label-key": "label-value",
 			}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts))
 }
 
 func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -200,7 +214,7 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -210,7 +224,7 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -222,14 +236,20 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedAppTemplate := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -312,19 +332,25 @@ func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		CreateClusterSecret("my-secret2", "cluster2", "https://kubernetes.default.svc").
-		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2})).
+		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedAppTemplate := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -408,20 +434,26 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		DeleteClusterSecret("my-secret2").
-		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1})).
-		Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2})).
+		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
+		Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}, opts))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorDeletingClusterFromResource(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex 
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	expectedAppTemplate := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -512,15 +544,15 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterFromResource(t *te
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2})).
+		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		StatusUpdatePlacementDecision("my-placementdecision", clusterListSmall).
-		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1})).
-		Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2})).
+		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
+		Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}))
+		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}, opts))
 }

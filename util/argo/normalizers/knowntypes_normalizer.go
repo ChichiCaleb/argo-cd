@@ -41,18 +41,27 @@ func init() {
 // NewKnownTypesNormalizer create a normalizer that re-format custom resource fields using built-in Kubernetes types.
 func NewKnownTypesNormalizer(overrides map[string]v1alpha1.ResourceOverride) (*knownTypesNormalizer, error) {
 	normalizer := knownTypesNormalizer{typeFields: map[schema.GroupKind][]knownTypeField{}}
+	
 	for key, override := range overrides {
 		group, kind, err := getGroupKindForOverrideKey(key)
 		if err != nil {
 			log.Warn(err)
+			continue
 		}
+
 		gk := schema.GroupKind{Group: group, Kind: kind}
-		for _, f := range override.KnownTypeFields {
+
+		// Use a local variable to avoid copying lock values
+		knownTypeFields := make([]v1alpha1.KnownTypeField, len(override.KnownTypeFields))
+		copy(knownTypeFields, override.KnownTypeFields)
+
+		for _, f := range knownTypeFields {
 			if err := normalizer.addKnownField(gk, f.Field, f.Type); err != nil {
 				log.Warnf("Failed to configure known field normalizer: %v", err)
 			}
 		}
 	}
+
 	normalizer.ensureDefaultCRDsConfigured()
 	return &normalizer, nil
 }

@@ -110,12 +110,13 @@ func TestLuaResourceActionsScript(t *testing.T) {
 		}
 		require.NoError(t, err)
 		dir := filepath.Dir(path)
-		// TODO: Change to path
-		yamlBytes, err := os.ReadFile(dir + "/action_test.yaml")
+		// Load the YAML test data
+		yamlBytes, err := os.ReadFile(filepath.Join(dir, "action_test.yaml"))
 		require.NoError(t, err)
 		var resourceTest ActionTestStructure
 		err = yaml.Unmarshal(yamlBytes, &resourceTest)
 		require.NoError(t, err)
+
 		for i := range resourceTest.DiscoveryTests {
 			test := resourceTest.DiscoveryTests[i]
 			testName := fmt.Sprintf("discovery/%s", test.InputPath)
@@ -128,56 +129,64 @@ func TestLuaResourceActionsScript(t *testing.T) {
 				require.NoError(t, err)
 				result, err := vm.ExecuteResourceActionDiscovery(obj, discoveryLua)
 				require.NoError(t, err)
+
+				// Convert test.Result to a map for efficient lookup
+				expectedResultsMap := make(map[string]appv1.ResourceAction)
+				for _, res := range test.Result {
+					expectedResultsMap[res.Name] = res
+				}
+
 				for i := range result {
-					assert.Contains(t, test.Result, result[i])
+					res := result[i]
+					expectedRes, found := expectedResultsMap[res.Name]
+					if !found {
+						t.Errorf("Unexpected result: %v", res)
+					} else {
+						// Compare expected result with actual result
+						assert.Equal(t, expectedRes, res)
+					}
 				}
 			})
 		}
+
 		for i := range resourceTest.ActionTests {
 			test := resourceTest.ActionTests[i]
 			testName := fmt.Sprintf("actions/%s/%s", test.Action, test.InputPath)
 
 			t.Run(testName, func(t *testing.T) {
 				vm := VM{
-					// Uncomment the following line if you need to use lua libraries debugging
-					// purposes. Otherwise, leave this false to ensure tests reflect the same
-					// privileges that API server has.
+					// Uncomment the following line if needed for debugging
 					// UseOpenLibs: true,
 				}
 				sourceObj := getObj(filepath.Join(dir, test.InputPath))
 				action, err := vm.GetResourceAction(sourceObj, test.Action)
-
 				require.NoError(t, err)
 
-				require.NoError(t, err)
 				impactedResources, err := vm.ExecuteResourceAction(sourceObj, action.ActionLua)
 				require.NoError(t, err)
 
-				// Treat the Lua expected output as a list
 				expectedObjects := getExpectedObjectList(t, filepath.Join(dir, test.ExpectedOutputPath))
 
 				for _, impactedResource := range impactedResources {
 					result := impactedResource.UnstructuredObj
 
-					// The expected output is a list of objects
-					// Find the actual impacted resource in the expected output
 					expectedObj := findFirstMatchingItem(expectedObjects.Items, func(u unstructured.Unstructured) bool {
-						// Some resources' name is derived from the source object name, so the returned name is not actually equal to the testdata output name
-						// Considering the resource found in the testdata output if its name starts with source object name
-						// TODO: maybe this should use a normalizer function instead of hard-coding the resource specifics here
-						if (result.GetKind() == "Job" && sourceObj.GetKind() == "CronJob") || (result.GetKind() == "Workflow" && (sourceObj.GetKind() == "CronWorkflow" || sourceObj.GetKind() == "WorkflowTemplate")) {
-							return u.GroupVersionKind() == result.GroupVersionKind() && strings.HasPrefix(u.GetName(), sourceObj.GetName()) && u.GetNamespace() == result.GetNamespace()
+						if (result.GetKind() == "Job" && sourceObj.GetKind() == "CronJob") || 
+						   (result.GetKind() == "Workflow" && (sourceObj.GetKind() == "CronWorkflow" || sourceObj.GetKind() == "WorkflowTemplate")) {
+							return u.GroupVersionKind() == result.GroupVersionKind() && 
+							       strings.HasPrefix(u.GetName(), sourceObj.GetName()) && 
+							       u.GetNamespace() == result.GetNamespace()
 						} else {
-							return u.GroupVersionKind() == result.GroupVersionKind() && u.GetName() == result.GetName() && u.GetNamespace() == result.GetNamespace()
+							return u.GroupVersionKind() == result.GroupVersionKind() && 
+							       u.GetName() == result.GetName() && 
+							       u.GetNamespace() == result.GetNamespace()
 						}
 					})
 
 					assert.NotNil(t, expectedObj)
 
 					switch impactedResource.K8SOperation {
-					// No default case since a not supported operation would have failed upon unmarshaling earlier
 					case PatchOperation:
-						// Patching is only allowed for the source resource, so the GVK + name + ns must be the same as the impacted resource
 						assert.EqualValues(t, sourceObj.GroupVersionKind(), result.GroupVersionKind())
 						assert.EqualValues(t, sourceObj.GetName(), result.GetName())
 						assert.EqualValues(t, sourceObj.GetNamespace(), result.GetNamespace())
@@ -185,11 +194,10 @@ func TestLuaResourceActionsScript(t *testing.T) {
 						switch result.GetKind() {
 						case "Job":
 						case "Workflow":
-							// The name of the created resource is derived from the source object name, so the returned name is not actually equal to the testdata output name
 							result.SetName(expectedObj.GetName())
 						}
 					}
-					// Ideally, we would use a assert.Equal to detect the difference, but the Lua VM returns a object with float64 instead of the original int32.  As a result, the assert.Equal is never true despite that the change has been applied.
+					
 					diffResult, err := diff.Diff(expectedObj, result, diff.WithNormalizer(testNormalizer{}))
 					require.NoError(t, err)
 					if diffResult.Modified {

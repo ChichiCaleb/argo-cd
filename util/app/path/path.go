@@ -93,23 +93,26 @@ func CheckOutOfBoundsSymlinks(basePath string) error {
 
 // GetAppRefreshPaths returns the list of paths that should trigger a refresh for an application
 func GetAppRefreshPaths(app *v1alpha1.Application) []string {
-	var paths []string
-	if val, ok := app.Annotations[v1alpha1.AnnotationKeyManifestGeneratePaths]; ok && val != "" {
-		for _, item := range strings.Split(val, ";") {
-			if item == "" {
-				continue
-			}
-			if filepath.IsAbs(item) {
-				paths = append(paths, item[1:])
-			} else {
-				for _, source := range app.Spec.GetSources() {
-					paths = append(paths, filepath.Clean(filepath.Join(source.Path, item)))
-				}
-			}
-		}
-	}
-	return paths
+    var paths []string
+    if val, ok := app.Annotations[v1alpha1.AnnotationKeyManifestGeneratePaths]; ok && val != "" {
+        for _, item := range strings.Split(val, ";") {
+            if item == "" {
+                continue
+            }
+            if filepath.IsAbs(item) {
+                paths = append(paths, item[1:])
+            } else {
+                for _, source := range app.Spec.GetSources() {
+                    // Use pointer to avoid copying structs
+                    src := source
+                    paths = append(paths, filepath.Clean(filepath.Join(src.Path, item)))
+                }
+            }
+        }
+    }
+    return paths
 }
+
 
 // AppFilesHaveChanged returns true if any of the changed files are under the given refresh paths
 // If refreshPaths or changedFiles are empty, it will always return true
