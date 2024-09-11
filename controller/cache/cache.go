@@ -220,6 +220,17 @@ type liveStateCache struct {
 	lock          sync.RWMutex
 }
 
+// Helper function to convert map[string]*v1alpha1.ResourceOverride to map[string]v1alpha1.ResourceOverride
+func dereferenceResourceOverrides(input map[string]*v1alpha1.ResourceOverride) map[string]v1alpha1.ResourceOverride {
+	output := make(map[string]v1alpha1.ResourceOverride)
+	for key, val := range input {
+		if val != nil {
+			output[key] = *val // Dereference the pointer
+		}
+	}
+	return output
+}
+
 func (c *liveStateCache) loadCacheSettings() (*cacheSettings, error) {
 	appInstanceLabelKey, err := c.settingsMgr.GetAppInstanceLabelKey()
 	if err != nil {
@@ -241,13 +252,28 @@ func (c *liveStateCache) loadCacheSettings() (*cacheSettings, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Convert resourceOverrides to the expected type
+	dereferencedResourceOverrides := dereferenceResourceOverrides(resourceOverrides)
+
+	// Use the dereferenced resource overrides for lua.ResourceHealthOverrides
 	clusterSettings := clustercache.Settings{
-		ResourceHealthOverride: lua.ResourceHealthOverrides(resourceOverrides),
+		ResourceHealthOverride: lua.ResourceHealthOverrides(dereferencedResourceOverrides),
 		ResourcesFilter:        resourcesFilter,
 	}
 
-	return &cacheSettings{clusterSettings, appInstanceLabelKey, argo.GetTrackingMethod(c.settingsMgr), resourceUpdatesOverrides, ignoreResourceUpdatesEnabled}, nil
+	// Use dereferenced resourceUpdatesOverrides in the cacheSettings struct
+	dereferencedResourceUpdatesOverrides := dereferenceResourceOverrides(resourceUpdatesOverrides)
+
+	return &cacheSettings{
+		clusterSettings,
+		appInstanceLabelKey,
+		argo.GetTrackingMethod(c.settingsMgr),
+		dereferencedResourceUpdatesOverrides,
+		ignoreResourceUpdatesEnabled,
+	}, nil
 }
+
 
 func asResourceNode(r *clustercache.Resource) appv1.ResourceNode {
 	gv, err := schema.ParseGroupVersion(r.Ref.APIVersion)

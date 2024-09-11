@@ -343,19 +343,27 @@ func (s *Server) GetAppDetails(ctx context.Context, q *repositorypkg.RepoAppDeta
 	if err != nil {
 		return nil, err
 	}
-	kustomizeOptions, err := kustomizeSettings.GetOptions(*q.Source)
+
+	// Convert *v1alpha1.ApplicationSource to a pointer for GetOptions
+	kustomizeOptions, err := kustomizeSettings.GetOptions(q.Source) // q.Source is already a pointer
 	if err != nil {
 		return nil, err
 	}
+	
 	helmOptions, err := s.settings.GetHelmSettings()
 	if err != nil {
 		return nil, err
 	}
 
-	refSources := make(appsv1.RefTargetRevisionMapping)
+	var refSources appsv1.RefTargetRevisionMapping
 	if app != nil && app.Spec.HasMultipleSources() {
-		// Store the map of all sources having ref field into a map for applications with sources field
-		refSources, err = argo.GetRefSources(ctx, app.Spec.Sources, q.AppProject, s.db.GetRepository, []string{}, false)
+		// Convert []v1alpha1.ApplicationSource to []*v1alpha1.ApplicationSource for GetRefSources
+		var appSources []*v1alpha1.ApplicationSource
+		for i := range app.Spec.Sources {
+			appSources = append(appSources, &app.Spec.Sources[i])
+		}
+
+		refSources, err = argo.GetRefSources(ctx, appSources, q.AppProject, s.db.GetRepository, []string{}, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get ref sources: %w", err)
 		}
@@ -371,6 +379,7 @@ func (s *Server) GetAppDetails(ctx context.Context, q *repositorypkg.RepoAppDeta
 		RefSources:       refSources,
 	})
 }
+
 
 // GetHelmCharts returns list of helm charts in the specified repository
 func (s *Server) GetHelmCharts(ctx context.Context, q *repositorypkg.RepoQuery) (*apiclient.HelmChartsResponse, error) {

@@ -71,8 +71,11 @@ func (svc *argoCDService) getKustomizeOptions(source *v1alpha1.ApplicationSource
 	if err != nil {
 		return nil, err
 	}
-	return kustomizeSettings.GetOptions(*source)
+
+	// Pass the pointer to GetOptions
+	return kustomizeSettings.GetOptions(source)
 }
+
 
 func (svc *argoCDService) GetAppDetails(ctx context.Context, app *v1alpha1.Application) (*shared.AppDetail, error) {
 	appSource := app.Spec.GetSourcePtrByIndex(0)

@@ -63,35 +63,47 @@ func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Initialize a ClusterList with Items being a slice of pointers to Cluster
 	clusterList := appv1.ClusterList{
-		Items: make([]*appv1.Cluster, 0), // Use pointers to Cluster
+		Items: make([]appv1.Cluster, 0), // Use a slice of Cluster, not pointers
 	}
+
 	settings, err := db.settingsMgr.GetSettings()
 	if err != nil {
 		return nil, err
 	}
 	inClusterEnabled := settings.InClusterEnabled
 	hasInClusterCredentials := false
+
+	// Iterate through secrets and convert to Cluster
 	for _, clusterSecret := range clusterSecrets {
 		cluster, err := SecretToCluster(clusterSecret)
 		if err != nil {
 			log.Errorf("could not unmarshal cluster secret %s", clusterSecret.Name)
 			continue
 		}
+		// Handle the case where the server is the internal Kubernetes API server
 		if cluster.Server == appv1.KubernetesInternalAPIServerAddr {
 			if inClusterEnabled {
 				hasInClusterCredentials = true
-				clusterList.Items = append(clusterList.Items, cluster) // Append pointer
+				clusterList.Items = append(clusterList.Items, *cluster) // Dereference pointer to append
 			}
 		} else {
-			clusterList.Items = append(clusterList.Items, cluster) // Append pointer
+			clusterList.Items = append(clusterList.Items, *cluster) // Dereference pointer to append
 		}
 	}
+
+	// If in-cluster credentials are enabled but none were found, append the local cluster
 	if inClusterEnabled && !hasInClusterCredentials {
-		clusterList.Items = append(clusterList.Items, db.getLocalCluster()) // Append pointer
+		localCluster := db.getLocalCluster()
+		clusterList.Items = append(clusterList.Items, *localCluster) // Dereference pointer to append
 	}
+
+	// Return the cluster list with pointers
 	return &clusterList, nil
 }
+
 
 
 // CreateCluster creates a cluster
@@ -381,9 +393,10 @@ func clusterToSecret(c *appv1.Cluster, secret *apiv1.Secret) error {
 
 // SecretToCluster converts a secret into a Cluster object
 func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
-	var configData map[string]interface{}
+	var configData appv1.ClusterConfig // Use the correct type here
+
 	if len(s.Data["config"]) > 0 {
-		err := json.Unmarshal(s.Data["config"], &configData)
+		err := json.Unmarshal(s.Data["config"], &configData) // Unmarshal directly into appv1.ClusterConfig
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal cluster config: %w", err)
 		}
@@ -433,7 +446,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 		Name:               string(s.Data["name"]),
 		Namespaces:         namespaces,
 		ClusterResources:   string(s.Data["clusterResources"]) == "true",
-		Config:             configData, // Use the safe data here
+		Config:             configData, // Now uses the correct type
 		RefreshRequestedAt: refreshRequestedAt,
 		Shard:              shard,
 		Project:            string(s.Data["project"]),

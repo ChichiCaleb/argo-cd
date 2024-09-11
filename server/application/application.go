@@ -476,18 +476,19 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 		}
 
 		appSpec := a.Spec.DeepCopy()
-		sources := make([]appv1.ApplicationSource, len(appSpec.GetSources()))
-
+		// Create a slice of pointers to ApplicationSource
+		var sources []*appv1.ApplicationSource
 		if a.Spec.HasMultipleSources() {
 			for i, source := range appSpec.GetSources() {
-				sources[i] = source
+				// Append the address of each source to the slice
+				sources = append(sources, &appSpec.Sources[i])
 			}
 		} else {
-			source := a.Spec.GetSource()
+			source := appSpec.GetSource()
 			if q.GetRevision() != "" {
 				source.TargetRevision = q.GetRevision()
 			}
-			sources = append(sources, source)
+			sources = append(sources, &source) // Append pointer to the single source
 		}
 
 		// Store the map of all sources having ref field into a map for applications with sources field
@@ -507,6 +508,7 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 				return fmt.Errorf("error getting kustomize settings: %w", err)
 			}
 
+			// Pass pointer to source to GetOptions
 			kustomizeOptions, err := kustomizeSettings.GetOptions(source)
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings options: %w", err)
@@ -518,7 +520,7 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 				AppLabelKey:        appInstanceLabelKey,
 				AppName:            a.InstanceName(s.ns),
 				Namespace:          a.Spec.Destination.Namespace,
-				ApplicationSource:  &source,
+				ApplicationSource:  source,
 				Repos:              helmRepos,
 				KustomizeOptions:   kustomizeOptions,
 				KubeVersion:        serverVersion,
@@ -568,6 +570,7 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 
 	return manifests, nil
 }
+
 
 func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_GetManifestsWithFilesServer) error {
 	ctx := stream.Context()
@@ -625,8 +628,8 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 		if err != nil {
 			return fmt.Errorf("error getting kustomize settings: %w", err)
 		}
-		kustomizeOptions, err := kustomizeSettings.GetOptions(a.Spec.GetSource())
-		if err != nil {
+		kustomizeOptions, err := kustomizeSettings.GetOptions(&a.Spec.GetSource())
+        if err != nil {
 			return fmt.Errorf("error getting kustomize settings options: %w", err)
 		}
 
@@ -757,7 +760,8 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings: %w", err)
 			}
-			kustomizeOptions, err := kustomizeSettings.GetOptions(a.Spec.GetSource())
+			kustomizeOptions, err := kustomizeSettings.GetOptions(&a.Spec.GetSource())
+
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings options: %w", err)
 			}
@@ -1255,7 +1259,11 @@ func (s *Server) validateAndNormalizeApp(ctx context.Context, app *appv1.Applica
 		}
 		conditions = append(conditions, condition...)
 		if len(conditions) > 0 {
-			return status.Errorf(codes.InvalidArgument, "application spec for %s is invalid: %s", app.Name, argo.FormatAppConditions(conditions))
+			conditionPointers := make([]*appv1.ApplicationCondition, len(conditions))
+			for i := range conditions {
+				conditionPointers[i] = &conditions[i]
+			}
+			return status.Errorf(codes.InvalidArgument, "application spec for %s is invalid: %s", app.Name, argo.FormatAppConditions(conditionPointers))
 		}
 	}
 
@@ -1264,12 +1272,17 @@ func (s *Server) validateAndNormalizeApp(ctx context.Context, app *appv1.Applica
 		return fmt.Errorf("error validating project permissions: %w", err)
 	}
 	if len(conditions) > 0 {
-		return status.Errorf(codes.InvalidArgument, "application spec for %s is invalid: %s", app.Name, argo.FormatAppConditions(conditions))
+		conditionPointers := make([]*appv1.ApplicationCondition, len(conditions))
+		for i := range conditions {
+			conditionPointers[i] = &conditions[i]
+		}
+		return status.Errorf(codes.InvalidArgument, "application spec for %s is invalid: %s", app.Name, argo.FormatAppConditions(conditionPointers))
 	}
 
 	app.Spec = *argo.NormalizeApplicationSpec(&app.Spec)
 	return nil
 }
+
 
 func (s *Server) getApplicationClusterConfig(ctx context.Context, a *appv1.Application) (*rest.Config, error) {
 	if err := argo.ValidateDestination(ctx, &a.Spec.Destination, s.db); err != nil {
@@ -1289,12 +1302,13 @@ func (s *Server) getCachedAppState(ctx context.Context, a *appv1.Application, ge
 		// Fix: Pass an empty map to GetConditions
 		conditions := a.Status.GetConditions(map[string]bool{})
 		if len(conditions) > 0 {
-			// Fix: No need to dereference cond
-			nonPointerConditions := make([]appv1.ApplicationCondition, len(conditions))
+			// Fix: Convert to slice of pointers
+			pointerConditions := make([]*appv1.ApplicationCondition, len(conditions))
 			for i, cond := range conditions {
-				nonPointerConditions[i] = cond
+				condCopy := cond
+				pointerConditions[i] = &condCopy
 			}
-			return errors.New(argoutil.FormatAppConditions(nonPointerConditions))
+			return errors.New(argoutil.FormatAppConditions(pointerConditions))
 		}
 		_, err = s.Get(ctx, &application.ApplicationQuery{
 			Name:         a.GetName(),
@@ -2326,10 +2340,19 @@ func (s *Server) ListResourceActions(ctx context.Context, q *application.Applica
 		return nil, fmt.Errorf("error getting resource overrides: %w", err)
 	}
 
-	availableActions, err := s.getAvailableActions(resourceOverrides, obj)
+	// Convert map of pointers to map of values
+	resourceOverridesMap := make(map[string]appv1.ResourceOverride, len(resourceOverrides))
+	for key, overridePtr := range resourceOverrides {
+		if overridePtr != nil {
+			resourceOverridesMap[key] = *overridePtr
+		}
+	}
+
+	availableActions, err := s.getAvailableActions(resourceOverridesMap, obj)
 	if err != nil {
 		return nil, fmt.Errorf("error getting available actions: %w", err)
 	}
+
 	actionsPtr := []*appv1.ResourceAction{}
 	for i := range availableActions {
 		actionsPtr = append(actionsPtr, &availableActions[i])
@@ -2337,6 +2360,7 @@ func (s *Server) ListResourceActions(ctx context.Context, q *application.Applica
 
 	return &application.ResourceActionsListResponse{Actions: actionsPtr}, nil
 }
+
 
 func (s *Server) getUnstructuredLiveResourceOrApp(ctx context.Context, rbacRequest string, q *application.ApplicationResourceRequest) (obj *unstructured.Unstructured, res *appv1.ResourceNode, app *appv1.Application, config *rest.Config, err error) {
 	if q.GetKind() == applicationType.ApplicationKind && q.GetGroup() == applicationType.Group && q.GetName() == q.GetResourceName() {
@@ -2411,8 +2435,16 @@ func (s *Server) RunResourceAction(ctx context.Context, q *application.ResourceA
 		return nil, fmt.Errorf("error getting resource overrides: %w", err)
 	}
 
+	// Convert map of pointers to map of values
+	resourceOverridesMap := make(map[string]appv1.ResourceOverride, len(resourceOverrides))
+	for key, overridePtr := range resourceOverrides {
+		if overridePtr != nil {
+			resourceOverridesMap[key] = *overridePtr
+		}
+	}
+
 	luaVM := lua.VM{
-		ResourceOverrides: resourceOverrides,
+		ResourceOverrides: resourceOverridesMap,
 	}
 	action, err := luaVM.GetResourceAction(liveObj, q.GetAction())
 	if err != nil {
@@ -2495,6 +2527,7 @@ func (s *Server) RunResourceAction(ctx context.Context, q *application.ResourceA
 	}
 	return &application.ApplicationResponse{}, nil
 }
+
 
 func (s *Server) patchResource(ctx context.Context, config *rest.Config, liveObjBytes, newObjBytes []byte, newObj *unstructured.Unstructured) (*application.ApplicationResponse, error) {
 	diffBytes, err := jsonpatch.CreateMergePatch(liveObjBytes, newObjBytes)

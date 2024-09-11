@@ -152,34 +152,47 @@ func (s *Server) List(ctx context.Context, q *applicationset.ApplicationSetListQ
 		return nil, fmt.Errorf("error listing ApplicationSets with selectors: %w", err)
 	}
 
-	newItems := make([]v1alpha1.ApplicationSet, 0)
+	newItems := make([]*v1alpha1.ApplicationSet, 0)
 	for _, a := range appsets {
-		// Skip any application that is neither in the conrol plane's namespace
+		// Skip any application that is neither in the control plane's namespace
 		// nor in the list of enabled namespaces.
 		if !security.IsNamespaceEnabled(a.Namespace, s.ns, s.enabledNamespaces) {
 			continue
 		}
 
 		if s.enf.Enforce(ctx.Value("claims"), rbacpolicy.ResourceApplicationSets, rbacpolicy.ActionGet, a.RBACName(s.ns)) {
-			newItems = append(newItems, *a)
+			newItems = append(newItems, a)
 		}
 	}
 
-	newItems = argo.FilterAppSetsByProjects(newItems, q.Projects)
+	// Convert newItems to []v1alpha1.ApplicationSet for filtering
+	appSetItems := make([]v1alpha1.ApplicationSet, len(newItems))
+	for i, item := range newItems {
+		appSetItems[i] = *item
+	}
+
+	filteredAppSets := argo.FilterAppSetsByProjects(appSetItems, q.Projects)
+
+	// Convert filteredAppSets back to []*v1alpha1.ApplicationSet
+	filteredItems := make([]*v1alpha1.ApplicationSet, len(filteredAppSets))
+	for i, item := range filteredAppSets {
+		filteredItems[i] = &item
+	}
 
 	// Sort found applicationsets by name
-	sort.Slice(newItems, func(i, j int) bool {
-		return newItems[i].Name < newItems[j].Name
+	sort.Slice(filteredItems, func(i, j int) bool {
+		return filteredItems[i].Name < filteredItems[j].Name
 	})
 
 	appsetList := &v1alpha1.ApplicationSetList{
 		ListMeta: metav1.ListMeta{
 			ResourceVersion: s.appsetInformer.LastSyncResourceVersion(),
 		},
-		Items: newItems,
+		Items: filteredAppSets, // This should be []v1alpha1.ApplicationSet
 	}
 	return appsetList, nil
 }
+
 
 func (s *Server) Create(ctx context.Context, q *applicationset.ApplicationSetCreateRequest) (*v1alpha1.ApplicationSet, error) {
 	appset := q.GetApplicationset()

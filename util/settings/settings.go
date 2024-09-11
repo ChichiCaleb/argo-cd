@@ -876,15 +876,8 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]*v1a
 		return nil, fmt.Errorf("failed to get resource overrides: %w", err)
 	}
 
-	// Convert to a map of pointers
-	resourceOverridesPointer := make(map[string]*v1alpha1.ResourceOverride)
+	// No need to convert to another map of pointers, it's already a map of pointers
 	for k, v := range resourceOverrides {
-		// Allocate memory for the pointer type
-		val := v // Local variable to avoid referencing the loop variable directly
-		resourceOverridesPointer[k] = &val
-	}
-
-	for k, v := range resourceOverridesPointer {
 		if v == nil {
 			continue
 		}
@@ -898,20 +891,21 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]*v1a
 		// Set the IgnoreDifferences because these are the overrides used by Normalizers
 		v.IgnoreDifferences = resourceUpdates
 		v.IgnoreResourceUpdates = v1alpha1.OverrideIgnoreDiff{}
-		resourceOverridesPointer[k] = v
+		resourceOverrides[k] = v
 	}
 
 	if compareOptions.IgnoreDifferencesOnResourceUpdates {
 		log.Info("Using diffing customizations to ignore resource updates")
 	}
 
-	// Now pass the updated pointer map to the helper function
-	addIgnoreDiffItemOverrideToGK(resourceOverridesPointer, "*/*", "/metadata/resourceVersion")
-	addIgnoreDiffItemOverrideToGK(resourceOverridesPointer, "*/*", "/metadata/generation")
-	addIgnoreDiffItemOverrideToGK(resourceOverridesPointer, "*/*", "/metadata/managedFields")
+	// Pass the pointer map directly (no need to create another one)
+	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/resourceVersion")
+	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/generation")
+	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/managedFields")
 
-	return resourceOverridesPointer, nil
+	return resourceOverrides, nil
 }
+
 
 
 func (mgr *SettingsManager) GetIsIgnoreResourceUpdatesEnabled() (bool, error) {

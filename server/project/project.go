@@ -399,15 +399,23 @@ func (s *Server) Update(ctx context.Context, q *project.ProjectUpdateRequest) (*
 		return nil, err
 	}
 
+	// Convert []v1alpha1.Application to []*v1alpha1.Application
+	var appPointers []*v1alpha1.Application
+	for i := range appsList.Items {
+		appPointers = append(appPointers, &appsList.Items[i])
+	}
+
+	filteredApps := argo.FilterByProjects(appPointers, []string{q.Project.Name})
+
 	var srcValidatedApps []v1alpha1.Application
 	var dstValidatedApps []v1alpha1.Application
 	getProjectClusters := func(project string) ([]*v1alpha1.Cluster, error) {
 		return s.db.GetProjectClusters(ctx, project)
 	}
 
-	for _, a := range argo.FilterByProjects(appsList.Items, []string{q.Project.Name}) {
+	for _, a := range filteredApps {
 		if oldProj.IsSourcePermitted(a.Spec.GetSource()) {
-			srcValidatedApps = append(srcValidatedApps, a)
+			srcValidatedApps = append(srcValidatedApps, *a)
 		}
 
 		dstPermitted, err := oldProj.IsDestinationPermitted(a.Spec.Destination, getProjectClusters)
@@ -416,7 +424,7 @@ func (s *Server) Update(ctx context.Context, q *project.ProjectUpdateRequest) (*
 		}
 
 		if dstPermitted {
-			dstValidatedApps = append(dstValidatedApps, a)
+			dstValidatedApps = append(dstValidatedApps, *a)
 		}
 	}
 
@@ -457,6 +465,7 @@ func (s *Server) Update(ctx context.Context, q *project.ProjectUpdateRequest) (*
 	return res, err
 }
 
+
 // Delete deletes a project
 func (s *Server) Delete(ctx context.Context, q *project.ProjectQuery) (*project.EmptyResponse, error) {
 	if q.Name == v1alpha1.DefaultAppProjectName {
@@ -478,16 +487,25 @@ func (s *Server) Delete(ctx context.Context, q *project.ProjectQuery) (*project.
 	if err != nil {
 		return nil, err
 	}
-	apps := argo.FilterByProjects(appsList.Items, []string{q.Name})
+
+	// Convert []v1alpha1.Application to []*v1alpha1.Application
+	var appPointers []*v1alpha1.Application
+	for i := range appsList.Items {
+		appPointers = append(appPointers, &appsList.Items[i])
+	}
+
+	apps := argo.FilterByProjects(appPointers, []string{q.Name})
 	if len(apps) > 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "project is referenced by %d applications", len(apps))
 	}
+
 	err = s.appclientset.ArgoprojV1alpha1().AppProjects(s.ns).Delete(ctx, q.Name, metav1.DeleteOptions{})
 	if err == nil {
 		s.logEvent(p, ctx, argo.EventReasonResourceDeleted, "deleted project")
 	}
 	return &project.EmptyResponse{}, err
 }
+
 
 func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*project.EventListWrapper, error) {
 	// Enforce RBAC policy for the project

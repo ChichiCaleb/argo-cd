@@ -46,7 +46,7 @@ func (s *Server) Get(ctx context.Context, q *settingspkg.SettingsQuery) (*settin
 	overrides := make(map[string]*v1alpha1.ResourceOverride)
 	for k := range resourceOverrides {
 		val := resourceOverrides[k]
-		overrides[k] = &val
+		overrides[k] = val // No need to take the address since val is already a pointer
 	}
 	appInstanceLabelKey, err := s.mgr.GetAppInstanceLabelKey()
 	if err != nil {

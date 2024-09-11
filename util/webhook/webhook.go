@@ -303,7 +303,7 @@ func (a *ArgoCDWebhookHandler) HandleEvent(payload interface{}) {
 		for _, app := range filteredApps {
 			for _, source := range app.Spec.GetSources() {
 				source := source // Create a new variable to avoid capturing the loop variable
-				if sourceRevisionHasChanged(source, revision, touchedHead) && sourceUsesURL(source, webURL, repoRegexp) {
+				if sourceRevisionHasChanged(&source, revision, touchedHead) && sourceUsesURL(&source, webURL, repoRegexp) {
 					refreshPaths := path.GetAppRefreshPaths(app)
 					if path.AppFilesHaveChanged(refreshPaths, changedFiles) {
 						namespacedAppInterface := a.appClientset.ArgoprojV1alpha1().Applications(app.ObjectMeta.Namespace)
@@ -322,6 +322,7 @@ func (a *ArgoCDWebhookHandler) HandleEvent(payload interface{}) {
 				}
 			}
 		}
+		
 	}
 }
 
@@ -346,6 +347,14 @@ func getWebUrlRegex(webURL string) (*regexp.Regexp, error) {
 	return repoRegexp, nil
 }
 
+func convertToSourcePointers(sources v1alpha1.ApplicationSources) []*v1alpha1.ApplicationSource {
+	sourcePointers := make([]*v1alpha1.ApplicationSource, len(sources))
+	for i := range sources {
+		sourcePointers[i] = &sources[i] // Take the address of each source to get a pointer
+	}
+	return sourcePointers
+}
+
 func (a *ArgoCDWebhookHandler) storePreviouslyCachedManifests(app *v1alpha1.Application, change changeInfo, trackingMethod string, appInstanceLabelKey string) error {
 	err := argo.ValidateDestination(context.Background(), &app.Spec.Destination, a.db)
 	if err != nil {
@@ -365,7 +374,10 @@ func (a *ArgoCDWebhookHandler) storePreviouslyCachedManifests(app *v1alpha1.Appl
 		sources = append(sources, app.Spec.GetSource())
 	}
 
-	refSources, err := argo.GetRefSources(context.Background(), sources, app.Spec.Project, a.db.GetRepository, []string{}, false)
+	// Convert to slice of pointers
+	sourcePointers := convertToSourcePointers(sources)
+
+	refSources, err := argo.GetRefSources(context.Background(), sourcePointers, app.Spec.Project, a.db.GetRepository, []string{}, false)
 	if err != nil {
 		return fmt.Errorf("error getting ref sources: %w", err)
 	}
@@ -378,6 +390,7 @@ func (a *ArgoCDWebhookHandler) storePreviouslyCachedManifests(app *v1alpha1.Appl
 
 	return nil
 }
+
 
 func sourceRevisionHasChanged(source *v1alpha1.ApplicationSource, revision string, touchedHead bool) bool {
     targetRev := ParseRevision(source.TargetRevision)

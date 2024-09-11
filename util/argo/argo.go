@@ -328,7 +328,7 @@ func ValidateRepo(
 		return nil, fmt.Errorf("error getting permitted repo creds: %w", err)
 	}
 
-	cluster, err := db.GetCluster(context.Background(), spec.Destination.Server)
+	cluster, err := db.GetCluster(ctx, spec.Destination.Server)
 	if err != nil {
 		conditions = append(conditions, argoappv1.ApplicationCondition{
 			Type:    argoappv1.ApplicationConditionInvalidSpecError,
@@ -351,11 +351,18 @@ func ValidateRepo(
 		return nil, fmt.Errorf("error getting enabled source types: %w", err)
 	}
 
+	// Convert app.Spec.GetSources() to the expected type
+	sources := app.Spec.GetSources()
+	var sourceSlice []*argoappv1.ApplicationSource
+	for i := range sources {
+		sourceSlice = append(sourceSlice, &sources[i])
+	}
+
 	sourceCondition, err := validateRepo(
 		ctx,
 		app,
 		db,
-		app.Spec.GetSources(),
+		sourceSlice,
 		repoClient,
 		permittedHelmRepos,
 		helmOptions,
@@ -372,6 +379,7 @@ func ValidateRepo(
 
 	return conditions, nil
 }
+
 
 func validateRepo(ctx context.Context,
 	app *argoappv1.Application,
@@ -431,7 +439,7 @@ func validateRepo(ctx context.Context,
 		permittedHelmRepos,
 		helmOptions,
 		app.Name,
-		app.Spec.Destination,
+		&app.Spec.Destination, // Pass as pointer here
 		proj,
 		sources,
 		repoClient,
@@ -559,13 +567,15 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 
 	if spec.HasMultipleSources() {
 		for _, source := range spec.Sources {
-			condition := validateSourcePermissions(&source, spec.HasMultipleSources()) // Pass pointer
+			// Pass pointer to validateSourcePermissions
+			condition := validateSourcePermissions(&source, spec.HasMultipleSources())
 			if len(condition) > 0 {
 				conditions = append(conditions, condition...)
 				return conditions, nil
 			}
 
-			if !proj.IsSourcePermitted(&source) { // Pass pointer
+			// Pass value to IsSourcePermitted
+			if !proj.IsSourcePermitted(source) {
 				conditions = append(conditions, argoappv1.ApplicationCondition{
 					Type:    argoappv1.ApplicationConditionInvalidSpecError,
 					Message: fmt.Sprintf("application repo %s is not permitted in project '%s'", source.RepoURL, spec.Project),
@@ -573,13 +583,15 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 			}
 		}
 	} else {
-		source := spec.GetSource() // Use the source pointer directly
-		conditions = validateSourcePermissions(source, spec.HasMultipleSources())
+		source := spec.GetSource()
+		// Pass pointer to validateSourcePermissions
+		conditions = validateSourcePermissions(&source, spec.HasMultipleSources())
 		if len(conditions) > 0 {
 			return conditions, nil
 		}
 
-		if !proj.IsSourcePermitted(source) { // Pass pointer
+		// Pass value to IsSourcePermitted
+		if !proj.IsSourcePermitted(source) {
 			conditions = append(conditions, argoappv1.ApplicationCondition{
 				Type:    argoappv1.ApplicationConditionInvalidSpecError,
 				Message: fmt.Sprintf("application repo %s is not permitted in project '%s'", source.RepoURL, spec.Project),
@@ -622,7 +634,10 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 			}
 		}
 	} else if spec.Destination.Server == "" {
-		conditions = append(conditions, argoappv1.ApplicationCondition{Type: argoappv1.ApplicationConditionInvalidSpecError, Message: errDestinationMissing})
+		conditions = append(conditions, argoappv1.ApplicationCondition{
+			Type:    argoappv1.ApplicationConditionInvalidSpecError,
+			Message: errDestinationMissing,
+		})
 	}
 	return conditions, nil
 }
