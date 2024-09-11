@@ -876,7 +876,15 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]*v1a
 		return nil, fmt.Errorf("failed to get resource overrides: %w", err)
 	}
 
+	// Convert to a map of pointers
+	resourceOverridesPointer := make(map[string]*v1alpha1.ResourceOverride)
 	for k, v := range resourceOverrides {
+		// Allocate memory for the pointer type
+		val := v // Local variable to avoid referencing the loop variable directly
+		resourceOverridesPointer[k] = &val
+	}
+
+	for k, v := range resourceOverridesPointer {
 		if v == nil {
 			continue
 		}
@@ -890,18 +898,19 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]*v1a
 		// Set the IgnoreDifferences because these are the overrides used by Normalizers
 		v.IgnoreDifferences = resourceUpdates
 		v.IgnoreResourceUpdates = v1alpha1.OverrideIgnoreDiff{}
-		resourceOverrides[k] = v
+		resourceOverridesPointer[k] = v
 	}
 
 	if compareOptions.IgnoreDifferencesOnResourceUpdates {
 		log.Info("Using diffing customizations to ignore resource updates")
 	}
 
-	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/resourceVersion")
-	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/generation")
-	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/managedFields")
+	// Now pass the updated pointer map to the helper function
+	addIgnoreDiffItemOverrideToGK(resourceOverridesPointer, "*/*", "/metadata/resourceVersion")
+	addIgnoreDiffItemOverrideToGK(resourceOverridesPointer, "*/*", "/metadata/generation")
+	addIgnoreDiffItemOverrideToGK(resourceOverridesPointer, "*/*", "/metadata/managedFields")
 
-	return resourceOverrides, nil
+	return resourceOverridesPointer, nil
 }
 
 
@@ -919,17 +928,28 @@ func (mgr *SettingsManager) GetIsIgnoreResourceUpdatesEnabled() (bool, error) {
 }
 
 // GetResourceOverrides loads Resource Overrides from argocd-cm ConfigMap
-func (mgr *SettingsManager) GetResourceOverrides() (map[string]v1alpha1.ResourceOverride, error) {
+func (mgr *SettingsManager) GetResourceOverrides() (map[string]*v1alpha1.ResourceOverride, error) {
 	argoCDCM, err := mgr.getConfigMap()
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving config map: %w", err)
 	}
-	resourceOverrides := map[string]v1alpha1.ResourceOverride{}
+
+	// Change resourceOverrides to be a map of pointers
+	resourceOverrides := map[string]*v1alpha1.ResourceOverride{}
+	// Create a temporary map to hold non-pointer values before conversion
+	rawResourceOverrides := map[string]v1alpha1.ResourceOverride{}
+
 	if value, ok := argoCDCM.Data[resourceCustomizationsKey]; ok && value != "" {
-		err := yaml.Unmarshal([]byte(value), &resourceOverrides)
+		err := yaml.Unmarshal([]byte(value), &rawResourceOverrides)
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// Convert the raw map to a map of pointers
+	for key, val := range rawResourceOverrides {
+		v := val // Create a new variable to hold the value for each iteration
+		resourceOverrides[key] = &v
 	}
 
 	err = mgr.appendResourceOverridesFromSplitKeys(argoCDCM.Data, resourceOverrides)
@@ -955,10 +975,8 @@ func (mgr *SettingsManager) GetResourceOverrides() (map[string]v1alpha1.Resource
 	case "all":
 		addStatusOverrideToGK(resourceOverrides, "*/*")
 		log.Info("Ignore status for all objects")
-
 	case "off", "false":
 		log.Info("Not ignoring status for any object")
-
 	default:
 		addStatusOverrideToGK(resourceOverrides, crdGK)
 		log.Warnf("Unrecognized value for ignoreResourceStatusField - %s, ignore status for CustomResourceDefinitions", diffOptions.IgnoreResourceStatusField)
@@ -966,6 +984,7 @@ func (mgr *SettingsManager) GetResourceOverrides() (map[string]v1alpha1.Resource
 
 	return resourceOverrides, nil
 }
+
 
 func addStatusOverrideToGK(resourceOverrides map[string]*v1alpha1.ResourceOverride, groupKind string) {
     if val, ok := resourceOverrides[groupKind]; ok {

@@ -357,7 +357,7 @@ func (vm VM) GetResourceActionDiscovery(obj *unstructured.Unstructured) (string,
 	key := GetConfigMapKey(obj.GroupVersionKind())
 
 	// Use a local variable to hold the ResourceOverride to avoid copying locks
-	var override v1alpha1.ResourceOverride
+	var override appv1.ResourceOverride
 	var ok bool
 
 	// Access the ResourceOverride map safely
@@ -383,7 +383,7 @@ func (vm VM) GetResourceAction(obj *unstructured.Unstructured, actionName string
 	key := GetConfigMapKey(obj.GroupVersionKind())
 
 	// Use a local variable to hold the ResourceOverride
-	var override v1alpha1.ResourceOverride
+	var override appv1.ResourceOverride
 	var ok bool
 
 	// Access the ResourceOverride map safely
