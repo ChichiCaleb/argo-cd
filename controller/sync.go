@@ -197,12 +197,24 @@ func (m *appStateManager) SyncAppState(app *v1alpha1.Application, state *v1alpha
 	syncRes.Revisions = compareResult.syncStatus.Revisions
 
 	// If there are any comparison or spec errors error conditions do not perform the operation
-	if errConditions := app.Status.GetConditions(map[v1alpha1.ApplicationConditionType]bool{
+
+	
+	errConditions := app.Status.GetConditions(map[v1alpha1.ApplicationConditionType]bool{
 		v1alpha1.ApplicationConditionComparisonError:  true,
 		v1alpha1.ApplicationConditionInvalidSpecError: true,
-	}); len(errConditions) > 0 {
+	})
+
+	// Convert errConditions from []v1alpha1.ApplicationCondition to []*v1alpha1.ApplicationCondition
+	var errConditionPtrs []*v1alpha1.ApplicationCondition
+	for _, cond := range errConditions {
+		c := cond // create a new variable to get the address
+		errConditionPtrs = append(errConditionPtrs, &c)
+	}
+
+	// Check if there are any error conditions
+	if len(errConditionPtrs) > 0 {
 		state.Phase = common.OperationError
-		state.Message = argo.FormatAppConditions(errConditions)
+		state.Message = argo.FormatAppConditions(errConditionPtrs)
 		return
 	}
 
@@ -304,44 +316,59 @@ func (m *appStateManager) SyncAppState(app *v1alpha1.Application, state *v1alpha
 		}
 	}
 
-	opts := []sync.SyncOpt{
-		sync.WithLogr(logutils.NewLogrusLogger(logEntry)),
-		sync.WithHealthOverride(lua.ResourceHealthOverrides(resourceOverrides)),
-		sync.WithPermissionValidator(func(un *unstructured.Unstructured, res *v1.APIResource) error {
-			if !proj.IsGroupKindPermitted(un.GroupVersionKind().GroupKind(), res.Namespaced) {
-				return fmt.Errorf("resource %s:%s is not permitted in project %s", un.GroupVersionKind().Group, un.GroupVersionKind().Kind, proj.Name)
-			}
-			if res.Namespaced {
-				permitted, err := proj.IsDestinationPermitted(v1alpha1.ApplicationDestination{Namespace: un.GetNamespace(), Server: app.Spec.Destination.Server, Name: app.Spec.Destination.Name}, func(project string) ([]*v1alpha1.Cluster, error) {
-					return m.db.GetProjectClusters(context.TODO(), project)
-				})
-				if err != nil {
-					return err
-				}
+// Create a new map for lua.ResourceHealthOverrides
+healthOverrides := make(lua.ResourceHealthOverrides)
 
-				if !permitted {
-					return fmt.Errorf("namespace %v is not permitted in project '%s'", un.GetNamespace(), proj.Name)
-				}
-			}
-			return nil
-		}),
-		sync.WithOperationSettings(syncOp.DryRun, syncOp.Prune, syncOp.SyncStrategy.Force(), syncOp.IsApplyStrategy() || len(syncOp.Resources) > 0),
-		sync.WithInitialState(state.Phase, state.Message, initialResourcesRes, state.StartedAt),
-		sync.WithResourcesFilter(func(key kube.ResourceKey, target *unstructured.Unstructured, live *unstructured.Unstructured) bool {
-			return (len(syncOp.Resources) == 0 ||
-				isPostDeleteHook(target) ||
-				argo.ContainsSyncResource(key.Name, key.Namespace, schema.GroupVersionKind{Kind: key.Kind, Group: key.Group}, syncOp.Resources)) &&
-				m.isSelfReferencedObj(live, target, app.GetName(), appLabelKey, trackingMethod)
-		}),
-		sync.WithManifestValidation(!syncOp.SyncOptions.HasOption(common.SyncOptionsDisableValidation)),
-		sync.WithSyncWaveHook(delayBetweenSyncWaves),
-		sync.WithPruneLast(syncOp.SyncOptions.HasOption(common.SyncOptionPruneLast)),
-		sync.WithResourceModificationChecker(syncOp.SyncOptions.HasOption("ApplyOutOfSyncOnly=true"), compareResult.diffResultList),
-		sync.WithPrunePropagationPolicy(&prunePropagationPolicy),
-		sync.WithReplace(syncOp.SyncOptions.HasOption(common.SyncOptionReplace)),
-		sync.WithServerSideApply(syncOp.SyncOptions.HasOption(common.SyncOptionServerSideApply)),
-		sync.WithServerSideApplyManager(cdcommon.ArgoCDSSAManager),
-	}
+// Populate the healthOverrides map with values of type ResourceOverride
+for key, value := range resourceOverrides {
+    healthOverrides[key] = *value // Dereference to get the value of type ResourceOverride
+}
+
+// Convert syncOp.Resources from []SyncOperationResource to []*SyncOperationResource
+var resourcesPtrs []*v1alpha1.SyncOperationResource
+for i := range syncOp.Resources {
+    res := syncOp.Resources[i]
+    resourcesPtrs = append(resourcesPtrs, &res)
+}
+
+opts := []sync.SyncOpt{
+    sync.WithLogr(logutils.NewLogrusLogger(logEntry)),
+    sync.WithHealthOverride(healthOverrides),
+    sync.WithPermissionValidator(func(un *unstructured.Unstructured, res *v1.APIResource) error {
+        if !proj.IsGroupKindPermitted(un.GroupVersionKind().GroupKind(), res.Namespaced) {
+            return fmt.Errorf("resource %s:%s is not permitted in project %s", un.GroupVersionKind().Group, un.GroupVersionKind().Kind, proj.Name)
+        }
+        if res.Namespaced {
+            permitted, err := proj.IsDestinationPermitted(v1alpha1.ApplicationDestination{Namespace: un.GetNamespace(), Server: app.Spec.Destination.Server, Name: app.Spec.Destination.Name}, func(project string) ([]*v1alpha1.Cluster, error) {
+                return m.db.GetProjectClusters(context.TODO(), project)
+            })
+            if err != nil {
+                return err
+            }
+
+            if !permitted {
+                return fmt.Errorf("namespace %v is not permitted in project '%s'", un.GetNamespace(), proj.Name)
+            }
+        }
+        return nil
+    }),
+    sync.WithOperationSettings(syncOp.DryRun, syncOp.Prune, syncOp.SyncStrategy.Force(), syncOp.IsApplyStrategy() || len(resourcesPtrs) > 0),
+    sync.WithInitialState(state.Phase, state.Message, initialResourcesRes, state.StartedAt),
+    sync.WithResourcesFilter(func(key kube.ResourceKey, target *unstructured.Unstructured, live *unstructured.Unstructured) bool {
+        return (len(resourcesPtrs) == 0 ||
+            isPostDeleteHook(target) ||
+            argo.ContainsSyncResource(key.Name, key.Namespace, schema.GroupVersionKind{Kind: key.Kind, Group: key.Group}, resourcesPtrs)) &&
+            m.isSelfReferencedObj(live, target, app.GetName(), appLabelKey, trackingMethod)
+    }),
+    sync.WithManifestValidation(!syncOp.SyncOptions.HasOption(common.SyncOptionsDisableValidation)),
+    sync.WithSyncWaveHook(delayBetweenSyncWaves),
+    sync.WithPruneLast(syncOp.SyncOptions.HasOption(common.SyncOptionPruneLast)),
+    sync.WithResourceModificationChecker(syncOp.SyncOptions.HasOption("ApplyOutOfSyncOnly=true"), compareResult.diffResultList),
+    sync.WithPrunePropagationPolicy(&prunePropagationPolicy),
+    sync.WithReplace(syncOp.SyncOptions.HasOption(common.SyncOptionReplace)),
+    sync.WithServerSideApply(syncOp.SyncOptions.HasOption(common.SyncOptionServerSideApply)),
+    sync.WithServerSideApplyManager(cdcommon.ArgoCDSSAManager),
+}
 
 	if syncOp.SyncOptions.HasOption("CreateNamespace=true") {
 		opts = append(opts, sync.WithNamespaceModifier(syncNamespace(app.Spec.SyncPolicy)))

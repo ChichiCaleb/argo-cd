@@ -175,21 +175,22 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 	manifestInfos := make([]*apiclient.ManifestResponse, 0)
 	targetObjs := make([]*unstructured.Unstructured, 0)
 
-	// Store the map of all sources having ref field into a map for applications with sources field
-	// If it's for a rollback process, the refSources[*].targetRevision fields are the desired
-	// revisions for the rollback
-	refSources, err := argo.GetRefSources(context.Background(), sources, app.Spec.Project, m.db.GetRepository, revisions, rollback)
+	// Convert sources to a slice of pointers
+	sourcePtrs := make([]*v1alpha1.ApplicationSource, len(sources))
+	for i := range sources {
+		sourcePtrs[i] = &sources[i]
+	}
+
+	refSources, err := argo.GetRefSources(context.Background(), sourcePtrs, app.Spec.Project, m.db.GetRepository, revisions, rollback)
 	if err != nil {
 		return nil, nil, false, fmt.Errorf("failed to get ref sources: %w", err)
 	}
 
 	revisionUpdated := false
-
 	atLeastOneRevisionIsNotPossibleToBeUpdated := false
-
 	keyManifestGenerateAnnotationVal, keyManifestGenerateAnnotationExists := app.Annotations[v1alpha1.AnnotationKeyManifestGeneratePaths]
 
-	for i, source := range sources {
+	for i, source := range sourcePtrs {
 		if len(revisions) < len(sources) || revisions[i] == "" {
 			revisions[i] = source.TargetRevision
 		}
@@ -197,7 +198,7 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 		if err != nil {
 			return nil, nil, false, fmt.Errorf("failed to get repo %q: %w", source.RepoURL, err)
 		}
-		kustomizeOptions, err := kustomizeSettings.GetOptions(source)
+		kustomizeOptions, err := kustomizeSettings.GetOptions(source) // Pass a pointer here
 		if err != nil {
 			return nil, nil, false, fmt.Errorf("failed to get Kustomize options for source %d of %d: %w", i+1, len(sources), err)
 		}
@@ -214,7 +215,6 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 		revision := revisions[i]
 
 		if !source.IsHelm() && syncedRevision != "" && keyManifestGenerateAnnotationExists && keyManifestGenerateAnnotationVal != "" {
-			// Validate the manifest-generate-path annotation to avoid generating manifests if it has not changed.
 			updateRevisionResult, err := repoClient.UpdateRevisionForPaths(context.Background(), &apiclient.UpdateRevisionForPathsRequest{
 				Repo:               repo,
 				Revision:           revision,
@@ -224,7 +224,7 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 				AppLabelKey:        appLabelKey,
 				AppName:            app.InstanceName(m.namespace),
 				Namespace:          app.Spec.Destination.Namespace,
-				ApplicationSource:  &source,
+				ApplicationSource:  source,
 				KubeVersion:        serverVersion,
 				ApiVersions:        argo.APIResourcesToStrings(apiResources, true),
 				TrackingMethod:     string(argo.GetTrackingMethod(m.settingsMgr)),
@@ -238,12 +238,10 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 				revisionUpdated = true
 			}
 
-			// Generate manifests should use same revision as updateRevisionForPaths, because HEAD revision may be different between these two calls
 			if updateRevisionResult.Revision != "" {
 				revision = updateRevisionResult.Revision
 			}
 		} else {
-			// revisionUpdated is set to true if at least one revision is not possible to be updated,
 			atLeastOneRevisionIsNotPossibleToBeUpdated = true
 		}
 
@@ -258,7 +256,7 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 			AppLabelKey:        appLabelKey,
 			AppName:            app.InstanceName(m.namespace),
 			Namespace:          app.Spec.Destination.Namespace,
-			ApplicationSource:  &source,
+			ApplicationSource:  source,
 			KustomizeOptions:   kustomizeOptions,
 			KubeVersion:        serverVersion,
 			ApiVersions:        argo.APIResourcesToStrings(apiResources, true),
@@ -292,13 +290,13 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 	logCtx = logCtx.WithField("time_ms", time.Since(ts.StartTime).Milliseconds())
 	logCtx.Info("GetRepoObjs stats")
 
-	// in case if annotation not exists, we should always execute selfheal if manifests changed
 	if atLeastOneRevisionIsNotPossibleToBeUpdated {
 		revisionUpdated = true
 	}
 
 	return targetObjs, manifestInfos, revisionUpdated, nil
 }
+
 
 func unmarshalManifests(manifests []string) ([]*unstructured.Unstructured, error) {
 	targetObjs := make([]*unstructured.Unstructured, 0)
@@ -367,7 +365,14 @@ func (m *appStateManager) getComparisonSettings() (string, map[string]v1alpha1.R
 	if err != nil {
 		return "", nil, nil, err
 	}
-	return appLabelKey, resourceOverrides, resFilter, nil
+
+	// Convert map[string]*v1alpha1.ResourceOverride to map[string]v1alpha1.ResourceOverride
+	resourceOverridesConverted := make(map[string]v1alpha1.ResourceOverride, len(resourceOverrides))
+	for key, override := range resourceOverrides {
+		resourceOverridesConverted[key] = *override
+	}
+
+	return appLabelKey, resourceOverridesConverted, resFilter, nil
 }
 
 // verifyGnuPGSignature verifies the result of a GnuPG operation for a given git

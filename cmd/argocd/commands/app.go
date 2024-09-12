@@ -1536,8 +1536,8 @@ func NewApplicationListCommand(clientOpts *argocdclient.ClientOptions) *cobra.Co
 		cluster      string
 	)
 	command := &cobra.Command{
-		Use:   "list",
-		Short: "List applications",
+		Use:     "list",
+		Short:   "List applications",
 		Example: `  # List all apps
   argocd app list
 
@@ -1560,24 +1560,31 @@ func NewApplicationListCommand(clientOpts *argocdclient.ClientOptions) *cobra.Co
 			errors.CheckError(err)
 			appList := apps.Items
 
+			// Convert appList from []v1alpha1.Application to []*v1alpha1.Application
+			var appListPtrs []*argoappv1.Application
+			for i := range appList {
+				app := appList[i]
+				appListPtrs = append(appListPtrs, &app)
+			}
+
 			if len(projects) != 0 {
-				appList = argo.FilterByProjects(appList, projects)
+				appListPtrs = argo.FilterByProjects(appListPtrs, projects)
 			}
 			if repo != "" {
-				appList = argo.FilterByRepo(appList, repo)
+				appListPtrs = argo.FilterByRepo(appListPtrs, repo)
 			}
 			if cluster != "" {
-				appList = argo.FilterByCluster(appList, cluster)
+				appListPtrs = argo.FilterByCluster(appListPtrs, cluster)
 			}
 
 			switch output {
 			case "yaml", "json":
-				err := PrintResourceList(appList, output, false)
+				err := PrintResourceList(appListPtrs, output, false)
 				errors.CheckError(err)
 			case "name":
-				printApplicationNames(appList)
+				printApplicationNames(appListPtrs)
 			case "wide", "":
-				printApplicationTable(appList, &output)
+				printApplicationTable(appListPtrs, &output)
 			default:
 				errors.CheckError(fmt.Errorf("unknown output format: %s", output))
 			}
@@ -1591,6 +1598,7 @@ func NewApplicationListCommand(clientOpts *argocdclient.ClientOptions) *cobra.Co
 	command.Flags().StringVarP(&cluster, "cluster", "c", "", "List apps by cluster name or url")
 	return command
 }
+
 
 func formatSyncPolicy(app argoappv1.Application) string {
 	if app.Spec.SyncPolicy == nil || app.Spec.SyncPolicy.Automated == nil {

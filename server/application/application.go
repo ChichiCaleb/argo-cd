@@ -476,24 +476,23 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 		}
 
 		appSpec := a.Spec.DeepCopy()
-		// Create a slice of pointers to ApplicationSource
 		var sources []*appv1.ApplicationSource
+
 		if a.Spec.HasMultipleSources() {
-			for i, source := range appSpec.GetSources() {
+			for i := range appSpec.Sources {
 				// Append the address of each source to the slice
 				sources = append(sources, &appSpec.Sources[i])
 			}
 		} else {
-			  // Get the source and append a pointer to the source
-			  source := appSpec.GetSource()
-			  if q.GetRevision() != "" {
-				  source.TargetRevision = q.GetRevision()
-			  }
-			  // Append a pointer to the source directly
-			  sources = append(sources, &appSpec.Spec.Source)
+			// Get the source and create a pointer to it
+			source := appSpec.GetSource()
+			if q.GetRevision() != "" {
+				source.TargetRevision = q.GetRevision()
+			}
+			// Append a pointer to the source directly
+			sources = append(sources, &source)
 		}
 
-		// Store the map of all sources having ref field into a map for applications with sources field
 		refSources, err := argo.GetRefSources(context.Background(), sources, appSpec.Project, s.db.GetRepository, []string{}, false)
 		if err != nil {
 			return fmt.Errorf("failed to get ref sources: %w", err)
@@ -510,7 +509,6 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 				return fmt.Errorf("error getting kustomize settings: %w", err)
 			}
 
-			// Pass pointer to source to GetOptions
 			kustomizeOptions, err := kustomizeSettings.GetOptions(source)
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings options: %w", err)
@@ -522,7 +520,7 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 				AppLabelKey:        appInstanceLabelKey,
 				AppName:            a.InstanceName(s.ns),
 				Namespace:          a.Spec.Destination.Namespace,
-				ApplicationSource:  source,
+				ApplicationSource: source, // Use pointer here
 				Repos:              helmRepos,
 				KustomizeOptions:   kustomizeOptions,
 				KubeVersion:        serverVersion,
@@ -574,6 +572,8 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 }
 
 
+
+
 func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_GetManifestsWithFilesServer) error {
 	ctx := stream.Context()
 	query, err := manifeststream.ReceiveApplicationManifestQueryWithFiles(stream)
@@ -614,14 +614,15 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 			return fmt.Errorf("error getting API resources: %w", err)
 		}
 
+		// Store the source in a variable
 		source := a.Spec.GetSource()
 
-		proj, err := argo.GetAppProject(a, applisters.NewAppProjectLister(s.projInformer.GetIndexer()), s.ns, s.settingsMgr, s.db, ctx)
+		proj, err = argo.GetAppProject(a, applisters.NewAppProjectLister(s.projInformer.GetIndexer()), s.ns, s.settingsMgr, s.db, ctx)
 		if err != nil {
 			return fmt.Errorf("error getting app project: %w", err)
 		}
 
-		repo, err := s.db.GetRepository(ctx, a.Spec.GetSource().RepoURL, proj.Name)
+		repo, err := s.db.GetRepository(ctx, source.RepoURL, proj.Name)
 		if err != nil {
 			return fmt.Errorf("error getting repository: %w", err)
 		}
@@ -630,12 +631,10 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 		if err != nil {
 			return fmt.Errorf("error getting kustomize settings: %w", err)
 		}
-		kustomizeOptions, err := kustomizeSettings.GetOptions(&a.Spec.GetSource())
-        if err != nil {
+		kustomizeOptions, err := kustomizeSettings.GetOptions(&source)
+		if err != nil {
 			return fmt.Errorf("error getting kustomize settings options: %w", err)
 		}
-
-		source := a.Spec.GetSource()
 
 		req := &apiclient.ManifestRequest{
 			Repo:               repo,
@@ -656,13 +655,12 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 			ProjectSourceRepos: proj.Spec.SourceRepos,
 		}
 
-
 		repoStreamClient, err := client.GenerateManifestWithFiles(stream.Context())
 		if err != nil {
 			return fmt.Errorf("error opening stream: %w", err)
 		}
 
-		err = manifeststream.SendRepoStream(repoStreamClient, stream, req, query.Checksum) // No need to dereference
+		err = manifeststream.SendRepoStream(repoStreamClient, stream, req, query.Checksum)
 		if err != nil {
 			return fmt.Errorf("error sending repo stream: %w", err)
 		}
@@ -702,6 +700,8 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 	return nil
 }
 
+
+
 // Get returns an application by name
 func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*appv1.Application, error) {
 	appName := q.GetName()
@@ -725,12 +725,12 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 
 	s.inferResourcesStatusHealth(a)
 
-	if q.Refresh == "" { // Check for empty string instead of nil
+	if q.Refresh == "" {
 		return a, nil
 	}
 
 	refreshType := appv1.RefreshTypeNormal
-	if q.Refresh == string(appv1.RefreshTypeHard) { // No need to dereference
+	if q.Refresh == string(appv1.RefreshTypeHard) {
 		refreshType = appv1.RefreshTypeHard
 	}
 	appIf := s.appclientset.ArgoprojV1alpha1().Applications(appNs)
@@ -756,8 +756,8 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 			helmOptions *appv1.HelmOptions,
 			enabledSourceTypes map[string]bool,
 		) error {
-			source := app.Spec.GetSource()
-			repo, err := s.db.GetRepository(ctx, a.Spec.GetSource().RepoURL, proj.Name)
+			source := a.Spec.GetSource() // Assign to a variable
+			repo, err := s.db.GetRepository(ctx, source.RepoURL, proj.Name)
 			if err != nil {
 				return fmt.Errorf("error getting repository: %w", err)
 			}
@@ -765,15 +765,15 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings: %w", err)
 			}
-			kustomizeOptions, err := kustomizeSettings.GetOptions(&a.Spec.GetSource())
+			kustomizeOptions, err := kustomizeSettings.GetOptions(&source) // Use the variable here
 
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings options: %w", err)
 			}
-			  source := a.Spec.GetSource()
+
 			_, err = client.GetAppDetails(ctx, &apiclient.RepoServerAppDetailsQuery{
 				Repo:               repo,
-				Source:             &source,
+				Source:             &source, // Pass the address of the variable
 				AppName:            appName,
 				KustomizeOptions:   kustomizeOptions,
 				Repos:              helmRepos,
@@ -810,6 +810,7 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 		}
 	}
 }
+
 
 // ListResourceEvents returns a list of event resources
 func (s *Server) ListResourceEvents(ctx context.Context, q *application.ApplicationResourceEventsQuery) (*application.EventListWrapper, error) {

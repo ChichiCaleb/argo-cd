@@ -352,50 +352,91 @@ func NewResourceOverridesCommand(cmdCtx commandContext) *cobra.Command {
 }
 
 func executeResourceOverrideCommand(ctx context.Context, cmdCtx commandContext, args []string, callback func(res unstructured.Unstructured, override v1alpha1.ResourceOverride, overrides map[string]v1alpha1.ResourceOverride)) {
-	data, err := os.ReadFile(args[0])
-	errors.CheckError(err)
+    // Read the YAML file
+    data, err := os.ReadFile(args[0])
+    errors.CheckError(err)
 
-	res := unstructured.Unstructured{}
-	errors.CheckError(yaml.Unmarshal(data, &res))
+    // Unmarshal the YAML data into an unstructured object
+    res := unstructured.Unstructured{}
+    errors.CheckError(yaml.Unmarshal(data, &res))
 
-	settingsManager, err := cmdCtx.createSettingsManager(ctx)
-	errors.CheckError(err)
+    // Create a settings manager
+    settingsManager, err := cmdCtx.createSettingsManager(ctx)
+    errors.CheckError(err)
 
-	overrides, err := settingsManager.GetResourceOverrides()
-	errors.CheckError(err)
-	gvk := res.GroupVersionKind()
-	key := gvk.Kind
-	if gvk.Group != "" {
-		key = fmt.Sprintf("%s/%s", gvk.Group, gvk.Kind)
-	}
-	override := overrides[key]
-	callback(res, override, overrides)
+    // Retrieve resource overrides
+    overridesMap, err := settingsManager.GetResourceOverrides()
+    errors.CheckError(err)
+
+    // Convert map of pointers to map of values
+    overrides := make(map[string]v1alpha1.ResourceOverride)
+    for key, overridePtr := range overridesMap {
+        if overridePtr != nil {
+            overrides[key] = *overridePtr
+        }
+    }
+
+    // Get the group version kind of the resource
+    gvk := res.GroupVersionKind()
+    key := gvk.Kind
+    if gvk.Group != "" {
+        key = fmt.Sprintf("%s/%s", gvk.Group, gvk.Kind)
+    }
+
+    // Retrieve the override value, if present
+    override := v1alpha1.ResourceOverride{}
+    if overridePtr, exists := overridesMap[key]; exists && overridePtr != nil {
+        override = *overridePtr
+    }
+
+    // Call the callback function with the appropriate parameters
+    callback(res, override, overrides)
 }
+
 
 func executeIgnoreResourceUpdatesOverrideCommand(ctx context.Context, cmdCtx commandContext, args []string, callback func(res unstructured.Unstructured, override v1alpha1.ResourceOverride, overrides map[string]v1alpha1.ResourceOverride)) {
-	data, err := os.ReadFile(args[0])
-	errors.CheckError(err)
+    // Read the YAML file
+    data, err := os.ReadFile(args[0])
+    errors.CheckError(err)
 
-	res := unstructured.Unstructured{}
-	errors.CheckError(yaml.Unmarshal(data, &res))
+    // Unmarshal the YAML data into an unstructured object
+    res := unstructured.Unstructured{}
+    errors.CheckError(yaml.Unmarshal(data, &res))
 
-	settingsManager, err := cmdCtx.createSettingsManager(ctx)
-	errors.CheckError(err)
+    // Create a settings manager
+    settingsManager, err := cmdCtx.createSettingsManager(ctx)
+    errors.CheckError(err)
 
-	overrides, err := settingsManager.GetIgnoreResourceUpdatesOverrides()
-	errors.CheckError(err)
-	gvk := res.GroupVersionKind()
-	key := gvk.Kind
-	if gvk.Group != "" {
-		key = fmt.Sprintf("%s/%s", gvk.Group, gvk.Kind)
-	}
-	override, hasOverride := overrides[key]
-	if !hasOverride {
-		_, _ = fmt.Printf("No overrides configured for '%s/%s'\n", gvk.Group, gvk.Kind)
-		return
-	}
-	callback(res, override, overrides)
+    // Retrieve resource updates overrides
+    overridesMap, err := settingsManager.GetIgnoreResourceUpdatesOverrides()
+    errors.CheckError(err)
+
+    // Convert map of pointers to map of values
+    overrides := make(map[string]v1alpha1.ResourceOverride)
+    for key, overridePtr := range overridesMap {
+        if overridePtr != nil {
+            overrides[key] = *overridePtr
+        }
+    }
+
+    // Get the group version kind of the resource
+    gvk := res.GroupVersionKind()
+    key := gvk.Kind
+    if gvk.Group != "" {
+        key = fmt.Sprintf("%s/%s", gvk.Group, gvk.Kind)
+    }
+
+    // Retrieve the override value, if present
+    override, hasOverride := overrides[key]
+    if !hasOverride {
+        _, _ = fmt.Printf("No overrides configured for '%s/%s'\n", gvk.Group, gvk.Kind)
+        return
+    }
+
+    // Call the callback function with the appropriate parameters
+    callback(res, override, overrides)
 }
+
 
 func NewResourceIgnoreDifferencesCommand(cmdCtx commandContext) *cobra.Command {
 	command := &cobra.Command{

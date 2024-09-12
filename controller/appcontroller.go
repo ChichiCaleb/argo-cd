@@ -761,18 +761,30 @@ func (ctrl *ApplicationController) hideSecretData(app *appv1.Application, compar
 			if err != nil {
 				return nil, fmt.Errorf("error hiding secret data: %w", err)
 			}
+
 			compareOptions, err := ctrl.settingsMgr.GetResourceCompareOptions()
 			if err != nil {
 				return nil, fmt.Errorf("error getting resource compare options: %w", err)
 			}
+
 			resourceOverrides, err := ctrl.settingsMgr.GetResourceOverrides()
 			if err != nil {
 				return nil, fmt.Errorf("error getting resource overrides: %w", err)
 			}
+
+			// Convert the map
+			resourceOverridesMap := make(map[string]appv1.ResourceOverride, len(resourceOverrides))
+			for key, val := range resourceOverrides {
+				if val != nil {
+					resourceOverridesMap[key] = *val
+				}
+			}
+
 			appLabelKey, err := ctrl.settingsMgr.GetAppInstanceLabelKey()
 			if err != nil {
 				return nil, fmt.Errorf("error getting app instance label key: %w", err)
 			}
+
 			trackingMethod, err := ctrl.settingsMgr.GetTrackingMethod()
 			if err != nil {
 				return nil, fmt.Errorf("error getting tracking method: %w", err)
@@ -782,8 +794,9 @@ func (ctrl *ApplicationController) hideSecretData(app *appv1.Application, compar
 			if err != nil {
 				return nil, fmt.Errorf("error getting cluster cache: %w", err)
 			}
+
 			diffConfig, err := argodiff.NewDiffConfigBuilder().
-				WithDiffSettings(app.Spec.IgnoreDifferences, resourceOverrides, compareOptions.IgnoreAggregatedRoles, ctrl.ignoreNormalizerOpts).
+				WithDiffSettings(app.Spec.IgnoreDifferences, resourceOverridesMap, compareOptions.IgnoreAggregatedRoles, ctrl.ignoreNormalizerOpts).
 				WithTracking(appLabelKey, trackingMethod).
 				WithNoCache().
 				WithLogger(logutils.NewLogrusLogger(logutils.NewWithCurrentConfig())).
@@ -819,6 +832,7 @@ func (ctrl *ApplicationController) hideSecretData(app *appv1.Application, compar
 		} else {
 			item.TargetState = "null"
 		}
+
 		item.PredictedLiveState = string(resDiff.PredictedLive)
 		item.NormalizedLiveState = string(resDiff.NormalizedLive)
 		item.Modified = resDiff.Modified
@@ -827,6 +841,7 @@ func (ctrl *ApplicationController) hideSecretData(app *appv1.Application, compar
 	}
 	return items, nil
 }
+
 
 // Run starts the Application CRD controller.
 func (ctrl *ApplicationController) Run(ctx context.Context, statusProcessors int, operationProcessors int) {

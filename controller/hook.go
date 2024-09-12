@@ -46,6 +46,7 @@ func (ctrl *ApplicationController) executePostDeleteHooks(app *v1alpha1.Applicat
 	if err != nil {
 		return false, err
 	}
+
 	var revisions []string
 	for _, src := range app.Spec.GetSources() {
 		revisions = append(revisions, src.TargetRevision)
@@ -55,6 +56,7 @@ func (ctrl *ApplicationController) executePostDeleteHooks(app *v1alpha1.Applicat
 	if err != nil {
 		return false, err
 	}
+
 	runningHooks := map[kube.ResourceKey]*unstructured.Unstructured{}
 	for key, obj := range liveObjs {
 		if isPostDeleteHook(obj) {
@@ -74,6 +76,7 @@ func (ctrl *ApplicationController) executePostDeleteHooks(app *v1alpha1.Applicat
 			expectedHook[kube.GetResourceKey(obj)] = obj
 		}
 	}
+
 	createdCnt := 0
 	for _, obj := range expectedHook {
 		_, err = ctrl.kubectl.CreateResource(context.Background(), config, obj.GroupVersionKind(), obj.GetName(), obj.GetNamespace(), obj, v1.CreateOptions{})
@@ -82,15 +85,24 @@ func (ctrl *ApplicationController) executePostDeleteHooks(app *v1alpha1.Applicat
 		}
 		createdCnt++
 	}
+
 	if createdCnt > 0 {
 		logCtx.Infof("Created %d post-delete hooks", createdCnt)
 		return false, nil
 	}
+
 	resourceOverrides, err := ctrl.settingsMgr.GetResourceOverrides()
 	if err != nil {
 		return false, err
 	}
-	healthOverrides := lua.ResourceHealthOverrides(resourceOverrides)
+
+	// Convert resourceOverrides to lua.ResourceHealthOverrides
+	healthOverrides := make(lua.ResourceHealthOverrides)
+	for key, override := range resourceOverrides {
+		if override != nil {
+			healthOverrides[key] = *override
+		}
+	}
 
 	progressingHooksCnt := 0
 	for _, obj := range runningHooks {
@@ -114,6 +126,7 @@ func (ctrl *ApplicationController) executePostDeleteHooks(app *v1alpha1.Applicat
 			progressingHooksCnt++
 		}
 	}
+
 	if progressingHooksCnt > 0 {
 		logCtx.Infof("Waiting for %d post-delete hooks to complete", progressingHooksCnt)
 		return false, nil
@@ -122,12 +135,20 @@ func (ctrl *ApplicationController) executePostDeleteHooks(app *v1alpha1.Applicat
 	return true, nil
 }
 
+
 func (ctrl *ApplicationController) cleanupPostDeleteHooks(liveObjs map[kube.ResourceKey]*unstructured.Unstructured, config *rest.Config, logCtx *log.Entry) (bool, error) {
 	resourceOverrides, err := ctrl.settingsMgr.GetResourceOverrides()
 	if err != nil {
 		return false, err
 	}
-	healthOverrides := lua.ResourceHealthOverrides(resourceOverrides)
+
+	// Convert resourceOverrides to lua.ResourceHealthOverrides
+	healthOverrides := make(lua.ResourceHealthOverrides)
+	for key, override := range resourceOverrides {
+		if override != nil {
+			healthOverrides[key] = *override
+		}
+	}
 
 	pendingDeletionCount := 0
 	aggregatedHealth := health.HealthStatusHealthy

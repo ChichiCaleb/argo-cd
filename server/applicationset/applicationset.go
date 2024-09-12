@@ -154,8 +154,6 @@ func (s *Server) List(ctx context.Context, q *applicationset.ApplicationSetListQ
 
 	newItems := make([]*v1alpha1.ApplicationSet, 0)
 	for _, a := range appsets {
-		// Skip any application that is neither in the control plane's namespace
-		// nor in the list of enabled namespaces.
 		if !security.IsNamespaceEnabled(a.Namespace, s.ns, s.enabledNamespaces) {
 			continue
 		}
@@ -165,35 +163,30 @@ func (s *Server) List(ctx context.Context, q *applicationset.ApplicationSetListQ
 		}
 	}
 
-	// Convert newItems to []v1alpha1.ApplicationSet for filtering
-	appSetItems := make([]v1alpha1.ApplicationSet, len(newItems))
-	for i, item := range newItems {
-		appSetItems[i] = *item // Dereferencing pointers
-	}
-
-	// Filter by projects
-	filteredAppSets := argo.FilterAppSetsByProjects(appSetItems, q.Projects)
-
-	// Convert filteredAppSets back to []*v1alpha1.ApplicationSet
-	filteredItems := make([]*v1alpha1.ApplicationSet, len(filteredAppSets))
-	for i := range filteredAppSets {
-		filteredItems[i] = &filteredAppSets[i] // Getting the address of each item
-	}
+	// Use newItems directly, since it's already []*v1alpha1.ApplicationSet
+	filteredAppSets := argo.FilterAppSetsByProjects(newItems, q.Projects)
 
 	// Sort found applicationsets by name
-	sort.Slice(filteredItems, func(i, j int) bool {
-		return filteredItems[i].Name < filteredItems[j].Name
+	sort.Slice(filteredAppSets, func(i, j int) bool {
+		return filteredAppSets[i].Name < filteredAppSets[j].Name
 	})
+
+	// Convert filteredItems back to []v1alpha1.ApplicationSet for the final list
+	finalAppSets := make([]v1alpha1.ApplicationSet, len(filteredAppSets))
+	for i, item := range filteredAppSets {
+		finalAppSets[i] = *item // Dereference each pointer
+	}
 
 	appsetList := &v1alpha1.ApplicationSetList{
 		ListMeta: metav1.ListMeta{
 			ResourceVersion: s.appsetInformer.LastSyncResourceVersion(),
 		},
-		Items: filteredAppSets, // This expects []v1alpha1.ApplicationSet
+		Items: finalAppSets, // Use the slice of values
 	}
 
 	return appsetList, nil
 }
+
 
 
 func (s *Server) Create(ctx context.Context, q *applicationset.ApplicationSetCreateRequest) (*v1alpha1.ApplicationSet, error) {
