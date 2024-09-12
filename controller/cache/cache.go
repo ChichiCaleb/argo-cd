@@ -221,8 +221,8 @@ type liveStateCache struct {
 }
 
 // Helper function to convert map[string]*v1alpha1.ResourceOverride to map[string]v1alpha1.ResourceOverride
-func dereferenceResourceOverrides(input map[string]*v1alpha1.ResourceOverride) map[string]v1alpha1.ResourceOverride {
-	output := make(map[string]v1alpha1.ResourceOverride)
+func dereferenceResourceOverrides(input map[string]*appv1.ResourceOverride) map[string]appv1.ResourceOverride {
+	output := make(map[string]appv1.ResourceOverride)
 	for key, val := range input {
 		if val != nil {
 			output[key] = *val // Dereference the pointer

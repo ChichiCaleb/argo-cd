@@ -484,11 +484,13 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 				sources = append(sources, &appSpec.Sources[i])
 			}
 		} else {
-			source := appSpec.GetSource()
-			if q.GetRevision() != "" {
-				source.TargetRevision = q.GetRevision()
-			}
-			sources = append(sources, &source) // Append pointer to the single source
+			  // Get the source and append a pointer to the source
+			  source := appSpec.GetSource()
+			  if q.GetRevision() != "" {
+				  source.TargetRevision = q.GetRevision()
+			  }
+			  // Append a pointer to the source directly
+			  sources = append(sources, &appSpec.Spec.Source)
 		}
 
 		// Store the map of all sources having ref field into a map for applications with sources field
@@ -633,6 +635,8 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 			return fmt.Errorf("error getting kustomize settings options: %w", err)
 		}
 
+		source := a.Spec.GetSource()
+
 		req := &apiclient.ManifestRequest{
 			Repo:               repo,
 			Revision:           source.TargetRevision,
@@ -651,6 +655,7 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 			ProjectName:        proj.Name,
 			ProjectSourceRepos: proj.Spec.SourceRepos,
 		}
+
 
 		repoStreamClient, err := client.GenerateManifestWithFiles(stream.Context())
 		if err != nil {
@@ -765,7 +770,7 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings options: %w", err)
 			}
-
+			  source := a.Spec.GetSource()
 			_, err = client.GetAppDetails(ctx, &apiclient.RepoServerAppDetailsQuery{
 				Repo:               repo,
 				Source:             &source,

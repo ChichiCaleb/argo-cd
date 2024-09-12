@@ -168,15 +168,16 @@ func (s *Server) List(ctx context.Context, q *applicationset.ApplicationSetListQ
 	// Convert newItems to []v1alpha1.ApplicationSet for filtering
 	appSetItems := make([]v1alpha1.ApplicationSet, len(newItems))
 	for i, item := range newItems {
-		appSetItems[i] = *item
+		appSetItems[i] = *item // Dereferencing pointers
 	}
 
+	// Filter by projects
 	filteredAppSets := argo.FilterAppSetsByProjects(appSetItems, q.Projects)
 
 	// Convert filteredAppSets back to []*v1alpha1.ApplicationSet
 	filteredItems := make([]*v1alpha1.ApplicationSet, len(filteredAppSets))
-	for i, item := range filteredAppSets {
-		filteredItems[i] = &item
+	for i := range filteredAppSets {
+		filteredItems[i] = &filteredAppSets[i] // Getting the address of each item
 	}
 
 	// Sort found applicationsets by name
@@ -188,8 +189,9 @@ func (s *Server) List(ctx context.Context, q *applicationset.ApplicationSetListQ
 		ListMeta: metav1.ListMeta{
 			ResourceVersion: s.appsetInformer.LastSyncResourceVersion(),
 		},
-		Items: filteredAppSets, // This should be []v1alpha1.ApplicationSet
+		Items: filteredAppSets, // This expects []v1alpha1.ApplicationSet
 	}
+
 	return appsetList, nil
 }
 
