@@ -520,7 +520,7 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 				AppLabelKey:        appInstanceLabelKey,
 				AppName:            a.InstanceName(s.ns),
 				Namespace:          a.Spec.Destination.Namespace,
-				ApplicationSource: source, // Use pointer here
+				ApplicationSource:  source, // Use pointer here
 				Repos:              helmRepos,
 				KustomizeOptions:   kustomizeOptions,
 				KubeVersion:        serverVersion,
@@ -570,9 +570,6 @@ func (s *Server) GetManifests(ctx context.Context, q *application.ApplicationMan
 
 	return manifests, nil
 }
-
-
-
 
 func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_GetManifestsWithFilesServer) error {
 	ctx := stream.Context()
@@ -700,8 +697,6 @@ func (s *Server) GetManifestsWithFiles(stream application.ApplicationService_Get
 	return nil
 }
 
-
-
 // Get returns an application by name
 func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*appv1.Application, error) {
 	appName := q.GetName()
@@ -766,7 +761,6 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 				return fmt.Errorf("error getting kustomize settings: %w", err)
 			}
 			kustomizeOptions, err := kustomizeSettings.GetOptions(&source) // Use the variable here
-
 			if err != nil {
 				return fmt.Errorf("error getting kustomize settings options: %w", err)
 			}
@@ -810,7 +804,6 @@ func (s *Server) Get(ctx context.Context, q *application.ApplicationQuery) (*app
 		}
 	}
 }
-
 
 // ListResourceEvents returns a list of event resources
 func (s *Server) ListResourceEvents(ctx context.Context, q *application.ApplicationResourceEventsQuery) (*application.EventListWrapper, error) {
@@ -1288,7 +1281,6 @@ func (s *Server) validateAndNormalizeApp(ctx context.Context, app *appv1.Applica
 	app.Spec = *argo.NormalizeApplicationSpec(&app.Spec)
 	return nil
 }
-
 
 func (s *Server) getApplicationClusterConfig(ctx context.Context, a *appv1.Application) (*rest.Config, error) {
 	if err := argo.ValidateDestination(ctx, &a.Spec.Destination, s.db); err != nil {
@@ -2367,7 +2359,6 @@ func (s *Server) ListResourceActions(ctx context.Context, q *application.Applica
 	return &application.ResourceActionsListResponse{Actions: actionsPtr}, nil
 }
 
-
 func (s *Server) getUnstructuredLiveResourceOrApp(ctx context.Context, rbacRequest string, q *application.ApplicationResourceRequest) (obj *unstructured.Unstructured, res *appv1.ResourceNode, app *appv1.Application, config *rest.Config, err error) {
 	if q.GetKind() == applicationType.ApplicationKind && q.GetGroup() == applicationType.Group && q.GetName() == q.GetResourceName() {
 		app, _, err = s.getApplicationEnforceRBACInformer(ctx, rbacRequest, q.GetProject(), q.GetAppNamespace(), q.GetName())
@@ -2533,7 +2524,6 @@ func (s *Server) RunResourceAction(ctx context.Context, q *application.ResourceA
 	}
 	return &application.ApplicationResponse{}, nil
 }
-
 
 func (s *Server) patchResource(ctx context.Context, config *rest.Config, liveObjBytes, newObjBytes []byte, newObj *unstructured.Unstructured) (*application.ApplicationResponse, error) {
 	diffBytes, err := jsonpatch.CreateMergePatch(liveObjBytes, newObjBytes)

@@ -100,7 +100,6 @@ func ApplicationSetHasConditions(applicationSetName string, expectedConditions [
 	}
 }
 
-
 // ApplicationsDoNotExist checks that each of the 'expectedApps' no longer exist in the namespace
 func ApplicationsDoNotExist(expectedApps []v1alpha1.Application) Expectation {
 	return func(c *Consequences) (state, string) {

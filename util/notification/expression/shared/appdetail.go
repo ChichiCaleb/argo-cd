@@ -51,7 +51,6 @@ func (has *CustomHelmAppSpec) GetParameterValueByName(name string) string {
 	return ""
 }
 
-
 func (has *CustomHelmAppSpec) GetFileParameterPathByName(name string) string {
 	var path string
 	for i := range has.HelmAppSpec.FileParameters {

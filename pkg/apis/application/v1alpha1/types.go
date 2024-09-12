@@ -2257,18 +2257,18 @@ type ClusterConfig struct {
 
 // Custom MarshalJSON method to exclude the problematic fields
 func (c ClusterConfig) MarshalJSON() ([]byte, error) {
-    type Alias ClusterConfig
-    return json.Marshal(&struct {
-        Alias
-        State         interface{} `json:"-"`
-        SizeCache     interface{} `json:"-"`
-        UnknownFields interface{} `json:"-"`
-    }{
-        Alias:         (Alias)(c),
-        State:         nil, // Exclude state
-        SizeCache:     nil, // Exclude sizeCache
-        UnknownFields: nil, // Exclude unknownFields
-    })
+	type Alias ClusterConfig
+	return json.Marshal(&struct {
+		Alias
+		State         interface{} `json:"-"`
+		SizeCache     interface{} `json:"-"`
+		UnknownFields interface{} `json:"-"`
+	}{
+		Alias:         (Alias)(c),
+		State:         nil, // Exclude state
+		SizeCache:     nil, // Exclude sizeCache
+		UnknownFields: nil, // Exclude unknownFields
+	})
 }
 
 // TLSClientConfig contains settings to enable transport layer security

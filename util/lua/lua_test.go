@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+	"reflect"
 
 	"github.com/argoproj/gitops-engine/pkg/health"
 	"github.com/stretchr/testify/assert"
@@ -271,19 +272,19 @@ func TestGetHealthScriptNoPredefined(t *testing.T) {
 }
 
 func TestGetResourceActionPredefined(t *testing.T) {
-    testObj := StrToUnstructured(objJSON)
-    vm := VM{}
+	testObj := StrToUnstructured(objJSON)
+	vm := VM{}
 
-    action, err := vm.GetResourceAction(testObj, "resume")
-    require.NoError(t, err)
+	action, err := vm.GetResourceAction(testObj, "resume")
+	require.NoError(t, err)
 
-    // Check if the fields of the action are not empty
-    if action.Name == "" {
-        t.Error("Expected action.Name to be non-empty")
-    }
-    if action.ActionLua == "" {
-        t.Error("Expected action.ActionLua to be non-empty")
-    }
+	// Check if the fields of the action are not empty
+	if action.Name == "" {
+		t.Error("Expected action.Name to be non-empty")
+	}
+	if action.ActionLua == "" {
+		t.Error("Expected action.ActionLua to be non-empty")
+	}
 }
 
 func TestGetResourceActionNoPredefined(t *testing.T) {
@@ -295,32 +296,31 @@ func TestGetResourceActionNoPredefined(t *testing.T) {
 }
 
 func TestGetResourceActionWithOverride(t *testing.T) {
-    testObj := StrToUnstructured(objJSON)
-    expectedAction := appv1.ResourceActionDefinition{
-        Name:      "test",
-        ActionLua: "return obj",
-    }
+	testObj := StrToUnstructured(objJSON)
+	expectedAction := appv1.ResourceActionDefinition{
+		Name:      "test",
+		ActionLua: "return obj",
+	}
 
-    vm := VM{
-        ResourceOverrides: map[string]appv1.ResourceOverride{
-            "argoproj.io/Rollout": {
-                Actions: string(grpc.MustMarshal(appv1.ResourceActions{
-                    Definitions: []appv1.ResourceActionDefinition{
-                        expectedAction,
-                    },
-                })),
-            },
-        },
-    }
-    
-    action, err := vm.GetResourceAction(testObj, "test")
-    require.NoError(t, err)
+	vm := VM{
+		ResourceOverrides: map[string]appv1.ResourceOverride{
+			"argoproj.io/Rollout": {
+				Actions: string(grpc.MustMarshal(appv1.ResourceActions{
+					Definitions: []appv1.ResourceActionDefinition{
+						expectedAction,
+					},
+				})),
+			},
+		},
+	}
 
-    // Compare only the relevant fields
-    assert.Equal(t, expectedAction.Name, action.Name, "Expected action.Name to match")
-    assert.Equal(t, expectedAction.ActionLua, action.ActionLua, "Expected action.ActionLua to match")
+	action, err := vm.GetResourceAction(testObj, "test")
+	require.NoError(t, err)
+
+	// Compare only the relevant fields
+	assert.Equal(t, expectedAction.Name, action.Name, "Expected action.Name to match")
+	assert.Equal(t, expectedAction.ActionLua, action.ActionLua, "Expected action.ActionLua to match")
 }
-
 
 func TestGetResourceActionDiscoveryPredefined(t *testing.T) {
 	testObj := StrToUnstructured(objJSON)
@@ -413,7 +413,6 @@ func TestExecuteResourceActionDiscovery(t *testing.T) {
 		}
 	}
 }
-
 
 const discoveryLuaWithInvalidResourceAction = `
 resume = {name = 'resume', invalidField: "test""}

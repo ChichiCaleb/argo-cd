@@ -86,7 +86,6 @@ func Test_secretToCluster(t *testing.T) {
 	assert.Equal(t, expectedCluster.Annotations, cluster.Annotations)
 }
 
-
 func Test_secretToCluster_LastAppliedConfigurationDropped(t *testing.T) {
 	secret := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{

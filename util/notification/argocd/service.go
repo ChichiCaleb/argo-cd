@@ -76,7 +76,6 @@ func (svc *argoCDService) getKustomizeOptions(source *v1alpha1.ApplicationSource
 	return kustomizeSettings.GetOptions(source)
 }
 
-
 func (svc *argoCDService) GetAppDetails(ctx context.Context, app *v1alpha1.Application) (*shared.AppDetail, error) {
 	appSource := app.Spec.GetSourcePtrByIndex(0)
 

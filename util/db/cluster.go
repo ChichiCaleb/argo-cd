@@ -56,7 +56,6 @@ func (db *db) getLocalCluster() *appv1.Cluster {
 	return cluster
 }
 
-
 // ListClusters returns list of clusters
 func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 	clusterSecrets, err := db.listSecretsByType(common.LabelValueSecretTypeCluster)
@@ -103,8 +102,6 @@ func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 	// Return the cluster list with pointers
 	return &clusterList, nil
 }
-
-
 
 // CreateCluster creates a cluster
 func (db *db) CreateCluster(ctx context.Context, c *appv1.Cluster) (*appv1.Cluster, error) {

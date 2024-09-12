@@ -631,7 +631,6 @@ func TestSecretsRepositoryBackend_CreateRepoCreds(t *testing.T) {
 	}
 }
 
-
 func TestSecretsRepositoryBackend_GetRepoCreds(t *testing.T) {
 	repoCredSecrets := []runtime.Object{
 		&corev1.Secret{

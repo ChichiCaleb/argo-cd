@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	
 
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/notification"
 	notifFixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/notification"

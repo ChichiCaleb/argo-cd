@@ -842,7 +842,6 @@ func (ctrl *ApplicationController) hideSecretData(app *appv1.Application, compar
 	return items, nil
 }
 
-
 // Run starts the Application CRD controller.
 func (ctrl *ApplicationController) Run(ctx context.Context, statusProcessors int, operationProcessors int) {
 	defer runtime.HandleCrash()

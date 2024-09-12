@@ -131,7 +131,7 @@ func TestLuaResourceActionsScript(t *testing.T) {
 				require.NoError(t, err)
 
 				// Convert test.Result to a map for efficient lookup
-				expectedResultsMap := make(map[string]appv1.ResourceAction)
+				expectedResultsMap := make(map[string]appsv1.ResourceAction)
 				for _, res := range test.Result {
 					expectedResultsMap[res.Name] = res
 				}
@@ -171,15 +171,15 @@ func TestLuaResourceActionsScript(t *testing.T) {
 					result := impactedResource.UnstructuredObj
 
 					expectedObj := findFirstMatchingItem(expectedObjects.Items, func(u unstructured.Unstructured) bool {
-						if (result.GetKind() == "Job" && sourceObj.GetKind() == "CronJob") || 
-						   (result.GetKind() == "Workflow" && (sourceObj.GetKind() == "CronWorkflow" || sourceObj.GetKind() == "WorkflowTemplate")) {
-							return u.GroupVersionKind() == result.GroupVersionKind() && 
-							       strings.HasPrefix(u.GetName(), sourceObj.GetName()) && 
-							       u.GetNamespace() == result.GetNamespace()
+						if (result.GetKind() == "Job" && sourceObj.GetKind() == "CronJob") ||
+							(result.GetKind() == "Workflow" && (sourceObj.GetKind() == "CronWorkflow" || sourceObj.GetKind() == "WorkflowTemplate")) {
+							return u.GroupVersionKind() == result.GroupVersionKind() &&
+								strings.HasPrefix(u.GetName(), sourceObj.GetName()) &&
+								u.GetNamespace() == result.GetNamespace()
 						} else {
-							return u.GroupVersionKind() == result.GroupVersionKind() && 
-							       u.GetName() == result.GetName() && 
-							       u.GetNamespace() == result.GetNamespace()
+							return u.GroupVersionKind() == result.GroupVersionKind() &&
+								u.GetName() == result.GetName() &&
+								u.GetNamespace() == result.GetNamespace()
 						}
 					})
 
@@ -197,7 +197,7 @@ func TestLuaResourceActionsScript(t *testing.T) {
 							result.SetName(expectedObj.GetName())
 						}
 					}
-					
+
 					diffResult, err := diff.Diff(expectedObj, result, diff.WithNormalizer(testNormalizer{}))
 					require.NoError(t, err)
 					if diffResult.Modified {

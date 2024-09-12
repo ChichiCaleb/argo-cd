@@ -1169,7 +1169,7 @@ func TestNamespacedPermissions(t *testing.T) {
 	appCtx := appFixture.Given(t)
 	projName := "argo-project"
 	projActions := projectFixture.
-	Given(t).
+		Given(t).
 		Name(projName).
 		SourceNamespaces([]string{AppNamespace()}).
 		When().
@@ -1247,7 +1247,7 @@ func TestNamespacedPermissionWithScopedRepo(t *testing.T) {
 	projName := "argo-project"
 	fixture.EnsureCleanState(t)
 	projectFixture.
-	Given(t).
+		Given(t).
 		Name(projName).
 		SourceNamespaces([]string{AppNamespace()}).
 		Destination("*,*").
@@ -1260,7 +1260,7 @@ func TestNamespacedPermissionWithScopedRepo(t *testing.T) {
 		Project(projName).
 		Create()
 
-		appFixture.GivenWithSameState(t).
+	appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").
@@ -1287,7 +1287,7 @@ func TestNamespacedPermissionWithScopedRepo(t *testing.T) {
 func TestNamespacedPermissionDeniedWithScopedRepo(t *testing.T) {
 	projName := "argo-project"
 	projectFixture.
-	Given(t).
+		Given(t).
 		Name(projName).
 		Destination("*,*").
 		SourceNamespaces([]string{AppNamespace()}).
@@ -1299,7 +1299,7 @@ func TestNamespacedPermissionDeniedWithScopedRepo(t *testing.T) {
 		Path(RepoURL(RepoURLTypeFile)).
 		Create()
 
-		appFixture.GivenWithSameState(t).
+	appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		SetTrackingMethod("annotation").
@@ -2231,7 +2231,7 @@ definitions:
     obj.status.bar = "update-status"
     return obj
 `
-appFixture.Given(t).
+	appFixture.Given(t).
 		SetAppNamespace(AppNamespace()).
 		SetTrackingMethod("annotation").
 		Path("crd-subresource").

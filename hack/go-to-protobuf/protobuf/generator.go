@@ -213,7 +213,7 @@ func (b bodyGen) doStruct(sw *generator.SnippetWriter) error {
 			key := strings.TrimPrefix(k, "protobuf.options.")
 			switch key {
 			case "marshal":
-				
+
 			default:
 				options = append(options, fmt.Sprintf("%s = %s", key, v[0]))
 			}

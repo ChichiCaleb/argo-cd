@@ -149,167 +149,166 @@ func (db *db) GetRepoCertificate(ctx context.Context, serverType string, serverN
 // Create one or more repository certificates and returns a list of certificates
 // actually created.
 func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.RepositoryCertificateList, upsert bool) (*appsv1.RepositoryCertificateList, error) {
-    var (
-        saveSSHData bool = false
-        saveTLSData bool = false
-    )
+	var (
+		saveSSHData bool = false
+		saveTLSData bool = false
+	)
 
-    sshKnownHostsList, err := db.getSSHKnownHostsData()
-    if err != nil {
-        return nil, err
-    }
+	sshKnownHostsList, err := db.getSSHKnownHostsData()
+	if err != nil {
+		return nil, err
+	}
 
-    tlsCertificates, err := db.getTLSCertificateData()
-    if err != nil {
-        return nil, err
-    }
+	tlsCertificates, err := db.getTLSCertificateData()
+	if err != nil {
+		return nil, err
+	}
 
-    // This will hold the final list of certificates that have been created
-    created := make([]*appsv1.RepositoryCertificate, 0) // Use pointers
+	// This will hold the final list of certificates that have been created
+	created := make([]*appsv1.RepositoryCertificate, 0) // Use pointers
 
-    for _, certificate := range certificates.Items {
-        if certificate.CertType == "https" && !certutil.IsValidHostname(certificate.ServerName, false) {
-            return nil, fmt.Errorf("Invalid hostname in request: %s", certificate.ServerName)
-        } else if certificate.CertType == "ssh" {
-            reExtract := regexp.MustCompile(`^\[(.*)\]\:[0-9]+$`)
-            matches := reExtract.FindStringSubmatch(certificate.ServerName)
-            var hostnameToCheck string
-            if len(matches) == 0 {
-                hostnameToCheck = certificate.ServerName
-            } else {
-                hostnameToCheck = matches[1]
-            }
-            if !certutil.IsValidHostname(hostnameToCheck, false) {
-                return nil, fmt.Errorf("Invalid hostname in request: %s", hostnameToCheck)
-            }
-        }
+	for _, certificate := range certificates.Items {
+		if certificate.CertType == "https" && !certutil.IsValidHostname(certificate.ServerName, false) {
+			return nil, fmt.Errorf("Invalid hostname in request: %s", certificate.ServerName)
+		} else if certificate.CertType == "ssh" {
+			reExtract := regexp.MustCompile(`^\[(.*)\]\:[0-9]+$`)
+			matches := reExtract.FindStringSubmatch(certificate.ServerName)
+			var hostnameToCheck string
+			if len(matches) == 0 {
+				hostnameToCheck = certificate.ServerName
+			} else {
+				hostnameToCheck = matches[1]
+			}
+			if !certutil.IsValidHostname(hostnameToCheck, false) {
+				return nil, fmt.Errorf("Invalid hostname in request: %s", hostnameToCheck)
+			}
+		}
 
-        if certificate.CertType == "ssh" {
-            newEntry := true
-            upserted := false
+		if certificate.CertType == "ssh" {
+			newEntry := true
+			upserted := false
 
-            for _, entry := range sshKnownHostsList {
-                if entry.Host == certificate.ServerName && entry.SubType == certificate.CertSubType {
-                    if !upsert && entry.Data != string(certificate.CertData) {
-                        return nil, fmt.Errorf("Key for '%s' (subtype: '%s') already exists and upsert was not specified.", entry.Host, entry.SubType)
-                    } else {
-                        newEntry = false
-                        if entry.Data != string(certificate.CertData) {
-                            entry.Data = string(certificate.CertData)
-                            upserted = true
-                        }
-                        break
-                    }
-                }
-            }
+			for _, entry := range sshKnownHostsList {
+				if entry.Host == certificate.ServerName && entry.SubType == certificate.CertSubType {
+					if !upsert && entry.Data != string(certificate.CertData) {
+						return nil, fmt.Errorf("Key for '%s' (subtype: '%s') already exists and upsert was not specified.", entry.Host, entry.SubType)
+					} else {
+						newEntry = false
+						if entry.Data != string(certificate.CertData) {
+							entry.Data = string(certificate.CertData)
+							upserted = true
+						}
+						break
+					}
+				}
+			}
 
-            _, hostnames, rawKeyData, _, _, err := ssh.ParseKnownHosts([]byte(fmt.Sprintf("%s %s %s", certificate.ServerName, certificate.CertSubType, certificate.CertData)))
-            if err != nil {
-                return nil, err
-            }
+			_, hostnames, rawKeyData, _, _, err := ssh.ParseKnownHosts([]byte(fmt.Sprintf("%s %s %s", certificate.ServerName, certificate.CertSubType, certificate.CertData)))
+			if err != nil {
+				return nil, err
+			}
 
-            if len(hostnames) == 0 {
-                log.Errorf("Could not parse hostname for key from token %s", certificate.ServerName)
-            }
+			if len(hostnames) == 0 {
+				log.Errorf("Could not parse hostname for key from token %s", certificate.ServerName)
+			}
 
-            if newEntry {
-                sshKnownHostsList = append(sshKnownHostsList, &SSHKnownHostsEntry{
-                    Host:    hostnames[0],
-                    Data:    string(certificate.CertData),
-                    SubType: certificate.CertSubType,
-                })
-            }
+			if newEntry {
+				sshKnownHostsList = append(sshKnownHostsList, &SSHKnownHostsEntry{
+					Host:    hostnames[0],
+					Data:    string(certificate.CertData),
+					SubType: certificate.CertSubType,
+				})
+			}
 
-            if newEntry || upserted {
-                certificate.CertInfo = certutil.SSHFingerprintSHA256(rawKeyData)
-                created = append(created, &certificate) // Use pointer
-                saveSSHData = true
-            }
-        } else if certificate.CertType == "https" {
-            var tlsCertificate *TLSCertificate = nil
-            newEntry := true
-            upserted := false
-            pemCreated := make([]string, 0)
+			if newEntry || upserted {
+				certificate.CertInfo = certutil.SSHFingerprintSHA256(rawKeyData)
+				created = append(created, &certificate) // Use pointer
+				saveSSHData = true
+			}
+		} else if certificate.CertType == "https" {
+			var tlsCertificate *TLSCertificate = nil
+			newEntry := true
+			upserted := false
+			pemCreated := make([]string, 0)
 
-            for _, entry := range tlsCertificates {
-                if entry.Subject == certificate.ServerName {
-                    newEntry = false
-                    if entry.Data != string(certificate.CertData) {
-                        if !upsert {
-                            return nil, fmt.Errorf("TLS certificate for server '%s' already exists and upsert was not specified.", entry.Subject)
-                        }
-                    }
-                    tlsCertificate = entry
-                    break
-                }
-            }
+			for _, entry := range tlsCertificates {
+				if entry.Subject == certificate.ServerName {
+					newEntry = false
+					if entry.Data != string(certificate.CertData) {
+						if !upsert {
+							return nil, fmt.Errorf("TLS certificate for server '%s' already exists and upsert was not specified.", entry.Subject)
+						}
+					}
+					tlsCertificate = entry
+					break
+				}
+			}
 
-            pemData, err := certutil.ParseTLSCertificatesFromData(string(certificate.CertData))
-            if err != nil {
-                return nil, err
-            }
+			pemData, err := certutil.ParseTLSCertificatesFromData(string(certificate.CertData))
+			if err != nil {
+				return nil, err
+			}
 
-            if len(pemData) == 0 {
-                return nil, fmt.Errorf("No valid PEM data received.")
-            }
+			if len(pemData) == 0 {
+				return nil, fmt.Errorf("No valid PEM data received.")
+			}
 
-            for _, entry := range pemData {
-                _, err := certutil.DecodePEMCertificateToX509(entry)
-                if err != nil {
-                    return nil, err
-                }
-                pemCreated = append(pemCreated, entry)
-            }
+			for _, entry := range pemData {
+				_, err := certutil.DecodePEMCertificateToX509(entry)
+				if err != nil {
+					return nil, err
+				}
+				pemCreated = append(pemCreated, entry)
+			}
 
-            if tlsCertificate == nil {
-                tlsCertificate = &TLSCertificate{
-                    Subject: certificate.ServerName,
-                    Data:    string(certificate.CertData),
-                }
-                tlsCertificates = append(tlsCertificates, tlsCertificate)
-            } else if tlsCertificate.Data != string(certificate.CertData) {
-                tlsCertificate.Data = string(certificate.CertData)
-                upserted = true
-            }
+			if tlsCertificate == nil {
+				tlsCertificate = &TLSCertificate{
+					Subject: certificate.ServerName,
+					Data:    string(certificate.CertData),
+				}
+				tlsCertificates = append(tlsCertificates, tlsCertificate)
+			} else if tlsCertificate.Data != string(certificate.CertData) {
+				tlsCertificate.Data = string(certificate.CertData)
+				upserted = true
+			}
 
-            if newEntry || upserted {
-                for _, entry := range pemCreated {
-                    created = append(created, &appsv1.RepositoryCertificate{ // Use pointer
-                        ServerName: certificate.ServerName,
-                        CertType:   "https",
-                        CertData:   []byte(entry),
-                    })
-                }
-                saveTLSData = true
-            }
-        } else {
-            return nil, fmt.Errorf("Unknown certificate type: %s", certificate.CertType)
-        }
-    }
+			if newEntry || upserted {
+				for _, entry := range pemCreated {
+					created = append(created, &appsv1.RepositoryCertificate{ // Use pointer
+						ServerName: certificate.ServerName,
+						CertType:   "https",
+						CertData:   []byte(entry),
+					})
+				}
+				saveTLSData = true
+			}
+		} else {
+			return nil, fmt.Errorf("Unknown certificate type: %s", certificate.CertType)
+		}
+	}
 
-    if saveSSHData {
-        err = db.settingsMgr.SaveSSHKnownHostsData(ctx, knownHostsDataToStrings(sshKnownHostsList))
-        if err != nil {
-            return nil, err
-        }
-    }
+	if saveSSHData {
+		err = db.settingsMgr.SaveSSHKnownHostsData(ctx, knownHostsDataToStrings(sshKnownHostsList))
+		if err != nil {
+			return nil, err
+		}
+	}
 
-    if saveTLSData {
-        err = db.settingsMgr.SaveTLSCertificateData(ctx, tlsCertificatesToMap(tlsCertificates))
-        if err != nil {
-            return nil, err
-        }
-    }
+	if saveTLSData {
+		err = db.settingsMgr.SaveTLSCertificateData(ctx, tlsCertificatesToMap(tlsCertificates))
+		if err != nil {
+			return nil, err
+		}
+	}
 
-    // Convert the slice of pointers to a slice of values
-    createdValues := make([]appsv1.RepositoryCertificate, len(created))
-    for i, certPtr := range created {
-        createdValues[i] = *certPtr
-    }
+	// Convert the slice of pointers to a slice of values
+	createdValues := make([]appsv1.RepositoryCertificate, len(created))
+	for i, certPtr := range created {
+		createdValues[i] = *certPtr
+	}
 
-    return &appsv1.RepositoryCertificateList{Items: createdValues}, nil
+	return &appsv1.RepositoryCertificateList{Items: createdValues}, nil
 }
-
 
 // Batch remove configured certificates according to the selector query
 func (db *db) RemoveRepoCertificates(ctx context.Context, selector *CertificateListSelector) (*appsv1.RepositoryCertificateList, error) {

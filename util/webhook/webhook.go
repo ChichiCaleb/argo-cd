@@ -322,10 +322,9 @@ func (a *ArgoCDWebhookHandler) HandleEvent(payload interface{}) {
 				}
 			}
 		}
-		
+
 	}
 }
-
 
 // getWebUrlRegex compiles a regex that will match any targetRevision referring to the same repo as the given webURL.
 // webURL is expected to be a URL from an SCM webhook payload pointing to the web page for the repo.
@@ -391,33 +390,30 @@ func (a *ArgoCDWebhookHandler) storePreviouslyCachedManifests(app *v1alpha1.Appl
 	return nil
 }
 
-
 func sourceRevisionHasChanged(source *v1alpha1.ApplicationSource, revision string, touchedHead bool) bool {
-    targetRev := ParseRevision(source.TargetRevision)
-    if targetRev == "HEAD" || targetRev == "" { // revision is head
-        return touchedHead
-    }
-    targetRevisionHasPrefixList := []string{"refs/heads/", "refs/tags/"}
-    for _, prefix := range targetRevisionHasPrefixList {
-        if strings.HasPrefix(source.TargetRevision, prefix) {
-            return revision == targetRev
-        }
-    }
+	targetRev := ParseRevision(source.TargetRevision)
+	if targetRev == "HEAD" || targetRev == "" { // revision is head
+		return touchedHead
+	}
+	targetRevisionHasPrefixList := []string{"refs/heads/", "refs/tags/"}
+	for _, prefix := range targetRevisionHasPrefixList {
+		if strings.HasPrefix(source.TargetRevision, prefix) {
+			return revision == targetRev
+		}
+	}
 
-    return source.TargetRevision == revision
+	return source.TargetRevision == revision
 }
-
 
 func sourceUsesURL(source *v1alpha1.ApplicationSource, webURL string, repoRegexp *regexp.Regexp) bool {
-    if !repoRegexp.MatchString(source.RepoURL) {
-        log.Debugf("%s does not match %s", source.RepoURL, repoRegexp.String())
-        return false
-    }
+	if !repoRegexp.MatchString(source.RepoURL) {
+		log.Debugf("%s does not match %s", source.RepoURL, repoRegexp.String())
+		return false
+	}
 
-    log.Debugf("%s uses repoURL %s", source.RepoURL, webURL)
-    return true
+	log.Debugf("%s uses repoURL %s", source.RepoURL, webURL)
+	return true
 }
-
 
 func (a *ArgoCDWebhookHandler) Handler(w http.ResponseWriter, r *http.Request) {
 	var payload interface{}

@@ -516,12 +516,21 @@ func TestHelmChartReferencingExternalValues(t *testing.T) {
 			{Ref: "ref", RepoURL: "https://git.example.com/test/repo"},
 		},
 	}
-	refSources, err := argo.GetRefSources(context.Background(), spec.Sources, spec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
+
+	// Convert spec.Sources to a slice of pointers
+	var sourcesPtrs []*argoappv1.ApplicationSource
+	for i := range spec.Sources {
+		src := spec.Sources[i]
+		sourcesPtrs = append(sourcesPtrs, &src)
+	}
+
+	refSources, err := argo.GetRefSources(context.Background(), sourcesPtrs, spec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
 		return &argoappv1.Repository{
 			Repo: "https://git.example.com/test/repo",
 		}, nil
 	}, []string{}, false)
 	require.NoError(t, err)
+
 	request := &apiclient.ManifestRequest{
 		Repo: &argoappv1.Repository{}, ApplicationSource: &spec.Sources[0], NoCache: true, RefSources: refSources, HasMultipleSources: true, ProjectName: "something",
 		ProjectSourceRepos: []string{"*"},
@@ -539,7 +548,9 @@ func TestHelmChartReferencingExternalValues(t *testing.T) {
 	}, response)
 }
 
+
 func TestHelmChartReferencingExternalValues_InvalidRefs(t *testing.T) {
+	service := newService(t, ".")
 	spec := argoappv1.ApplicationSpec{
 		Sources: []argoappv1.ApplicationSource{
 			{RepoURL: "https://helm.example.com", Chart: "my-chart", TargetRevision: ">= 1.0.0", Helm: &argoappv1.ApplicationSourceHelm{
@@ -549,16 +560,21 @@ func TestHelmChartReferencingExternalValues_InvalidRefs(t *testing.T) {
 		},
 	}
 
-	// Empty refsource
-	service := newService(t, ".")
+	// Convert spec.Sources to a slice of pointers
+	var sourcesPtrs []*argoappv1.ApplicationSource
+	for i := range spec.Sources {
+		src := spec.Sources[i]
+		sourcesPtrs = append(sourcesPtrs, &src)
+	}
 
+	// Empty refsource
 	getRepository := func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
 		return &argoappv1.Repository{
 			Repo: "https://git.example.com/test/repo",
 		}, nil
 	}
 
-	refSources, err := argo.GetRefSources(context.Background(), spec.Sources, spec.Project, getRepository, []string{}, false)
+	refSources, err := argo.GetRefSources(context.Background(), sourcesPtrs, spec.Project, getRepository, []string{}, false)
 	require.NoError(t, err)
 
 	request := &apiclient.ManifestRequest{
@@ -570,10 +586,14 @@ func TestHelmChartReferencingExternalValues_InvalidRefs(t *testing.T) {
 	assert.Nil(t, response)
 
 	// Invalid ref
-	service = newService(t, ".")
-
 	spec.Sources[1].Ref = "Invalid"
-	refSources, err = argo.GetRefSources(context.Background(), spec.Sources, spec.Project, getRepository, []string{}, false)
+	sourcesPtrs = []*argoappv1.ApplicationSource{} // Rebuild pointers with updated spec
+	for i := range spec.Sources {
+		src := spec.Sources[i]
+		sourcesPtrs = append(sourcesPtrs, &src)
+	}
+
+	refSources, err = argo.GetRefSources(context.Background(), sourcesPtrs, spec.Project, getRepository, []string{}, false)
 	require.NoError(t, err)
 
 	request = &apiclient.ManifestRequest{
@@ -585,11 +605,15 @@ func TestHelmChartReferencingExternalValues_InvalidRefs(t *testing.T) {
 	assert.Nil(t, response)
 
 	// Helm chart as ref (unsupported)
-	service = newService(t, ".")
-
 	spec.Sources[1].Ref = "ref"
 	spec.Sources[1].Chart = "helm-chart"
-	refSources, err = argo.GetRefSources(context.Background(), spec.Sources, spec.Project, getRepository, []string{}, false)
+	sourcesPtrs = []*argoappv1.ApplicationSource{} // Rebuild pointers with updated spec
+	for i := range spec.Sources {
+		src := spec.Sources[i]
+		sourcesPtrs = append(sourcesPtrs, &src)
+	}
+
+	refSources, err = argo.GetRefSources(context.Background(), sourcesPtrs, spec.Project, getRepository, []string{}, false)
 	require.NoError(t, err)
 
 	request = &apiclient.ManifestRequest{
@@ -601,6 +625,7 @@ func TestHelmChartReferencingExternalValues_InvalidRefs(t *testing.T) {
 	assert.Nil(t, response)
 }
 
+
 func TestHelmChartReferencingExternalValues_OutOfBounds_Symlink(t *testing.T) {
 	service := newService(t, ".")
 	err := os.Mkdir("testdata/oob-symlink", 0o755)
@@ -611,9 +636,11 @@ func TestHelmChartReferencingExternalValues_OutOfBounds_Symlink(t *testing.T) {
 	})
 	// Create a symlink to a file outside the repo
 	err = os.Symlink("../../../values.yaml", "./testdata/oob-symlink/oob-symlink.yaml")
+	require.NoError(t, err) // Check if symlink creation succeeded
 	// Create a regular file to reference from another source
 	err = os.WriteFile("./testdata/oob-symlink/values.yaml", []byte("foo: bar"), 0o644)
-	require.NoError(t, err)
+	require.NoError(t, err) // Check if file creation succeeded
+
 	spec := argoappv1.ApplicationSpec{
 		Project: "default",
 		Sources: []argoappv1.ApplicationSource{
@@ -625,16 +652,28 @@ func TestHelmChartReferencingExternalValues_OutOfBounds_Symlink(t *testing.T) {
 			{Ref: "ref", RepoURL: "https://git.example.com/test/repo"},
 		},
 	}
-	refSources, err := argo.GetRefSources(context.Background(), spec.Sources, spec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
+
+	// Convert spec.Sources to a slice of pointers
+	var sourcesPtrs []*argoappv1.ApplicationSource
+	for i := range spec.Sources {
+		src := spec.Sources[i]
+		sourcesPtrs = append(sourcesPtrs, &src)
+	}
+
+	refSources, err := argo.GetRefSources(context.Background(), sourcesPtrs, spec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
 		return &argoappv1.Repository{
 			Repo: "https://git.example.com/test/repo",
 		}, nil
 	}, []string{}, false)
 	require.NoError(t, err)
-	request := &apiclient.ManifestRequest{Repo: &argoappv1.Repository{}, ApplicationSource: &spec.Sources[0], NoCache: true, RefSources: refSources, HasMultipleSources: true}
+
+	request := &apiclient.ManifestRequest{
+		Repo: &argoappv1.Repository{}, ApplicationSource: &spec.Sources[0], NoCache: true, RefSources: refSources, HasMultipleSources: true,
+	}
 	_, err = service.GenerateManifest(context.Background(), request)
 	require.Error(t, err)
 }
+
 
 func TestGenerateManifestsUseExactRevision(t *testing.T) {
 	service, gitClient, _ := newServiceWithMocks(t, ".", false)

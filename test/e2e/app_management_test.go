@@ -89,7 +89,7 @@ func TestGetLogsDenySwitchOn(t *testing.T) {
 			},
 		}, "app-creator")
 
-		appFixture.GivenWithSameState(t).
+	appFixture.GivenWithSameState(t).
 		Path("guestbook-logs").
 		When().
 		CreateApp().
@@ -140,7 +140,7 @@ func TestGetLogsAllowSwitchOn(t *testing.T) {
 			},
 		}, "app-creator")
 
-		appFixture.GivenWithSameState(t).
+	appFixture.GivenWithSameState(t).
 		Path("guestbook-logs").
 		When().
 		CreateApp().
@@ -1611,7 +1611,7 @@ func TestPermissionWithScopedRepo(t *testing.T) {
 		Project(projName).
 		Create()
 
-		appFixture.GivenWithSameState(t).
+	appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").
@@ -1647,7 +1647,7 @@ func TestPermissionDeniedWithScopedRepo(t *testing.T) {
 		Path(RepoURL(RepoURLTypeFile)).
 		Create()
 
-		appFixture.GivenWithSameState(t).
+	appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").
@@ -1674,7 +1674,7 @@ func TestPermissionDeniedWithNegatedNamespace(t *testing.T) {
 		Project(projName).
 		Create()
 
-		appFixture.GivenWithSameState(t).
+	appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").
@@ -1701,7 +1701,7 @@ func TestPermissionDeniedWithNegatedServer(t *testing.T) {
 		Project(projName).
 		Create()
 
-		appFixture.GivenWithSameState(t).
+	appFixture.GivenWithSameState(t).
 		Project(projName).
 		RepoURLType(RepoURLTypeFile).
 		Path("two-nice-pods").

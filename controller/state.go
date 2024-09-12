@@ -297,7 +297,6 @@ func (m *appStateManager) GetRepoObjs(app *v1alpha1.Application, sources []v1alp
 	return targetObjs, manifestInfos, revisionUpdated, nil
 }
 
-
 func unmarshalManifests(manifests []string) ([]*unstructured.Unstructured, error) {
 	targetObjs := make([]*unstructured.Unstructured, 0)
 	for _, manifest := range manifests {

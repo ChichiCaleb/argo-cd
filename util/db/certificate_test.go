@@ -301,7 +301,7 @@ func Test_ListCertificate(t *testing.T) {
 	assert.Len(t, certList.Items, Test_NumSSHKnownHostsExpected)
 
 	// Extract values to avoid lock copying
-	sshCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	sshCertificates := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
 	copy(sshCertificates, certList.Items)
 	for idx, entry := range sshCertificates {
 		assert.Equal(t, entry.ServerName, Test_SSH_Hostname_Entries[idx])
@@ -318,7 +318,7 @@ func Test_ListCertificate(t *testing.T) {
 	assert.Len(t, certList.Items, Test_NumTLSCertificatesExpected)
 
 	// Extract values to avoid lock copying
-	tlsCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	tlsCertificates := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
 	copy(tlsCertificates, certList.Items)
 
 	// List all certificates using selector
@@ -331,7 +331,7 @@ func Test_ListCertificate(t *testing.T) {
 	assert.Len(t, certList.Items, Test_NumTLSCertificatesExpected+Test_NumSSHKnownHostsExpected)
 
 	// Extract values to avoid lock copying
-	allCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	allCertificates := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
 	copy(allCertificates, certList.Items)
 
 	// List all certificates using nil selector
@@ -341,7 +341,7 @@ func Test_ListCertificate(t *testing.T) {
 	assert.Len(t, certList.Items, Test_NumTLSCertificatesExpected+Test_NumSSHKnownHostsExpected)
 
 	// Extract values to avoid lock copying
-	nilSelectorCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	nilSelectorCertificates := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
 	copy(nilSelectorCertificates, certList.Items)
 
 	// List all certificates matching a host name pattern
@@ -354,7 +354,7 @@ func Test_ListCertificate(t *testing.T) {
 	assert.Len(t, certList.Items, 4)
 
 	// Extract values to avoid lock copying
-	gitlabCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	gitlabCertificates := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
 	copy(gitlabCertificates, certList.Items)
 
 	for _, entry := range gitlabCertificates {
@@ -371,13 +371,12 @@ func Test_ListCertificate(t *testing.T) {
 	assert.Len(t, certList.Items, 1)
 
 	// Extract values to avoid lock copying
-	tlsGitlabCertificates := make([]appv1.RepositoryCertificate, len(certList.Items))
+	tlsGitlabCertificates := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
 	copy(tlsGitlabCertificates, certList.Items)
 
 	assert.Equal(t, "gitlab.com", tlsGitlabCertificates[0].ServerName)
 	assert.Equal(t, "https", tlsGitlabCertificates[0].CertType)
 }
-
 
 func Test_CreateSSHKnownHostEntries(t *testing.T) {
 	clientset := getCertClientset()

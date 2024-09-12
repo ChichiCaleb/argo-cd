@@ -245,7 +245,6 @@ func TestKustomizeBuildForceCommonLabels(t *testing.T) {
 	}
 }
 
-
 func TestKustomizeBuildForceCommonAnnotations(t *testing.T) {
 	type testCase struct {
 		TestData            string
@@ -338,7 +337,6 @@ func TestKustomizeBuildForceCommonAnnotations(t *testing.T) {
 	}
 }
 
-
 func TestKustomizeLabelWithoutSelector(t *testing.T) {
 	type testCase struct {
 		TestData               string
@@ -415,7 +413,6 @@ func TestKustomizeLabelWithoutSelector(t *testing.T) {
 		}
 	}
 }
-
 
 func TestKustomizeCustomVersion(t *testing.T) {
 	appPath, err := testDataDir(t, kustomization1)

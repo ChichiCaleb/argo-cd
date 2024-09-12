@@ -308,7 +308,6 @@ func (ks *KustomizeSettings) GetOptions(source *v1alpha1.ApplicationSource) (*v1
 	}, nil
 }
 
-
 // Credentials for accessing a Git repository
 type Repository struct {
 	// The URL to the repository
@@ -906,8 +905,6 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]*v1a
 	return resourceOverrides, nil
 }
 
-
-
 func (mgr *SettingsManager) GetIsIgnoreResourceUpdatesEnabled() (bool, error) {
 	argoCDCM, err := mgr.getConfigMap()
 	if err != nil {
@@ -979,23 +976,22 @@ func (mgr *SettingsManager) GetResourceOverrides() (map[string]*v1alpha1.Resourc
 	return resourceOverrides, nil
 }
 
-
 func addStatusOverrideToGK(resourceOverrides map[string]*v1alpha1.ResourceOverride, groupKind string) {
-    if val, ok := resourceOverrides[groupKind]; ok {
-        if val != nil {
-            val.IgnoreDifferences.JSONPointers = append(val.IgnoreDifferences.JSONPointers, "/status")
-        } else {
-            // If val is nil, initialize a new ResourceOverride with the status path
-            resourceOverrides[groupKind] = &v1alpha1.ResourceOverride{
-                IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{"/status"}},
-            }
-        }
-    } else {
-        // Create a new ResourceOverride if not present
-        resourceOverrides[groupKind] = &v1alpha1.ResourceOverride{
-            IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{"/status"}},
-        }
-    }
+	if val, ok := resourceOverrides[groupKind]; ok {
+		if val != nil {
+			val.IgnoreDifferences.JSONPointers = append(val.IgnoreDifferences.JSONPointers, "/status")
+		} else {
+			// If val is nil, initialize a new ResourceOverride with the status path
+			resourceOverrides[groupKind] = &v1alpha1.ResourceOverride{
+				IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{"/status"}},
+			}
+		}
+	} else {
+		// Create a new ResourceOverride if not present
+		resourceOverrides[groupKind] = &v1alpha1.ResourceOverride{
+			IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{JSONPointers: []string{"/status"}},
+		}
+	}
 }
 
 func addIgnoreDiffItemOverrideToGK(resourceOverrides map[string]*v1alpha1.ResourceOverride, groupKind, ignoreItem string) {
@@ -1083,7 +1079,6 @@ func (mgr *SettingsManager) appendResourceOverridesFromSplitKeys(cmData map[stri
 	}
 	return nil
 }
-
 
 // Convert group-kind format to <group/kind>, allowed key format examples
 // resource.customizations.health.cert-manager.io_Certificate

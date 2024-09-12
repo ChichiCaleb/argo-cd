@@ -266,7 +266,6 @@ func TestContainsSyncResource(t *testing.T) {
 	}
 }
 
-
 // TestNilOutZerValueAppSources verifies we will nil out app source specs when they are their zero-value
 func TestNilOutZerValueAppSources(t *testing.T) {
 	var spec *argoappv1.ApplicationSpec
@@ -473,23 +472,31 @@ func TestFormatAppConditions(t *testing.T) {
 		},
 	}
 
+	// Convert conditions to a slice of pointers
+	var conditionPtrs []*argoappv1.ApplicationCondition
+	for i := range conditions {
+		cond := conditions[i]
+		conditionPtrs = append(conditionPtrs, &cond)
+	}
+
 	t.Run("Single Condition", func(t *testing.T) {
-		res := FormatAppConditions(conditions[0:1])
+		res := FormatAppConditions(conditionPtrs[0:1])
 		assert.NotEmpty(t, res)
 		assert.Equal(t, fmt.Sprintf("%s: Foo", EventReasonOperationCompleted), res)
 	})
 
 	t.Run("Multiple Conditions", func(t *testing.T) {
-		res := FormatAppConditions(conditions)
+		res := FormatAppConditions(conditionPtrs)
 		assert.NotEmpty(t, res)
 		assert.Equal(t, fmt.Sprintf("%s: Foo;%s: Bar", EventReasonOperationCompleted, EventReasonResourceCreated), res)
 	})
 
 	t.Run("Empty Conditions", func(t *testing.T) {
-		res := FormatAppConditions([]argoappv1.ApplicationCondition{})
+		res := FormatAppConditions([]*argoappv1.ApplicationCondition{})
 		assert.Empty(t, res)
 	})
 }
+
 
 func TestFilterByProjects(t *testing.T) {
 	apps := []argoappv1.Application{
@@ -505,26 +512,34 @@ func TestFilterByProjects(t *testing.T) {
 		},
 	}
 
+	// Convert apps to a slice of pointers
+	var appPtrs []*argoappv1.Application
+	for i := range apps {
+		app := apps[i]
+		appPtrs = append(appPtrs, &app)
+	}
+
 	t.Run("No apps in single project", func(t *testing.T) {
-		res := FilterByProjects(apps, []string{"foobarproj"})
+		res := FilterByProjects(appPtrs, []string{"foobarproj"})
 		assert.Empty(t, res)
 	})
 
 	t.Run("Single app in single project", func(t *testing.T) {
-		res := FilterByProjects(apps, []string{"fooproj"})
+		res := FilterByProjects(appPtrs, []string{"fooproj"})
 		assert.Len(t, res, 1)
 	})
 
 	t.Run("Single app in multiple project", func(t *testing.T) {
-		res := FilterByProjects(apps, []string{"fooproj", "foobarproj"})
+		res := FilterByProjects(appPtrs, []string{"fooproj", "foobarproj"})
 		assert.Len(t, res, 1)
 	})
 
 	t.Run("Multiple apps in multiple project", func(t *testing.T) {
-		res := FilterByProjects(apps, []string{"fooproj", "barproj"})
+		res := FilterByProjects(appPtrs, []string{"fooproj", "barproj"})
 		assert.Len(t, res, 2)
 	})
 }
+
 
 func TestFilterByProjectsP(t *testing.T) {
 	apps := []*argoappv1.Application{
@@ -579,18 +594,25 @@ func TestFilterByRepo(t *testing.T) {
 		},
 	}
 
+	// Convert apps to a slice of pointers
+	var appPtrs []*argoappv1.Application
+	for i := range apps {
+		app := apps[i]
+		appPtrs = append(appPtrs, &app)
+	}
+
 	t.Run("Empty filter", func(t *testing.T) {
-		res := FilterByRepo(apps, "")
+		res := FilterByRepo(appPtrs, "")
 		assert.Len(t, res, 2)
 	})
 
 	t.Run("Match", func(t *testing.T) {
-		res := FilterByRepo(apps, "git@github.com:owner/repo.git")
+		res := FilterByRepo(appPtrs, "git@github.com:owner/repo.git")
 		assert.Len(t, res, 1)
 	})
 
 	t.Run("No match", func(t *testing.T) {
-		res := FilterByRepo(apps, "git@github.com:owner/willnotmatch.git")
+		res := FilterByRepo(appPtrs, "git@github.com:owner/willnotmatch.git")
 		assert.Empty(t, res)
 	})
 }
@@ -1184,7 +1206,6 @@ func Test_GenerateSpecIsDifferentErrorMessageWithNoDiff(t *testing.T) {
 	assert.Equal(t, "existing application spec is different; use upsert flag to force update", msg)
 }
 
-
 func Test_GenerateSpecIsDifferentErrorMessageWithDiff(t *testing.T) {
 	r1 := &argoappv1.Repository{} // Use pointers instead of values
 	r2 := &argoappv1.Repository{
@@ -1360,7 +1381,6 @@ func Test_GetRefSources(t *testing.T) {
 		assert.Empty(t, refSources)
 	})
 }
-
 
 func TestValidatePermissionsMultipleSources(t *testing.T) {
 	t.Run("Empty Repo URL result in condition", func(t *testing.T) {

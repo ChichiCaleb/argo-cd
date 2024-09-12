@@ -465,7 +465,6 @@ func (s *Server) Update(ctx context.Context, q *project.ProjectUpdateRequest) (*
 	return res, err
 }
 
-
 // Delete deletes a project
 func (s *Server) Delete(ctx context.Context, q *project.ProjectQuery) (*project.EmptyResponse, error) {
 	if q.Name == v1alpha1.DefaultAppProjectName {
@@ -505,7 +504,6 @@ func (s *Server) Delete(ctx context.Context, q *project.ProjectQuery) (*project.
 	}
 	return &project.EmptyResponse{}, err
 }
-
 
 func (s *Server) ListEvents(ctx context.Context, q *project.ProjectQuery) (*project.EventListWrapper, error) {
 	// Enforce RBAC policy for the project

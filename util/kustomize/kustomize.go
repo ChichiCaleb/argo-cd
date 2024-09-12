@@ -184,7 +184,7 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 				arg := fmt.Sprintf("%s=%d", replica.Name, count)
 				args = append(args, arg)
 			}
-		
+
 			cmd := exec.Command(k.getBinaryPath(), args...)
 			cmd.Dir = k.path
 			commands = append(commands, executil.GetCommandArgsToLog(cmd))
@@ -193,7 +193,6 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 				return nil, nil, nil, err
 			}
 		}
-		
 
 		if len(opts.CommonLabels) > 0 {
 			//  edit add label foo:bar
@@ -262,7 +261,7 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("failed to unmarshal kustomization.yaml: %w", err)
 			}
-			
+
 			if patches, ok := kustomization["patches"].([]interface{}); ok {
 				// Convert opts.Patches to interface{} to append
 				untypedPatches := make([]interface{}, len(opts.Patches))
@@ -274,7 +273,7 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 			} else {
 				kustomization["patches"] = opts.Patches
 			}
-			
+
 			updatedKustomization, err := yaml.Marshal(kustomization)
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("failed to marshal kustomization.yaml after adding patches: %w", err)
@@ -289,7 +288,6 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 			}
 			commands = append(commands, "# kustomization.yaml updated with patches. There is no `kustomize edit` command for adding patches. In order to generate the manifests in your local environment, you will need to copy the patches into kustomization.yaml manually.")
 		}
-		
 
 		if len(opts.Components) > 0 {
 			// components only supported in kustomize >= v3.7.0

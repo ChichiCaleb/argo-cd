@@ -461,7 +461,7 @@ func TestHelmDependenciesPermissionDenied(t *testing.T) {
 
 	projName := "argo-helm-project-denied"
 	projectFixture.
-	Given(t).
+		Given(t).
 		Name(projName).
 		Destination("*,*").
 		When().

@@ -154,7 +154,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			for i := range apps.Items {
 				appPointers = append(appPointers, &apps.Items[i])
 			}
-			
+
 			applicationSet := argo.FilterByProjects(appPointers, projects)
 			for _, a := range applicationSet {
 				if a.Status.Sync.Status != appv1.SyncStatusCodeSynced {
@@ -171,7 +171,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				status = appv1.SyncStatusCodeSynced
 			}
 		}
-		
+
 	}
 	// Sample url: http://localhost:8080/api/badge?name=123&revision=true
 	if revisionParam, ok := r.URL.Query()["revision"]; ok && enabled && strings.EqualFold(revisionParam[0], "true") {

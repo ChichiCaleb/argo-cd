@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/argoproj/pkg/rand"
 
@@ -156,9 +156,8 @@ func TestSimpleListGeneratorExternalNamespace(t *testing.T) {
 }
 
 func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
-   
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -349,9 +348,8 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 }
 
 func TestSimpleListGenerator(t *testing.T) {
-
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -448,7 +446,7 @@ func TestSimpleListGenerator(t *testing.T) {
 
 func TestSimpleListGeneratorGoTemplate(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -546,7 +544,7 @@ func TestSimpleListGeneratorGoTemplate(t *testing.T) {
 
 func TestRenderHelmValuesObject(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -627,7 +625,7 @@ func TestRenderHelmValuesObject(t *testing.T) {
 
 func TestTemplatePatch(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -760,11 +758,11 @@ func TestTemplatePatch(t *testing.T) {
 
 func TestUpdateHelmValuesObject(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
-	
+
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -850,9 +848,8 @@ func TestUpdateHelmValuesObject(t *testing.T) {
 }
 
 func TestSyncPolicyCreateUpdate(t *testing.T) {
-
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -971,9 +968,8 @@ func TestSyncPolicyCreateUpdate(t *testing.T) {
 }
 
 func TestSyncPolicyCreateDelete(t *testing.T) {
-
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -1078,7 +1074,7 @@ func TestSyncPolicyCreateDelete(t *testing.T) {
 
 func TestSyncPolicyCreateOnly(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -1188,7 +1184,7 @@ func TestSyncPolicyCreateOnly(t *testing.T) {
 
 func TestSimpleGitDirectoryGenerator(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -1304,11 +1300,10 @@ func TestSimpleGitDirectoryGenerator(t *testing.T) {
 
 func TestSimpleGitDirectoryGeneratorGoTemplate(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
-
 
 	generateExpectedApp := func(name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
@@ -1422,7 +1417,7 @@ func TestSimpleGitDirectoryGeneratorGoTemplate(t *testing.T) {
 
 func TestSimpleGitDirectoryGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -1528,7 +1523,7 @@ func TestSimpleGitDirectoryGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
 
 func TestSimpleGitDirectoryGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -1643,7 +1638,7 @@ func TestSimpleGitDirectoryGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
 
 func TestSimpleGitFilesGenerator(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -1758,7 +1753,7 @@ func TestSimpleGitFilesGenerator(t *testing.T) {
 
 func TestSimpleGitFilesGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -1864,7 +1859,7 @@ func TestSimpleGitFilesGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
 
 func TestSimpleGitFilesGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -1976,7 +1971,7 @@ func TestSimpleGitFilesGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
 
 func TestSimpleGitFilesGeneratorGoTemplate(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2092,7 +2087,7 @@ func TestSimpleGitFilesGeneratorGoTemplate(t *testing.T) {
 
 func TestSimpleGitFilesPreserveResourcesOnDeletion(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2158,7 +2153,7 @@ func TestSimpleGitFilesPreserveResourcesOnDeletion(t *testing.T) {
 
 func TestSimpleGitFilesPreserveResourcesOnDeletionGoTemplate(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2224,8 +2219,6 @@ func TestSimpleGitFilesPreserveResourcesOnDeletionGoTemplate(t *testing.T) {
 }
 
 func githubSCMMockHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
-	
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.RequestURI {
@@ -2431,7 +2424,7 @@ func testServerWithPort(t *testing.T, port int, handler http.Handler) *httptest.
 
 func TestSimpleSCMProviderGenerator(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2512,7 +2505,7 @@ func TestSimpleSCMProviderGenerator(t *testing.T) {
 
 func TestSimpleSCMProviderGeneratorGoTemplate(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2594,7 +2587,7 @@ func TestSimpleSCMProviderGeneratorGoTemplate(t *testing.T) {
 
 func TestSCMProviderGeneratorSCMProviderNotAllowed(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2676,7 +2669,7 @@ func TestSCMProviderGeneratorSCMProviderNotAllowed(t *testing.T) {
 
 func TestCustomApplicationFinalizers(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2749,7 +2742,7 @@ func TestCustomApplicationFinalizers(t *testing.T) {
 
 func TestCustomApplicationFinalizersGoTemplate(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2859,7 +2852,7 @@ func githubPullMockHandler(t *testing.T) func(http.ResponseWriter, *http.Request
 
 func TestSimplePullRequestGenerator(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -2943,7 +2936,7 @@ func TestSimplePullRequestGenerator(t *testing.T) {
 
 func TestSimplePullRequestGeneratorGoTemplate(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -3032,7 +3025,7 @@ func TestSimplePullRequestGeneratorGoTemplate(t *testing.T) {
 
 func TestPullRequestGeneratorNotAllowedSCMProvider(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -3122,7 +3115,7 @@ func TestPullRequestGeneratorNotAllowedSCMProvider(t *testing.T) {
 
 func TestGitGeneratorPrivateRepo(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -3204,7 +3197,7 @@ func TestGitGeneratorPrivateRepo(t *testing.T) {
 
 func TestGitGeneratorPrivateRepoGoTemplate(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}

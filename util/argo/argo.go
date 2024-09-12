@@ -88,34 +88,32 @@ func getAPIResourceInfo(group, kind string, getApiResourceInfo func() ([]kube.AP
 
 // FormatAppConditions returns string representation of given app condition list
 func FormatAppConditions(conditions []*argoappv1.ApplicationCondition) string {
-    formattedConditions := make([]string, 0)
-    for _, condition := range conditions {
-        // Use pointer dereference to access fields
-        formattedConditions = append(formattedConditions, fmt.Sprintf("%s: %s", condition.Type, condition.Message))
-    }
-    return strings.Join(formattedConditions, ";")
+	formattedConditions := make([]string, 0)
+	for _, condition := range conditions {
+		// Use pointer dereference to access fields
+		formattedConditions = append(formattedConditions, fmt.Sprintf("%s: %s", condition.Type, condition.Message))
+	}
+	return strings.Join(formattedConditions, ";")
 }
-
 
 // FilterByProjects returns applications which belong to the specified project
 func FilterByProjects(apps []*argoappv1.Application, projects []string) []*argoappv1.Application {
-    if len(projects) == 0 {
-        return apps
-    }
-    projectsMap := make(map[string]bool)
-    for _, project := range projects {
-        projectsMap[project] = true
-    }
-    
-    var items []*argoappv1.Application
-    for _, app := range apps {
-        if _, ok := projectsMap[app.Spec.GetProject()]; ok {
-            items = append(items, app)
-        }
-    }
-    return items
-}
+	if len(projects) == 0 {
+		return apps
+	}
+	projectsMap := make(map[string]bool)
+	for _, project := range projects {
+		projectsMap[project] = true
+	}
 
+	var items []*argoappv1.Application
+	for _, app := range apps {
+		if _, ok := projectsMap[app.Spec.GetProject()]; ok {
+			items = append(items, app)
+		}
+	}
+	return items
+}
 
 // FilterByProjectsP returns application pointers which belongs to the specified project
 func FilterByProjectsP(apps []*argoappv1.Application, projects []string) []*argoappv1.Application {
@@ -145,7 +143,7 @@ func FilterAppSetsByProjects(appsets []*argoappv1.ApplicationSet, projects []str
 	for _, project := range projects {
 		projectsMap[project] = true
 	}
-	
+
 	var items []*argoappv1.ApplicationSet
 	for _, appset := range appsets {
 		if _, ok := projectsMap[appset.Spec.Template.Spec.GetProject()]; ok {
@@ -154,7 +152,6 @@ func FilterAppSetsByProjects(appsets []*argoappv1.ApplicationSet, projects []str
 	}
 	return items
 }
-
 
 // FilterByRepo returns applications which have the specified repo URL
 func FilterByRepo(apps []*argoappv1.Application, repo string) []*argoappv1.Application {
@@ -169,7 +166,6 @@ func FilterByRepo(apps []*argoappv1.Application, repo string) []*argoappv1.Appli
 	}
 	return items
 }
-
 
 // FilterByRepoP returns application pointers
 func FilterByRepoP(apps []*argoappv1.Application, repo string) []*argoappv1.Application {
@@ -199,7 +195,6 @@ func FilterByCluster(apps []*argoappv1.Application, cluster string) []*argoappv1
 	return items
 }
 
-
 // FilterByName returns applications which match the specified name
 func FilterByName(apps []*argoappv1.Application, name string) ([]*argoappv1.Application, error) {
 	if name == "" {
@@ -214,7 +209,6 @@ func FilterByName(apps []*argoappv1.Application, name string) ([]*argoappv1.Appl
 	}
 	return items, status.Errorf(codes.NotFound, "application '%s' not found", name)
 }
-
 
 // FilterByNameP returns pointer applications
 // This function is for the changes in #12985.
@@ -380,7 +374,6 @@ func ValidateRepo(
 	return conditions, nil
 }
 
-
 func validateRepo(ctx context.Context,
 	app *argoappv1.Application,
 	db db.ArgoDB,
@@ -499,7 +492,6 @@ func GetRefSources(ctx context.Context, sources []*argoappv1.ApplicationSource, 
 	return refSources, nil
 }
 
-
 // ValidateDestination sets the 'Server' value of the ApplicationDestination, if it is not set.
 // NOTE: this function WILL write to the object pointed to by the 'dest' parameter.
 //
@@ -559,7 +551,6 @@ func validateSourcePermissions(source *argoappv1.ApplicationSource, hasMultipleS
 
 	return conditions
 }
-
 
 // ValidatePermissions ensures that the referenced cluster has been added to Argo CD and the app source repo and destination namespace/cluster are permitted in app project
 func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, proj *argoappv1.AppProject, db db.ArgoDB) ([]argoappv1.ApplicationCondition, error) {
@@ -641,7 +632,6 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 	}
 	return conditions, nil
 }
-
 
 // APIResourcesToStrings converts list of API Resources list into string list
 func APIResourcesToStrings(resources []kube.APIResourceInfo, includeKinds bool) []string {
@@ -728,7 +718,6 @@ func GetAppProject(app *argoappv1.Application, projLister applicationsv1.AppProj
 	}
 	return proj, nil
 }
-
 
 // verifyGenerateManifests verifies a repo path can generate manifests
 func verifyGenerateManifests(
@@ -827,7 +816,6 @@ func verifyGenerateManifests(
 	return conditions
 }
 
-
 // SetAppOperation updates an application with the specified operation, retrying conflict errors
 func SetAppOperation(appIf v1alpha1.ApplicationInterface, appName string, op *argoappv1.Operation) (*argoappv1.Application, error) {
 	for {
@@ -863,7 +851,6 @@ func ContainsSyncResource(name string, namespace string, gvk schema.GroupVersion
 	}
 	return false
 }
-
 
 // IncludeResource The app resource is checked against the include or exclude filters.
 // If exclude filters are present, they are evaluated only after all include filters have been assessed.
@@ -927,7 +914,6 @@ func NormalizeApplicationSpec(spec *argoappv1.ApplicationSpec) *argoappv1.Applic
 
 	return spec
 }
-
 
 func NormalizeSource(source *argoappv1.ApplicationSource) *argoappv1.ApplicationSource {
 	// 3. If any app sources are their zero values, then nil out the pointers to the source spec.

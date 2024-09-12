@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -19,7 +19,7 @@ import (
 
 func TestListMatrixGenerator(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -273,7 +273,7 @@ func TestClusterMatrixGenerator(t *testing.T) {
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace. opts))
+		Delete().Then().Expect(ApplicationsDoNotExist(expectedAppsNewNamespace.opts))
 }
 
 func TestMatrixTerminalMatrixGeneratorSelector(t *testing.T) {

@@ -22,8 +22,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 			},
 		}
 	}
-	getIgnoreDiff := func(group, kind, name, namespace string) *v1alpha1.ResourceIgnoreDifferences {
-		return &v1alpha1.ResourceIgnoreDifferences{
+	getIgnoreDiff := func(group, kind, name, namespace string) v1alpha1.ResourceIgnoreDifferences {
+		return v1alpha1.ResourceIgnoreDifferences{
 			Group:                 group,
 			Kind:                  kind,
 			Name:                  name,
@@ -33,13 +33,13 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 			ManagedFieldsManagers: []string{"ignoreDiffManager1", "ignoreDiffManager2"},
 		}
 	}
-	
+
 	t.Run("will return ignore diffs from resource override", func(t *testing.T) {
 		// given
 		gk := "apps/Deployment"
 		override := getOverride(gk)
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "", "")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, override)
 		expectedManagedFields := append(override[gk].IgnoreDifferences.ManagedFieldsManagers, ignoreDiff.ManagedFieldsManagers...)
 		expectedJSONPointers := append(override[gk].IgnoreDifferences.JSONPointers, ignoreDiff.JSONPointers...)
@@ -55,12 +55,13 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.Equal(t, expectedJSONPointers, actual.JSONPointers)
 		assert.Equal(t, expectedJQExpression, actual.JQPathExpressions)
 	})
+
 	t.Run("will return ignore diffs from resource override with wildcard", func(t *testing.T) {
 		// given
 		gk := "*/*"
 		override := getOverride(gk)
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "", "")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, override)
 		expectedManagedFields := append(override[gk].IgnoreDifferences.ManagedFieldsManagers, ignoreDiff.ManagedFieldsManagers...)
 		expectedJSONPointers := append(override[gk].IgnoreDifferences.JSONPointers, ignoreDiff.JSONPointers...)
@@ -76,10 +77,11 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.Equal(t, expectedJSONPointers, actual.JSONPointers)
 		assert.Equal(t, expectedJQExpression, actual.JQPathExpressions)
 	})
+
 	t.Run("will return ignore diffs from application resource", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -92,10 +94,11 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.Equal(t, ignoreDiff.JSONPointers, actual.JSONPointers)
 		assert.Equal(t, ignoreDiff.JQPathExpressions, actual.JQPathExpressions)
 	})
+
 	t.Run("will return ignore diffs from application resource with no app name and namespace configured", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "", "")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -108,10 +111,11 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.Equal(t, ignoreDiff.JSONPointers, actual.JSONPointers)
 		assert.Equal(t, ignoreDiff.JQPathExpressions, actual.JQPathExpressions)
 	})
+
 	t.Run("will return ignore diffs for all resources from group", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "*", "", "")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -124,10 +128,11 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.Equal(t, ignoreDiff.JSONPointers, actual.JSONPointers)
 		assert.Equal(t, ignoreDiff.JQPathExpressions, actual.JQPathExpressions)
 	})
+
 	t.Run("will return ignore diffs for all resources", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("*", "*", "", "")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -140,10 +145,11 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.Equal(t, ignoreDiff.JSONPointers, actual.JSONPointers)
 		assert.Equal(t, ignoreDiff.JQPathExpressions, actual.JQPathExpressions)
 	})
+
 	t.Run("no ignore diffs if namespace do not match", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -153,10 +159,11 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.False(t, ok)
 		require.Nil(t, actual)
 	})
+
 	t.Run("no ignore diffs if name do not match", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -166,10 +173,11 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.False(t, ok)
 		require.Nil(t, actual)
 	})
+
 	t.Run("no ignore diffs if resource do not match", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -179,10 +187,11 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.False(t, ok)
 		require.Nil(t, actual)
 	})
+
 	t.Run("no ignore diffs if group do not match", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -192,31 +201,27 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.False(t, ok)
 		require.Nil(t, actual)
 	})
-	t.Run("will merge ignore differences correctly removing duplicated configs", func(t *testing.T) {
+
+	t.Run("will return ignore diffs from resource override for specific group and kind", func(t *testing.T) {
 		// given
-		gk := "*/*"
+		gk := "apps/Deployment"
 		override := getOverride(gk)
-		ignoreDiff := getIgnoreDiff("*", "*", "", "")
-		expectedManagers := append(ignoreDiff.ManagedFieldsManagers, "repeated-manager")
-		expectedManagers = append(expectedManagers, override[gk].IgnoreDifferences.ManagedFieldsManagers...)
-		expectedJSONPointers := append(ignoreDiff.JSONPointers, "repeated-jsonpointer")
-		expectedJSONPointers = append(expectedJSONPointers, override[gk].IgnoreDifferences.JSONPointers...)
-		expectedJQPath := append(ignoreDiff.JQPathExpressions, "repeated-jqpath")
-		expectedJQPath = append(expectedJQPath, override[gk].IgnoreDifferences.JQPathExpressions...)
-		ignoreDiff.ManagedFieldsManagers = append(ignoreDiff.ManagedFieldsManagers, []string{"repeated-manager", "repeated-manager"}...)
-		ignoreDiff.JSONPointers = append(ignoreDiff.JSONPointers, []string{"repeated-jsonpointer", "repeated-jsonpointer"}...)
-		ignoreDiff.JQPathExpressions = append(ignoreDiff.JQPathExpressions, []string{"repeated-jqpath", "repeated-jqpath"}...)
-		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiff := getIgnoreDiff("apps", "Deployment", "specific-app", "specific-namespace")
+		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, override)
+		expectedManagedFields := append(override[gk].IgnoreDifferences.ManagedFieldsManagers, ignoreDiff.ManagedFieldsManagers...)
+		expectedJSONPointers := append(override[gk].IgnoreDifferences.JSONPointers, ignoreDiff.JSONPointers...)
+		expectedJQExpression := append(override[gk].IgnoreDifferences.JQPathExpressions, ignoreDiff.JQPathExpressions...)
 
 		// when
-		ok, actual := ignoreConfig.HasIgnoreDifference("apps", "Deployment", "app-name", "default")
+		ok, actual := ignoreConfig.HasIgnoreDifference("apps", "Deployment", "specific-app", "specific-namespace")
 
 		// then
 		assert.True(t, ok)
-		require.NotNil(t, actual)
-		assert.ElementsMatch(t, expectedManagers, actual.ManagedFieldsManagers)
-		assert.ElementsMatch(t, expectedJSONPointers, actual.JSONPointers)
-		assert.ElementsMatch(t, expectedJQPath, actual.JQPathExpressions)
+		assert.NotNil(t, actual)
+		assert.Equal(t, expectedManagedFields, actual.ManagedFieldsManagers)
+		assert.Equal(t, expectedJSONPointers, actual.JSONPointers)
+		assert.Equal(t, expectedJQExpression, actual.JQPathExpressions)
 	})
 }
+

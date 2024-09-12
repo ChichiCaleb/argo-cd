@@ -6,10 +6,10 @@ import (
 
 	"github.com/argoproj/gitops-engine/pkg/health"
 	. "github.com/argoproj/gitops-engine/pkg/sync/common"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/google/go-cmp/cmp"
-    "github.com/google/go-cmp/cmp/cmpopts"
 
 	. "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
@@ -104,7 +104,7 @@ func TestSyncStatusOptionIgnore(t *testing.T) {
 		And(func(app *Application) {
 			assert.Len(t, app.Status.Resources, 2)
 			for i := range app.Status.Resources {
-				resourceStatus := &app.Status.Resources[i] 
+				resourceStatus := &app.Status.Resources[i]
 				// new map in-sync
 				if resourceStatus.Name != oldMap {
 					assert.Contains(t, resourceStatus.Name, "my-map-")
@@ -115,7 +115,6 @@ func TestSyncStatusOptionIgnore(t *testing.T) {
 				}
 			}
 		})
-		
 }
 
 // make sure we can create an app which has a SSH remote base

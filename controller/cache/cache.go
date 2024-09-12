@@ -274,7 +274,6 @@ func (c *liveStateCache) loadCacheSettings() (*cacheSettings, error) {
 	}, nil
 }
 
-
 func asResourceNode(r *clustercache.Resource) appv1.ResourceNode {
 	gv, err := schema.ParseGroupVersion(r.Ref.APIVersion)
 	if err != nil {

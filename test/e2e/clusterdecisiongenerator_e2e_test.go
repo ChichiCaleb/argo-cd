@@ -5,9 +5,9 @@ import (
 
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -21,7 +21,7 @@ var tenSec = int64(10)
 
 func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -137,7 +137,7 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 
 func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -245,7 +245,7 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 
 func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -346,7 +346,7 @@ func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
 
 func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}
@@ -449,7 +449,7 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.
 
 func TestSimpleClusterDecisionResourceGeneratorDeletingClusterFromResource(t *testing.T) {
 	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex 
+	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
 	}

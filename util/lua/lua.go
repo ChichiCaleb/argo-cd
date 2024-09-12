@@ -161,7 +161,6 @@ func (vm VM) GetHealthScript(obj *unstructured.Unstructured) (string, bool, erro
 	return builtInScript, true, err
 }
 
-
 func (vm VM) ExecuteResourceAction(obj *unstructured.Unstructured, script string) ([]ImpactedResource, error) {
 	l, err := vm.runLua(obj, script)
 	if err != nil {
@@ -325,7 +324,6 @@ func (vm VM) ExecuteResourceActionDiscovery(obj *unstructured.Unstructured, scri
 	return nil, fmt.Errorf(incorrectReturnType, "table", returnValue.Type().String())
 }
 
-
 // Actions are enabled by default
 func isActionDisabled(actionsMap interface{}) bool {
 	actions, ok := actionsMap.(map[string]interface{})
@@ -377,7 +375,6 @@ func (vm VM) GetResourceActionDiscovery(obj *unstructured.Unstructured) (string,
 	return discoveryScript, nil
 }
 
-
 // GetResourceAction attempts to read lua script from config and then filesystem for that resource
 func (vm VM) GetResourceAction(obj *unstructured.Unstructured, actionName string) (appv1.ResourceActionDefinition, error) {
 	key := GetConfigMapKey(obj.GroupVersionKind())
@@ -413,7 +410,6 @@ func (vm VM) GetResourceAction(obj *unstructured.Unstructured, actionName string
 		ActionLua: actionScript,
 	}, nil
 }
-
 
 func GetConfigMapKey(gvk schema.GroupVersionKind) string {
 	if gvk.Group == "" {

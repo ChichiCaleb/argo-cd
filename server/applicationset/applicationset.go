@@ -187,8 +187,6 @@ func (s *Server) List(ctx context.Context, q *applicationset.ApplicationSetListQ
 	return appsetList, nil
 }
 
-
-
 func (s *Server) Create(ctx context.Context, q *applicationset.ApplicationSetCreateRequest) (*v1alpha1.ApplicationSet, error) {
 	appset := q.GetApplicationset()
 
