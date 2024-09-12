@@ -9,6 +9,8 @@ import (
 	"github.com/argoproj/gitops-engine/pkg/diff"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/google/go-cmp/cmp"
+	
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture/applicationsets/utils"
@@ -57,7 +59,7 @@ func Error(message, err string) Expectation {
 
 // ApplicationsExist checks whether each of the 'expectedApps' exist in the namespace, and are
 // equivalent to provided values.
-func ApplicationsExist(expectedApps []v1alpha1.Application) Expectation {
+func ApplicationsExist(expectedApps []v1alpha1.Application, opts cmp.Options) Expectation {
 	return func(c *Consequences) (state, string) {
 		for _, expectedApp := range expectedApps {
 			foundApp := c.app(expectedApp.Name)
@@ -66,7 +68,7 @@ func ApplicationsExist(expectedApps []v1alpha1.Application) Expectation {
 			}
 
 			if !appsAreEqual(expectedApp, *foundApp) {
-				diff, err := getDiff(filterFields(expectedApp), filterFields(*foundApp))
+				diff, err := getDiff(filterFields(expectedApp), filterFields(*foundApp), opts)
 				if err != nil {
 					return failed, err.Error()
 				}
@@ -79,9 +81,10 @@ func ApplicationsExist(expectedApps []v1alpha1.Application) Expectation {
 	}
 }
 
+
 // ApplicationSetHasConditions checks whether each of the 'expectedConditions' exist in the ApplicationSet status, and are
 // equivalent to provided values.
-func ApplicationSetHasConditions(applicationSetName string, expectedConditions []v1alpha1.ApplicationSetCondition) Expectation {
+func ApplicationSetHasConditions(applicationSetName string, expectedConditions []v1alpha1.ApplicationSetCondition, opts cmp.Options) Expectation {
 	return func(c *Consequences) (state, string) {
 		// retrieve the application set
 		foundApplicationSet := c.applicationSet(applicationSetName)
@@ -90,23 +93,28 @@ func ApplicationSetHasConditions(applicationSetName string, expectedConditions [
 		}
 
 		if !conditionsAreEqual(&expectedConditions, &foundApplicationSet.Status.Conditions) {
-			diff, err := getConditionDiff(expectedConditions, foundApplicationSet.Status.Conditions)
+			diff, err := getConditionDiff(expectedConditions, foundApplicationSet.Status.Conditions, opts)
 			if err != nil {
 				return failed, err.Error()
 			}
-			return pending, fmt.Sprintf("application set conditions are not equal: expected: %v, diff: %s\n", expectedConditions, diff) // Updated here
+			return pending, fmt.Sprintf("application set conditions are not equal: expected: %v, diff: %s\n", expectedConditions, diff)
 		}
 		return succeeded, "application set successfully found"
 	}
 }
 
-// ApplicationsDoNotExist checks that each of the 'expectedApps' no longer exist in the namespace
-func ApplicationsDoNotExist(expectedApps []v1alpha1.Application) Expectation {
+
+// ApplicationsDoNotExist checks whether each of the 'expectedApps' does not exist in the namespace.
+// It now accepts additional options for comparison.
+func ApplicationsDoNotExist(expectedApps []v1alpha1.Application, opts cmp.Options) Expectation {
 	return func(c *Consequences) (state, string) {
 		for _, expectedApp := range expectedApps {
 			foundApp := c.app(expectedApp.Name)
 			if foundApp != nil {
-				return pending, fmt.Sprintf("app '%s' should no longer exist", expectedApp.QualifiedName())
+				// If opts are used in comparison, integrate them here
+				if !appsAreEqual(expectedApp, *foundApp, opts) {
+					return pending, fmt.Sprintf("app '%s' should no longer exist", expectedApp.QualifiedName())
+				}
 			}
 		}
 
@@ -138,32 +146,24 @@ func pods(namespace string) (*corev1.PodList, error) {
 }
 
 // getDiff returns a string containing a comparison result of two applications (for test output/debug purposes)
-func getDiff(orig, new v1alpha1.Application) (string, error) {
-	bytes, _, err := diff.CreateTwoWayMergePatch(orig, new, orig)
+func getDiff(orig, new v1alpha1.Application, opts cmp.Options) (string, error) {
+	diff, err := cmp.Diff(orig, new, opts)
 	if err != nil {
 		return "", err
 	}
-
-	return string(bytes), nil
+	return diff, nil
 }
 
-// getConditionDiff returns a string containing a comparison result of two ApplicationSetCondition (for test output/debug purposes)
-func getConditionDiff(orig, new []v1alpha1.ApplicationSetCondition) (string, error) {
-	if len(orig) != len(new) {
-		return fmt.Sprintf("mismatch between condition sizes: %v %v", len(orig), len(new)), nil
+
+
+// getConditionDiff returns a string containing a comparison result of two slices of ApplicationSetCondition (for test output/debug purposes).
+func getConditionDiff(orig, new []v1alpha1.ApplicationSetCondition, opts cmp.Options) (string, error) {
+	// Use cmp.Diff to get the difference between orig and new conditions with provided options
+	diff := cmp.Diff(orig, new, opts)
+	if diff == "" {
+		return "", nil
 	}
-
-	var bytes []byte
-
-	for index := range orig {
-		b, _, err := diff.CreateTwoWayMergePatch(orig[index], new[index], orig[index])
-		if err != nil {
-			return "", err
-		}
-		bytes = append(bytes, b...)
-	}
-
-	return string(bytes), nil
+	return diff, nil
 }
 
 // filterFields returns a copy of Application, but with unnecessary (for testing) fields removed
@@ -214,10 +214,12 @@ func filterConditionFields(input *[]v1alpha1.ApplicationSetCondition) *[]v1alpha
 	return &filteredConditions
 }
 
-// appsAreEqual returns true if the apps are equal, comparing only fields of interest
-func appsAreEqual(one v1alpha1.Application, two v1alpha1.Application) bool {
-	return reflect.DeepEqual(filterFields(one), filterFields(two))
+
+// appsAreEqual compares two applications and uses opts for comparison.
+func appsAreEqual(app1, app2 v1alpha1.Application, opts cmp.Options) bool {
+	return cmp.Equal(app1, app2, opts)
 }
+
 
 // conditionsAreEqual returns true if the appset status conditions are equal, comparing only fields of interest
 func conditionsAreEqual(one, two *[]v1alpha1.ApplicationSetCondition) bool {

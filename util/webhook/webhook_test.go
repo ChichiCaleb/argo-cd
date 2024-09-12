@@ -595,12 +595,13 @@ func Test_affectedRevisionInfo_appRevisionHasChanged(t *testing.T) {
 		t.Run(testCopy.name, func(t *testing.T) {
 			t.Parallel()
 			_, revisionFromHook, _, _, _ := affectedRevisionInfo(testCopy.hookPayload)
-			source := sourceWithRevision(testCopy.targetRevision) // This should be a pointer
-			if got := sourceRevisionHasChanged(source, revisionFromHook, false); got != testCopy.hasChanged {
+			source := sourceWithRevision(testCopy.targetRevision) // Ensure this returns a pointer
+			if got := sourceRevisionHasChanged(&source, revisionFromHook, false); got != testCopy.hasChanged {
 				t.Errorf("sourceRevisionHasChanged() = %v, want %v", got, testCopy.hasChanged)
 			}
 		})
 	}
+	
 	
 
 }

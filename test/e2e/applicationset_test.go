@@ -55,6 +55,12 @@ var ExpectedConditions = []v1alpha1.ApplicationSetCondition{
 }
 
 func TestSimpleListGeneratorExternalNamespace(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	externalNamespace := string(utils.ArgoCDExternalNamespace)
 
 	expectedApp := argov1alpha1.Application{

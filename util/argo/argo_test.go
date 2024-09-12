@@ -1028,7 +1028,7 @@ func TestValidateDestination(t *testing.T) {
 }
 
 func TestFilterByName(t *testing.T) {
-	apps := []argoappv1.Application{
+	apps := []*argoappv1.Application{ // Change the type here
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "foo",
@@ -1047,24 +1047,31 @@ func TestFilterByName(t *testing.T) {
 		},
 	}
 
+	// Convert apps from value to pointer slice
+	appsPointers := make([]*argoappv1.Application, len(apps))
+	for i := range apps {
+		appsPointers[i] = &apps[i]
+	}
+
 	t.Run("Name is empty string", func(t *testing.T) {
-		res, err := FilterByName(apps, "")
+		res, err := FilterByName(appsPointers, "")
 		require.NoError(t, err)
 		assert.Len(t, res, 2)
 	})
 
 	t.Run("Single app by name", func(t *testing.T) {
-		res, err := FilterByName(apps, "foo")
+		res, err := FilterByName(appsPointers, "foo")
 		require.NoError(t, err)
 		assert.Len(t, res, 1)
 	})
 
 	t.Run("No such app", func(t *testing.T) {
-		res, err := FilterByName(apps, "foobar")
+		res, err := FilterByName(appsPointers, "foobar")
 		require.Error(t, err)
 		assert.Empty(t, res)
 	})
 }
+
 
 func TestFilterByNameP(t *testing.T) {
 	apps := []*argoappv1.Application{
@@ -1311,27 +1318,29 @@ func Test_GetRefSources(t *testing.T) {
 	repoPath, err := filepath.Abs("./../..")
 	require.NoError(t, err)
 
-	getMultiSourceAppSpec := func(sources argoappv1.ApplicationSources) *argoappv1.ApplicationSpec {
+	getMultiSourceAppSpec := func(sources []argoappv1.ApplicationSource) *argoappv1.ApplicationSpec {
 		return &argoappv1.ApplicationSpec{
 			Sources: sources,
 		}
 	}
 
-	repo := &argoappv1.Repository{Repo: fmt.Sprintf("file://%s", repoPath)}
+	// Change repo to be a value instead of a pointer
+	repo := argoappv1.Repository{Repo: fmt.Sprintf("file://%s", repoPath)}
 
 	t.Run("target ref exists", func(t *testing.T) {
-		argoSpec := getMultiSourceAppSpec(argoappv1.ApplicationSources{
+		argoSpec := getMultiSourceAppSpec([]argoappv1.ApplicationSource{
 			{RepoURL: fmt.Sprintf("file://%s", repoPath), Ref: "source-1_2"},
 			{RepoURL: fmt.Sprintf("file://%s", repoPath)},
 		})
 
-		refSources, err := GetRefSources(context.Background(), argoSpec.Sources, argoSpec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
-			return repo, nil
+		// Convert to slice of pointers
+		refSources, err := GetRefSources(context.Background(), toApplicationSourcePtrSlice(argoSpec.Sources), argoSpec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
+			return &repo, nil // Return pointer to repo
 		}, []string{}, false)
 
 		expectedRefSource := argoappv1.RefTargetRevisionMapping{
 			"$source-1_2": &argoappv1.RefTarget{
-				Repo: repo, // Use pointer to avoid copying value
+				Repo: &repo, // Use pointer to avoid copying value
 			},
 		}
 		require.NoError(t, err)
@@ -1340,12 +1349,12 @@ func Test_GetRefSources(t *testing.T) {
 	})
 
 	t.Run("target ref does not exist", func(t *testing.T) {
-		argoSpec := getMultiSourceAppSpec(argoappv1.ApplicationSources{
+		argoSpec := getMultiSourceAppSpec([]argoappv1.ApplicationSource{
 			{RepoURL: "file://does-not-exist", Ref: "source1"},
 			{RepoURL: fmt.Sprintf("file://%s", repoPath)},
 		})
 
-		refSources, err := GetRefSources(context.Background(), argoSpec.Sources, argoSpec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
+		refSources, err := GetRefSources(context.Background(), toApplicationSourcePtrSlice(argoSpec.Sources), argoSpec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
 			return nil, errors.New("repo does not exist")
 		}, []string{}, false)
 
@@ -1354,12 +1363,12 @@ func Test_GetRefSources(t *testing.T) {
 	})
 
 	t.Run("invalid ref", func(t *testing.T) {
-		argoSpec := getMultiSourceAppSpec(argoappv1.ApplicationSources{
+		argoSpec := getMultiSourceAppSpec([]argoappv1.ApplicationSource{
 			{RepoURL: "file://does-not-exist", Ref: "%invalid-name%"},
 			{RepoURL: fmt.Sprintf("file://%s", repoPath)},
 		})
 
-		refSources, err := GetRefSources(context.TODO(), argoSpec.Sources, argoSpec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
+		refSources, err := GetRefSources(context.Background(), toApplicationSourcePtrSlice(argoSpec.Sources), argoSpec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
 			return nil, err
 		}, []string{}, false)
 
@@ -1368,12 +1377,12 @@ func Test_GetRefSources(t *testing.T) {
 	})
 
 	t.Run("duplicate ref keys", func(t *testing.T) {
-		argoSpec := getMultiSourceAppSpec(argoappv1.ApplicationSources{
+		argoSpec := getMultiSourceAppSpec([]argoappv1.ApplicationSource{
 			{RepoURL: "file://does-not-exist", Ref: "source1"},
 			{RepoURL: "file://does-not-exist", Ref: "source1"},
 		})
 
-		refSources, err := GetRefSources(context.TODO(), argoSpec.Sources, argoSpec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
+		refSources, err := GetRefSources(context.Background(), toApplicationSourcePtrSlice(argoSpec.Sources), argoSpec.Project, func(ctx context.Context, url string, project string) (*argoappv1.Repository, error) {
 			return nil, err
 		}, []string{}, false)
 
@@ -1381,6 +1390,16 @@ func Test_GetRefSources(t *testing.T) {
 		assert.Empty(t, refSources)
 	})
 }
+
+// Helper function to convert a slice of ApplicationSource to a slice of pointers
+func toApplicationSourcePtrSlice(sources []argoappv1.ApplicationSource) []*argoappv1.ApplicationSource {
+	result := make([]*argoappv1.ApplicationSource, len(sources))
+	for i := range sources {
+		result[i] = &sources[i]
+	}
+	return result
+}
+
 
 func TestValidatePermissionsMultipleSources(t *testing.T) {
 	t.Run("Empty Repo URL result in condition", func(t *testing.T) {
