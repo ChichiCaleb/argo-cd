@@ -11,7 +11,7 @@ import (
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
-	. "github.com/argoproj/argo-cd/v2/test/e2e/fixture/applicationsets"
+	appsetfixture "github.com/argoproj/argo-cd/v2/test/e2e/fixture/applicationsets"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture/applicationsets/utils"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application"
@@ -62,7 +62,7 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 		},
 	}
 
-	Given(t).
+	appsetfixture.Given(t).
 		// Create a ClusterGenerator-based ApplicationSet
 		When().
 		CreateClusterSecret("my-secret", "cluster1", "https://kubernetes.default.svc").
@@ -102,7 +102,7 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -112,7 +112,7 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -128,11 +128,11 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 			appset.Spec.Template.Labels = map[string]string{
 				"label-key": "label-value",
 			}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts))
 }
 
 func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
@@ -176,7 +176,7 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 		},
 	}
 
-	Given(t).
+	appsetfixture.Given(t).
 		// Create a ClusterGenerator-based ApplicationSet
 		When().
 		CreateClusterSecret("my-secret", "cluster1", "https://kubernetes.default.svc").
@@ -214,7 +214,7 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -224,7 +224,7 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -236,11 +236,11 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}, opts))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
@@ -293,7 +293,7 @@ func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
 		},
 	}
 
-	Given(t).
+	appsetfixture.Given(t).
 		// Create a ClusterGenerator-based ApplicationSet
 		When().
 		CreateClusterSecret("my-secret", "cluster1", "https://kubernetes.default.svc").
@@ -332,16 +332,16 @@ func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		CreateClusterSecret("my-secret2", "cluster2", "https://kubernetes.default.svc").
-		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
+		Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.T) {
@@ -394,7 +394,7 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.
 		},
 	}
 
-	Given(t).
+	appsetfixture.Given(t).
 		// Create a ClusterGenerator-based ApplicationSet
 		When().
 		CreateClusterSecret("my-secret", "cluster1", "https://kubernetes.default.svc").
@@ -434,17 +434,17 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		DeleteClusterSecret("my-secret2").
-		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
-		Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2}, opts)).
+		Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
+		Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}, opts))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorDeletingClusterFromResource(t *testing.T) {
@@ -504,7 +504,7 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterFromResource(t *te
 		},
 	}
 
-	Given(t).
+	appsetfixture.Given(t).
 		// Create a ClusterGenerator-based ApplicationSet
 		When().
 		CreateClusterSecret("my-secret", "cluster1", "https://kubernetes.default.svc").
@@ -544,15 +544,15 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterFromResource(t *te
 					},
 				},
 			},
-		}).Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}, opts)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		StatusUpdatePlacementDecision("my-placementdecision", clusterListSmall).
-		Then().Expect(ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
-		Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2}, opts)).
+		Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1}, opts)).
+		Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2}, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}, opts))
 }

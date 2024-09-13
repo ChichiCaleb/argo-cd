@@ -10,7 +10,6 @@ import (
 	"github.com/expr-lang/expr"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/util/settings"

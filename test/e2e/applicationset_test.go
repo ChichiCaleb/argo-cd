@@ -2152,12 +2152,6 @@ func TestSimpleGitFilesPreserveResourcesOnDeletion(t *testing.T) {
 }
 
 func TestSimpleGitFilesPreserveResourcesOnDeletionGoTemplate(t *testing.T) {
-	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex
-	opts := cmp.Options{
-		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
-	}
-
 	appsetfixture.Given(t).
 		When().
 		CreateNamespace(utils.ApplicationsResourcesNamespace).

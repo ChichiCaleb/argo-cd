@@ -6,8 +6,7 @@ import (
 
 	"github.com/argoproj/gitops-engine/pkg/health"
 	. "github.com/argoproj/gitops-engine/pkg/sync/common"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

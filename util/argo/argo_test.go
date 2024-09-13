@@ -1048,7 +1048,7 @@ func TestFilterByName(t *testing.T) {
 	// Convert apps from value to pointer slice
 	appsPointers := make([]*argoappv1.Application, len(apps))
 	for i := range apps {
-		appsPointers[i] = &apps[i]
+		appsPointers[i] = apps[i]
 	}
 
 	t.Run("Name is empty string", func(t *testing.T) {
@@ -1337,7 +1337,7 @@ func Test_GetRefSources(t *testing.T) {
 
 		expectedRefSource := argoappv1.RefTargetRevisionMapping{
 			"$source-1_2": &argoappv1.RefTarget{
-				Repo: &repo, // Use pointer to avoid copying value
+				Repo: repo,
 			},
 		}
 		require.NoError(t, err)

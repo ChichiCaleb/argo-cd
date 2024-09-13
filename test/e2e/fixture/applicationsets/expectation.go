@@ -65,7 +65,7 @@ func ApplicationsExist(expectedApps []v1alpha1.Application, opts cmp.Options) Ex
 				return pending, fmt.Sprintf("missing app '%s'", expectedApp.QualifiedName())
 			}
 
-			if !appsAreEqual(expectedApp, *foundApp) {
+			if !appsAreEqual(expectedApp, *foundApp, opts) { // Pass 'opts' to appsAreEqual
 				diff, err := getDiff(filterFields(expectedApp), filterFields(*foundApp), opts)
 				if err != nil {
 					return failed, err.Error()
@@ -143,9 +143,9 @@ func pods(namespace string) (*corev1.PodList, error) {
 
 // getDiff returns a string containing a comparison result of two applications (for test output/debug purposes)
 func getDiff(orig, new v1alpha1.Application, opts cmp.Options) (string, error) {
-	diff, err := cmp.Diff(orig, new, opts)
-	if err != nil {
-		return "", err
+	diff := cmp.Diff(orig, new, opts) // cmp.Diff returns only one value
+	if diff == "" {
+		return "", nil
 	}
 	return diff, nil
 }
