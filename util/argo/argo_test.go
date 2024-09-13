@@ -497,7 +497,6 @@ func TestFormatAppConditions(t *testing.T) {
 	})
 }
 
-
 func TestFilterByProjects(t *testing.T) {
 	apps := []argoappv1.Application{
 		{
@@ -539,7 +538,6 @@ func TestFilterByProjects(t *testing.T) {
 		assert.Len(t, res, 2)
 	})
 }
-
 
 func TestFilterByProjectsP(t *testing.T) {
 	apps := []*argoappv1.Application{
@@ -1072,7 +1070,6 @@ func TestFilterByName(t *testing.T) {
 	})
 }
 
-
 func TestFilterByNameP(t *testing.T) {
 	apps := []*argoappv1.Application{
 		{
@@ -1399,7 +1396,6 @@ func toApplicationSourcePtrSlice(sources []argoappv1.ApplicationSource) []*argoa
 	}
 	return result
 }
-
 
 func TestValidatePermissionsMultipleSources(t *testing.T) {
 	t.Run("Empty Repo URL result in condition", func(t *testing.T) {

@@ -548,7 +548,6 @@ func TestHelmChartReferencingExternalValues(t *testing.T) {
 	}, response)
 }
 
-
 func TestHelmChartReferencingExternalValues_InvalidRefs(t *testing.T) {
 	service := newService(t, ".")
 	spec := argoappv1.ApplicationSpec{
@@ -625,7 +624,6 @@ func TestHelmChartReferencingExternalValues_InvalidRefs(t *testing.T) {
 	assert.Nil(t, response)
 }
 
-
 func TestHelmChartReferencingExternalValues_OutOfBounds_Symlink(t *testing.T) {
 	service := newService(t, ".")
 	err := os.Mkdir("testdata/oob-symlink", 0o755)
@@ -673,7 +671,6 @@ func TestHelmChartReferencingExternalValues_OutOfBounds_Symlink(t *testing.T) {
 	_, err = service.GenerateManifest(context.Background(), request)
 	require.Error(t, err)
 }
-
 
 func TestGenerateManifestsUseExactRevision(t *testing.T) {
 	service, gitClient, _ := newServiceWithMocks(t, ".", false)

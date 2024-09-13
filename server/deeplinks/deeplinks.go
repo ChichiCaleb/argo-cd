@@ -9,6 +9,7 @@ import (
 	"github.com/argoproj/gitops-engine/pkg/utils/kube"
 	"github.com/expr-lang/expr"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/utils/ptr"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -115,11 +116,18 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 		finalLinks = append(finalLinks, &application.LinkInfo{
 			Title:       ptr.To(link.Title),
 			Url:         ptr.To(finalURL.String()),
-			Description: link.Description,
-			IconClass:   link.IconClass,
+			Description: derefString(link.Description, ""), // Dereference and provide a default empty string if nil
+			IconClass:   derefString(link.IconClass, ""),   // Dereference and provide a default empty string if nil
 		})
 	}
 	return &application.LinksResponse{
 		Items: finalLinks,
 	}, errors
+}
+
+func derefString(s *string, defaultVal string) string {
+	if s != nil {
+		return *s
+	}
+	return defaultVal
 }

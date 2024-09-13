@@ -3,8 +3,8 @@ package lua
 import (
 	"bytes"
 	"fmt"
-	"testing"
 	"reflect"
+	"testing"
 
 	"github.com/argoproj/gitops-engine/pkg/health"
 	"github.com/stretchr/testify/assert"

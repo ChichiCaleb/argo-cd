@@ -2092,7 +2092,6 @@ func TestSimpleGitFilesGeneratorGoTemplate(t *testing.T) {
 }
 
 func TestSimpleGitFilesPreserveResourcesOnDeletion(t *testing.T) {
-
 	appsetfixture.Given(t).
 		When().
 		CreateNamespace(utils.ApplicationsResourcesNamespace).

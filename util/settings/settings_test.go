@@ -807,7 +807,6 @@ func TestKustomizeSettings_GetOptions(t *testing.T) {
 	})
 }
 
-
 func TestGetGoogleAnalytics(t *testing.T) {
 	_, settingsManager := fixtures(map[string]string{
 		"ga.trackingid": "123",

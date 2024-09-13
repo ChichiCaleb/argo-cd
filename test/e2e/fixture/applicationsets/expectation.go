@@ -6,10 +6,9 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/google/go-cmp/cmp"
-	
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/v2/test/e2e/fixture/applicationsets/utils"
@@ -80,7 +79,6 @@ func ApplicationsExist(expectedApps []v1alpha1.Application, opts cmp.Options) Ex
 	}
 }
 
-
 // ApplicationSetHasConditions checks whether each of the 'expectedConditions' exist in the ApplicationSet status, and are
 // equivalent to provided values.
 func ApplicationSetHasConditions(applicationSetName string, expectedConditions []v1alpha1.ApplicationSetCondition, opts cmp.Options) Expectation {
@@ -101,7 +99,6 @@ func ApplicationSetHasConditions(applicationSetName string, expectedConditions [
 		return succeeded, "application set successfully found"
 	}
 }
-
 
 // ApplicationsDoNotExist checks whether each of the 'expectedApps' does not exist in the namespace.
 // It now accepts additional options for comparison.
@@ -152,8 +149,6 @@ func getDiff(orig, new v1alpha1.Application, opts cmp.Options) (string, error) {
 	}
 	return diff, nil
 }
-
-
 
 // getConditionDiff returns a string containing a comparison result of two slices of ApplicationSetCondition (for test output/debug purposes).
 func getConditionDiff(orig, new []v1alpha1.ApplicationSetCondition, opts cmp.Options) (string, error) {
@@ -213,12 +208,10 @@ func filterConditionFields(input *[]v1alpha1.ApplicationSetCondition) *[]v1alpha
 	return &filteredConditions
 }
 
-
 // appsAreEqual compares two applications and uses opts for comparison.
 func appsAreEqual(app1, app2 v1alpha1.Application, opts cmp.Options) bool {
 	return cmp.Equal(app1, app2, opts)
 }
-
 
 // conditionsAreEqual returns true if the appset status conditions are equal, comparing only fields of interest
 func conditionsAreEqual(one, two *[]v1alpha1.ApplicationSetCondition) bool {

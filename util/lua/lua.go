@@ -137,10 +137,7 @@ func (vm VM) GetHealthScript(obj *unstructured.Unstructured) (string, bool, erro
 	// first, search the gvk as is in the ResourceOverrides
 	key := GetConfigMapKey(obj.GroupVersionKind())
 
-	// Use a local variable to hold the value and then access it
-	resourceOverrides := vm.ResourceOverrides
-	script, ok := resourceOverrides[key]
-	if ok && script.HealthLua != "" {
+	if script, ok := vm.ResourceOverrides[key]; ok && script.HealthLua != "" {
 		return script.HealthLua, script.UseOpenLibs, nil
 	}
 
@@ -148,8 +145,7 @@ func (vm VM) GetHealthScript(obj *unstructured.Unstructured) (string, bool, erro
 	wildcardKey := GetWildcardConfigMapKey(vm, obj.GroupVersionKind())
 
 	if wildcardKey != "" {
-		wildcardScript, ok := resourceOverrides[wildcardKey]
-		if ok && wildcardScript.HealthLua != "" {
+		if wildcardScript, ok := vm.ResourceOverrides[wildcardKey]; ok && wildcardScript.HealthLua != "" {
 			return wildcardScript.HealthLua, wildcardScript.UseOpenLibs, nil
 		}
 	}
@@ -318,15 +314,15 @@ func (vm VM) ExecuteResourceActionDiscovery(obj *unstructured.Unstructured, scri
 					return nil, fmt.Errorf("error marshaling resource action: %w", err)
 				}
 
-			// Unmarshal into a separate struct to avoid copying the lock value
-			var tempAction appv1.ResourceAction
-			err = json.Unmarshal(resourceActionBytes, &tempAction)
-			if err != nil {
-				return nil, err
+				err = json.Unmarshal(resourceActionBytes, &resourceAction)
+				if err != nil {
+					return nil, fmt.Errorf("error unmarshaling resource action: %w", err)
+				}
+				availableActionsMap[key] = resourceAction
 			}
-			availableActions = append(availableActions, tempAction)
+		} else {
+			return nil, fmt.Errorf(incorrectReturnType, "table", returnValue.Type().String())
 		}
-		return availableActions, nil
 	}
 
 	availableActions := make([]appv1.ResourceAction, 0, len(availableActionsMap))
@@ -366,13 +362,11 @@ func noAvailableActions(jsonBytes []byte) bool {
 
 func (vm VM) GetResourceActionDiscovery(obj *unstructured.Unstructured) ([]string, error) {
 	key := GetConfigMapKey(obj.GroupVersionKind())
+	var discoveryScripts []string
 
-	// Use a local variable to hold the ResourceOverride to avoid copying locks
-	var override appv1.ResourceOverride
-	var ok bool
-
-	// Access the ResourceOverride map safely
-	if override, ok = vm.ResourceOverrides[key]; ok && override.Actions != "" {
+	// Check if there are resource overrides for the given key
+	override, ok := vm.ResourceOverrides[key]
+	if ok && override.Actions != "" {
 		actions, err := override.GetActions()
 		if err != nil {
 			return nil, err
@@ -400,21 +394,13 @@ func (vm VM) GetResourceActionDiscovery(obj *unstructured.Unstructured) ([]strin
 // GetResourceAction attempts to read lua script from config and then filesystem for that resource
 func (vm VM) GetResourceAction(obj *unstructured.Unstructured, actionName string) (appv1.ResourceActionDefinition, error) {
 	key := GetConfigMapKey(obj.GroupVersionKind())
-
-	// Use a local variable to hold the ResourceOverride
-	var override appv1.ResourceOverride
-	var ok bool
-
-	// Access the ResourceOverride map safely
-	if override, ok = vm.ResourceOverrides[key]; ok && override.Actions != "" {
+	override, ok := vm.ResourceOverrides[key]
+	if ok && override.Actions != "" {
 		actions, err := override.GetActions()
 		if err != nil {
 			return appv1.ResourceActionDefinition{}, err
 		}
-
-		// Iterate over actions safely
-		for i := range actions.Definitions {
-			action := actions.Definitions[i]
+		for _, action := range actions.Definitions {
 			if action.Name == actionName {
 				return action, nil
 			}

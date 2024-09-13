@@ -476,7 +476,6 @@ func TestAppRevisionHasChanged(t *testing.T) {
 	}
 }
 
-
 func Test_affectedRevisionInfo_appRevisionHasChanged(t *testing.T) {
 	sourceWithRevision := func(targetRevision string) v1alpha1.ApplicationSource {
 		return v1alpha1.ApplicationSource{TargetRevision: targetRevision}
@@ -601,9 +600,6 @@ func Test_affectedRevisionInfo_appRevisionHasChanged(t *testing.T) {
 			}
 		})
 	}
-	
-	
-
 }
 
 func Test_getWebUrlRegex(t *testing.T) {

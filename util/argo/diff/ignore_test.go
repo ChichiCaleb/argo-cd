@@ -224,4 +224,3 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		assert.Equal(t, expectedJQExpression, actual.JQPathExpressions)
 	})
 }
-
