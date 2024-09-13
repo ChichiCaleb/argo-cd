@@ -348,7 +348,7 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
-		Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+		Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2}, opts)).
 		When().
 		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppExternalNamespace2}, opts))
 }

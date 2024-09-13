@@ -149,6 +149,12 @@ func TestListMatrixGenerator(t *testing.T) {
 }
 
 func TestClusterMatrixGenerator(t *testing.T) {
+		// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	generateExpectedApp := func(cluster, name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -273,10 +279,16 @@ func TestClusterMatrixGenerator(t *testing.T) {
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedAppsNewNamespace.opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
 }
 
 func TestMatrixTerminalMatrixGeneratorSelector(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	generateExpectedApp := func(cluster, name string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -383,7 +395,7 @@ func TestMatrixTerminalMatrixGeneratorSelector(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts)).
 
 		// Update the ApplicationSetTerminalGenerator LabelSelector, and verify the Applications are deleted and created
 		When().
@@ -415,20 +427,26 @@ func TestMatrixTerminalMatrixGeneratorSelector(t *testing.T) {
 					},
 				},
 			})
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps2)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps2, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1, opts)).
 
 		// Set ApplyNestedSelector to false and verify all Applications are created
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.ApplyNestedSelectors = false
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1)).Expect(appsetfixture.ApplicationsExist(expectedApps2, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsExist(expectedApps2, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts))
 }
 
 func TestMatrixTerminalMergeGeneratorSelector(t *testing.T) {
+	// Define fields to ignore for protobuf types
+	// To avoid copying impl.MessageState sync.Mutex
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
+	}
+
 	generateExpectedApp := func(name, nameSuffix string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -532,7 +550,7 @@ func TestMatrixTerminalMergeGeneratorSelector(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts)).
 
 		// Update the ApplicationSetTerminalGenerator LabelSelector, and verify the Applications are deleted and created
 		When().
@@ -565,15 +583,15 @@ func TestMatrixTerminalMergeGeneratorSelector(t *testing.T) {
 					},
 				},
 			})
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps2)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps2, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1, opts)).
 
 		// Set ApplyNestedSelector to false and verify all Applications are created
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.ApplyNestedSelectors = false
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1)).Expect(appsetfixture.ApplicationsExist(expectedApps2, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsExist(expectedApps2, opts)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts))
 }

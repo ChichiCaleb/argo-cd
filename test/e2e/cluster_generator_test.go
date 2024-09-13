@@ -318,7 +318,7 @@ func TestClusterGeneratorWithLocalCluster(t *testing.T) {
 							},
 						},
 					},
-				}).Then().ExpectWithDuration(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp}), 8*time.Minute).
+				}).Then().ExpectWithDuration(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp}, opts), 8*time.Minute).
 
 				// Update the ApplicationSet template namespace, and verify it updates the Applications
 				When().

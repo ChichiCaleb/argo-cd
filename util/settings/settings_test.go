@@ -225,10 +225,10 @@ func TestGetServerRBACLogEnforceEnableKey(t *testing.T) {
 }
 
 func TestGetResourceOverrides(t *testing.T) {
-	ignoreStatus := v1alpha1.ResourceOverride{IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
+	ignoreStatus := &v1alpha1.ResourceOverride{IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
 		JSONPointers: []string{"/status"},
 	}}
-	ignoreCRDFields := v1alpha1.ResourceOverride{IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
+	ignoreCRDFields := &v1alpha1.ResourceOverride{IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
 		JSONPointers: []string{"/status", "/spec/preserveUnknownFields"},
 	}}
 	crdGK := "apiextensions.k8s.io/CustomResourceDefinition"
@@ -253,7 +253,7 @@ func TestGetResourceOverrides(t *testing.T) {
 	webHookOverrides := overrides["admissionregistration.k8s.io/MutatingWebhookConfiguration"]
 	assert.NotNil(t, webHookOverrides)
 
-	assert.Equal(t, v1alpha1.ResourceOverride{
+	assert.Equal(t, &v1alpha1.ResourceOverride{
 		IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
 			JSONPointers:      []string{"/webhooks/0/clientConfig/caBundle"},
 			JQPathExpressions: []string{".webhooks[0].clientConfig.caBundle"},
@@ -299,7 +299,7 @@ func TestGetResourceOverrides(t *testing.T) {
 
 	crdOverrides = overrides[crdGK]
 	assert.NotNil(t, crdOverrides)
-	assert.Equal(t, v1alpha1.ResourceOverride{IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
+	assert.Equal(t, &v1alpha1.ResourceOverride{IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
 		JSONPointers:      []string{"/webhooks/0/clientConfig/caBundle", "/status", "/spec/preserveUnknownFields"},
 		JQPathExpressions: []string{".webhooks[0].clientConfig.caBundle"},
 	}}, crdOverrides)
@@ -506,7 +506,7 @@ func mergemaps(mapA map[string]string, mapB map[string]string) map[string]string
 }
 
 func TestGetIgnoreResourceUpdatesOverrides(t *testing.T) {
-	allDefault := v1alpha1.ResourceOverride{IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
+	allDefault := &v1alpha1.ResourceOverride{IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
 		JSONPointers: []string{"/metadata/resourceVersion", "/metadata/generation", "/metadata/managedFields"},
 	}}
 	allGK := "*/*"
@@ -537,7 +537,7 @@ func TestGetIgnoreResourceUpdatesOverrides(t *testing.T) {
 
 	// without ignoreDifferencesOnResourceUpdates, only ignoreResourceUpdates should be added
 	assert.NotNil(t, overrides["admissionregistration.k8s.io/MutatingWebhookConfiguration"])
-	assert.Equal(t, v1alpha1.ResourceOverride{
+	assert.Equal(t, &v1alpha1.ResourceOverride{
 		IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
 			JSONPointers:      []string{"/webhooks/1/clientConfig/caBundle"},
 			JQPathExpressions: []string{".webhooks[1].clientConfig.caBundle"},
@@ -554,7 +554,7 @@ func TestGetIgnoreResourceUpdatesOverrides(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.NotNil(t, overrides["admissionregistration.k8s.io/MutatingWebhookConfiguration"])
-	assert.Equal(t, v1alpha1.ResourceOverride{
+	assert.Equal(t, &v1alpha1.ResourceOverride{
 		IgnoreDifferences: v1alpha1.OverrideIgnoreDiff{
 			JSONPointers:      []string{"/webhooks/1/clientConfig/caBundle", "/webhooks/0/clientConfig/caBundle"},
 			JQPathExpressions: []string{".webhooks[1].clientConfig.caBundle", ".webhooks[0].clientConfig.caBundle"},
@@ -806,6 +806,7 @@ func TestKustomizeSettings_GetOptions(t *testing.T) {
 		assert.Equal(t, "--opt2 val2", ver.BuildOptions)
 	})
 }
+
 
 func TestGetGoogleAnalytics(t *testing.T) {
 	_, settingsManager := fixtures(map[string]string{
