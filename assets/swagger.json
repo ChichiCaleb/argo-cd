@@ -10337,43 +10337,43 @@
   },
   "tags": [
     {
-      "name": "ClusterService"
-    },
-    {
-      "name": "CertificateService"
-    },
-    {
-      "name": "ApplicationSetService"
-    },
-    {
-      "name": "RepositoryService"
-    },
-    {
-      "name": "GPGKeyService"
-    },
-    {
-      "name": "RepoCredsService"
-    },
-    {
-      "name": "VersionService"
-    },
-    {
       "name": "SessionService"
     },
     {
-      "name": "SettingsService"
-    },
-    {
       "name": "AccountService"
-    },
-    {
-      "name": "ProjectService"
     },
     {
       "name": "ApplicationService"
     },
     {
       "name": "NotificationService"
+    },
+    {
+      "name": "GPGKeyService"
+    },
+    {
+      "name": "SettingsService"
+    },
+    {
+      "name": "VersionService"
+    },
+    {
+      "name": "ApplicationSetService"
+    },
+    {
+      "name": "ProjectService"
+    },
+    {
+      "name": "RepositoryService"
+    },
+    {
+      "name": "ClusterService"
+    },
+    {
+      "name": "RepoCredsService"
+    },
+    {
+      "name": "CertificateService"
     }
   ]
 }

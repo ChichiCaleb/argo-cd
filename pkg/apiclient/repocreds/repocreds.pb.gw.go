@@ -227,6 +227,7 @@ func local_request_RepoCredsService_DeleteRepositoryCredentials_0(ctx context.Co
 // UnaryRPC     :call RepoCredsServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterRepoCredsServiceHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterRepoCredsServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server RepoCredsServiceServer) error {
 
 	mux.Handle("GET", pattern_RepoCredsService_ListRepositoryCredentials_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -367,7 +368,7 @@ func RegisterRepoCredsServiceHandler(ctx context.Context, mux *runtime.ServeMux,
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "RepoCredsServiceClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "RepoCredsServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "RepoCredsServiceClient" to call the correct interceptors.
+// "RepoCredsServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterRepoCredsServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client RepoCredsServiceClient) error {
 
 	mux.Handle("GET", pattern_RepoCredsService_ListRepositoryCredentials_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

@@ -1328,11 +1328,9 @@ message ResourceActionParam {  // Ignore this field in JSON
 message ResourceActions {  // Ignore this field in JSON
   string actionDiscoveryLua = 1;
   repeated ResourceActionDefinition definitions = 2;
+  bool mergeBuiltinActions = 3;
 
-   bool mergeBuiltinActions = 3;
 }
-
-
 // ResourceDiff holds the diff of a live and target resource object
 // TODO: describe members of this type
 message ResourceDiff {  // Ignore this field in JSON

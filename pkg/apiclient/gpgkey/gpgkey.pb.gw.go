@@ -203,6 +203,7 @@ func local_request_GPGKeyService_Delete_0(ctx context.Context, marshaler runtime
 // UnaryRPC     :call GPGKeyServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterGPGKeyServiceHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterGPGKeyServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server GPGKeyServiceServer) error {
 
 	mux.Handle("GET", pattern_GPGKeyService_List_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -343,7 +344,7 @@ func RegisterGPGKeyServiceHandler(ctx context.Context, mux *runtime.ServeMux, co
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "GPGKeyServiceClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "GPGKeyServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "GPGKeyServiceClient" to call the correct interceptors.
+// "GPGKeyServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterGPGKeyServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client GPGKeyServiceClient) error {
 
 	mux.Handle("GET", pattern_GPGKeyService_List_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
