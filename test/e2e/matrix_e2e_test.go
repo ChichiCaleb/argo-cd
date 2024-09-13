@@ -149,7 +149,7 @@ func TestListMatrixGenerator(t *testing.T) {
 }
 
 func TestClusterMatrixGenerator(t *testing.T) {
-		// Define fields to ignore for protobuf types
+	// Define fields to ignore for protobuf types
 	// To avoid copying impl.MessageState sync.Mutex
 	opts := cmp.Options{
 		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),

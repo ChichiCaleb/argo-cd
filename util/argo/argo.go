@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -1055,15 +1056,29 @@ func GenerateSpecIsDifferentErrorMessage(entity string, a, b interface{}) string
 }
 
 func GetDifferentPathsBetweenStructs(a, b interface{}) ([]string, error) {
+	// Dereference pointers if necessary
+	aVal := dereferenceIfPointer(a)
+	bVal := dereferenceIfPointer(b)
+
 	var difference []string
-	changelog, err := diff.Diff(a, b)
+	changelog, err := diff.Diff(aVal, bVal)
 	if err != nil {
 		return nil, fmt.Errorf("error during diff: %w", err)
 	}
+
 	for _, changeItem := range changelog {
 		difference = append(difference, changeItem.Path...)
 	}
 	return difference, nil
+}
+
+// Helper function to dereference pointer if input is a pointer
+func dereferenceIfPointer(v interface{}) interface{} {
+	rv := reflect.ValueOf(v)
+	if rv.Kind() == reflect.Ptr && !rv.IsNil() {
+		return rv.Elem().Interface() // Dereference the pointer
+	}
+	return v // Return the value as-is if it's not a pointer
 }
 
 // parseName will split the qualified name into its components, which are separated by the delimiter.
