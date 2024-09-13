@@ -83,6 +83,23 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 	finalLinks := []*application.LinkInfo{}
 	errors := []string{}
 	for _, link := range links {
+		if link.Condition != nil {
+			out, err := expr.Eval(*link.Condition, obj)
+			if err != nil {
+				errors = append(errors, fmt.Sprintf("failed to evaluate link condition '%v' with resource %v, error=%v", *link.Condition, name, err.Error()))
+				continue
+			}
+			switch condResult := out.(type) {
+			case bool:
+				if !condResult {
+					continue
+				}
+			default:
+				errors = append(errors, fmt.Sprintf("link condition '%v' evaluated to non-boolean value for resource %v", *link.Condition, name))
+				continue
+			}
+		}
+
 		t, err := template.New("deep-link").Funcs(sprigFuncMap).Parse(link.URL)
 		if err != nil {
 			errors = append(errors, fmt.Sprintf("failed to parse link template '%v', error=%v", link.URL, err.Error()))
@@ -94,44 +111,13 @@ func EvaluateDeepLinksResponse(obj map[string]interface{}, name string, links []
 			errors = append(errors, fmt.Sprintf("failed to evaluate link template '%v' with resource %v, error=%v", link.URL, name, err.Error()))
 			continue
 		}
-		// Dereferencing *string and handling nil values
-		description := ""
-		if link.Description != nil {
-			description = *link.Description
-		}
-		iconClass := ""
-		if link.IconClass != nil {
-			iconClass = *link.IconClass
-		}
 
-		if link.Condition != nil {
-			out, err := expr.Eval(*link.Condition, obj)
-			if err != nil {
-				errors = append(errors, fmt.Sprintf("failed to evaluate link condition '%v' with resource %v, error=%v", *link.Condition, name, err.Error()))
-				continue
-			}
-			switch resOut := out.(type) {
-			case bool:
-				if resOut {
-					finalLinks = append(finalLinks, &application.LinkInfo{
-						Title:       link.Title,
-						Url:         finalURL.String(),
-						Description: description, // Use the dereferenced value
-						IconClass:   iconClass,   // Use the dereferenced value
-					})
-				}
-			default:
-				errors = append(errors, fmt.Sprintf("link condition '%v' evaluated to non-boolean value for resource %v", *link.Condition, name))
-				continue
-			}
-		} else {
-			finalLinks = append(finalLinks, &application.LinkInfo{
-				Title:       link.Title,
-				Url:         finalURL.String(),
-				Description: description, // Use the dereferenced value
-				IconClass:   iconClass,   // Use the dereferenced value
-			})
-		}
+		finalLinks = append(finalLinks, &application.LinkInfo{
+			Title:       ptr.To(link.Title),
+			Url:         ptr.To(finalURL.String()),
+			Description: link.Description,
+			IconClass:   link.IconClass,
+		})
 	}
 	return &application.LinksResponse{
 		Items: finalLinks,

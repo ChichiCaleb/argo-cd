@@ -2399,11 +2399,12 @@ func (o *ResourceOverride) GetActions() (ResourceActions, error) {
 // TODO: describe this type
 // TODO: describe members of this type
 type ResourceActions struct {
-	state              protoimpl.MessageState     `json:"-"` // Ignore this field in JSON
-	sizeCache          protoimpl.SizeCache        `json:"-"` // Ignore this field in JSON
-	unknownFields      protoimpl.UnknownFields    `json:"-"` // Ignore this field in JSON
-	ActionDiscoveryLua string                     `json:"discovery.lua,omitempty" yaml:"discovery.lua,omitempty" protobuf:"bytes,1,opt,name=actionDiscoveryLua"`
-	Definitions        []ResourceActionDefinition `json:"definitions,omitempty" protobuf:"bytes,2,rep,name=definitions"`
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	ActionDiscoveryLua  string                     `json:"discovery.lua,omitempty" yaml:"discovery.lua,omitempty" protobuf:"bytes,1,opt,name=actionDiscoveryLua"`
+	Definitions         []ResourceActionDefinition `json:"definitions,omitempty" protobuf:"bytes,2,rep,name=definitions"`
+	MergeBuiltinActions bool                       `json:"mergeBuiltinActions,omitempty" yaml:"mergeBuiltinActions,omitempty" protobuf:"bytes,3,opt,name=mergeBuiltinActions"`
 }
 
 // TODO: describe this type

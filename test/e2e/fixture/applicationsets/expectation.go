@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/argoproj/gitops-engine/pkg/diff"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/google/go-cmp/cmp"
