@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -20,12 +17,6 @@ import (
 )
 
 func TestListMergeGenerator(t *testing.T) {
-	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex
-	opts := cmp.Options{
-		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
-	}
-
 	generateExpectedApp := func(name, nameSuffix string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -111,7 +102,7 @@ func TestListMergeGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -124,7 +115,7 @@ func TestListMergeGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedAppsNewNamespace, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedAppsNewNamespace)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -139,19 +130,14 @@ func TestListMergeGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedAppsNewMetadata, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedAppsNewMetadata)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedAppsNewNamespace))
 }
 
 func TestClusterMergeGenerator(t *testing.T) {
-	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex
-	opts := cmp.Options{
-		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
-	}
 	generateExpectedApp := func(cluster, name, nameSuffix string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -262,7 +248,7 @@ func TestClusterMergeGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps)).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -275,7 +261,7 @@ func TestClusterMergeGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedAppsNewNamespace, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedAppsNewNamespace)).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -290,20 +276,14 @@ func TestClusterMergeGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedAppsNewMetadata, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedAppsNewMetadata)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedAppsNewNamespace, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedAppsNewNamespace))
 }
 
 func TestMergeTerminalMergeGeneratorSelector(t *testing.T) {
-	// Define fields to ignore for protobuf types
-	// To avoid copying impl.MessageState sync.Mutex
-	opts := cmp.Options{
-		cmpopts.IgnoreFields(argov1alpha1.Application{}, "state", "sizeCache", "unknownFields"),
-	}
-
 	generateExpectedApp := func(name, nameSuffix string) argov1alpha1.Application {
 		return argov1alpha1.Application{
 			TypeMeta: metav1.TypeMeta{
@@ -408,7 +388,7 @@ func TestMergeTerminalMergeGeneratorSelector(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2)).
 
 		// Update the ApplicationSetTerminalGenerator LabelSelector, and verify the Applications are deleted and created
 		When().
@@ -441,17 +421,17 @@ func TestMergeTerminalMergeGeneratorSelector(t *testing.T) {
 					},
 				},
 			})
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps2, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps2)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1)).
 
 		// Set ApplyNestedSelector to false and verify all Applications are created
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.ApplyNestedSelectors = false
-		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsExist(expectedApps2, opts)).
+		}).Then().Expect(appsetfixture.ApplicationsExist(expectedApps1)).Expect(appsetfixture.ApplicationsExist(expectedApps2)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1, opts)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2, opts))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist(expectedApps1)).Expect(appsetfixture.ApplicationsDoNotExist(expectedApps2))
 }
 
 func toAPIExtensionsJSON(t *testing.T, g interface{}) *apiextensionsv1.JSON {

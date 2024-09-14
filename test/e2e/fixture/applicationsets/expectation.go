@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -57,7 +58,7 @@ func Error(message, err string) Expectation {
 
 // ApplicationsExist checks whether each of the 'expectedApps' exist in the namespace, and are
 // equivalent to provided values.
-func ApplicationsExist(expectedApps []v1alpha1.Application, opts cmp.Options) Expectation {
+func ApplicationsExist(expectedApps []v1alpha1.Application) Expectation {
 	return func(c *Consequences) (state, string) {
 		for _, expectedApp := range expectedApps {
 			foundApp := c.app(expectedApp.Name)
@@ -65,8 +66,8 @@ func ApplicationsExist(expectedApps []v1alpha1.Application, opts cmp.Options) Ex
 				return pending, fmt.Sprintf("missing app '%s'", expectedApp.QualifiedName())
 			}
 
-			if !appsAreEqual(expectedApp, *foundApp, opts) { // Pass 'opts' to appsAreEqual
-				diff, err := getDiff(filterFields(expectedApp), filterFields(*foundApp), opts)
+			if !appsAreEqual(expectedApp, *foundApp) {
+				diff, err := getDiff(filterFields(expectedApp), filterFields(*foundApp))
 				if err != nil {
 					return failed, err.Error()
 				}
@@ -81,7 +82,7 @@ func ApplicationsExist(expectedApps []v1alpha1.Application, opts cmp.Options) Ex
 
 // ApplicationSetHasConditions checks whether each of the 'expectedConditions' exist in the ApplicationSet status, and are
 // equivalent to provided values.
-func ApplicationSetHasConditions(applicationSetName string, expectedConditions []v1alpha1.ApplicationSetCondition, opts cmp.Options) Expectation {
+func ApplicationSetHasConditions(applicationSetName string, expectedConditions []v1alpha1.ApplicationSetCondition) Expectation {
 	return func(c *Consequences) (state, string) {
 		// retrieve the application set
 		foundApplicationSet := c.applicationSet(applicationSetName)
@@ -90,27 +91,23 @@ func ApplicationSetHasConditions(applicationSetName string, expectedConditions [
 		}
 
 		if !conditionsAreEqual(&expectedConditions, &foundApplicationSet.Status.Conditions) {
-			diff, err := getConditionDiff(expectedConditions, foundApplicationSet.Status.Conditions, opts)
+			diff, err := getConditionDiff(expectedConditions, foundApplicationSet.Status.Conditions)
 			if err != nil {
 				return failed, err.Error()
 			}
-			return pending, fmt.Sprintf("application set conditions are not equal: expected: %v, diff: %s\n", expectedConditions, diff)
+			return pending, fmt.Sprintf("application set conditions are not equal: '%s', diff: %s\n", expectedConditions, diff)
 		}
 		return succeeded, "application set successfully found"
 	}
 }
 
-// ApplicationsDoNotExist checks whether each of the 'expectedApps' does not exist in the namespace.
-// It now accepts additional options for comparison.
-func ApplicationsDoNotExist(expectedApps []v1alpha1.Application, opts cmp.Options) Expectation {
+// ApplicationsDoNotExist checks that each of the 'expectedApps' no longer exist in the namespace
+func ApplicationsDoNotExist(expectedApps []v1alpha1.Application) Expectation {
 	return func(c *Consequences) (state, string) {
 		for _, expectedApp := range expectedApps {
 			foundApp := c.app(expectedApp.Name)
 			if foundApp != nil {
-				// If opts are used in comparison, integrate them here
-				if !appsAreEqual(expectedApp, *foundApp, opts) {
-					return pending, fmt.Sprintf("app '%s' should no longer exist", expectedApp.QualifiedName())
-				}
+				return pending, fmt.Sprintf("app '%s' should no longer exist", expectedApp.QualifiedName())
 			}
 		}
 
@@ -142,8 +139,9 @@ func pods(namespace string) (*corev1.PodList, error) {
 }
 
 // getDiff returns a string containing a comparison result of two applications (for test output/debug purposes)
-func getDiff(orig, new v1alpha1.Application, opts cmp.Options) (string, error) {
-	diff := cmp.Diff(orig, new, opts) // cmp.Diff returns only one value
+func getDiff(orig, new v1alpha1.Application) (string, error) {
+	// Use cmp.Diff to get the difference, ignoring protoimpl.MessageState
+	diff := cmp.Diff(orig, new, cmpopts.IgnoreFields(v1alpha1.Application{}, "protoimpl.MessageState"))
 	if diff == "" {
 		return "", nil
 	}
@@ -151,9 +149,9 @@ func getDiff(orig, new v1alpha1.Application, opts cmp.Options) (string, error) {
 }
 
 // getConditionDiff returns a string containing a comparison result of two slices of ApplicationSetCondition (for test output/debug purposes).
-func getConditionDiff(orig, new []v1alpha1.ApplicationSetCondition, opts cmp.Options) (string, error) {
-	// Use cmp.Diff to get the difference between orig and new conditions with provided options
-	diff := cmp.Diff(orig, new, opts)
+func getConditionDiff(orig, new []v1alpha1.ApplicationSetCondition) (string, error) {
+	// Use cmp.Diff to get the difference between orig and new conditions, ignoring protoimpl.MessageState
+	diff := cmp.Diff(orig, new, cmpopts.IgnoreFields(v1alpha1.ApplicationSetCondition{}, "protoimpl.MessageState"))
 	if diff == "" {
 		return "", nil
 	}
@@ -209,11 +207,11 @@ func filterConditionFields(input *[]v1alpha1.ApplicationSetCondition) *[]v1alpha
 }
 
 // appsAreEqual compares two applications and uses opts for comparison.
-func appsAreEqual(app1, app2 v1alpha1.Application, opts cmp.Options) bool {
-	return cmp.Equal(app1, app2, opts)
+func appsAreEqual(app1, app2 v1alpha1.Application) bool {
+	return cmp.Equal(app1, app2, cmpopts.IgnoreFields(v1alpha1.Application{}, "protoimpl.MessageState"))
 }
 
 // conditionsAreEqual returns true if the appset status conditions are equal, comparing only fields of interest
 func conditionsAreEqual(one, two *[]v1alpha1.ApplicationSetCondition) bool {
-	return reflect.DeepEqual(filterConditionFields(one), filterConditionFields(two))
+	return cmp.Equal(filterConditionFields(one), filterConditionFields(two), cmpopts.IgnoreFields(v1alpha1.ApplicationSetCondition{}, "protoimpl.MessageState"))
 }
