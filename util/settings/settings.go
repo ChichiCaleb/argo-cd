@@ -1057,14 +1057,14 @@ func (mgr *SettingsManager) appendResourceOverridesFromSplitKeys(cmData map[stri
 			if err != nil {
 				return err
 			}
-			overrideVal.IgnoreDifferences = overrideIgnoreDiff
+			overrideVal.IgnoreDifferences = *overrideIgnoreDiff
 		case "ignoreResourceUpdates":
 			overrideIgnoreUpdate := &v1alpha1.OverrideIgnoreDiff{}
 			err := yaml.Unmarshal([]byte(v), overrideIgnoreUpdate)
 			if err != nil {
 				return err
 			}
-			overrideVal.IgnoreResourceUpdates = overrideIgnoreUpdate
+			overrideVal.IgnoreResourceUpdates = *overrideIgnoreUpdate
 		case "knownTypeFields":
 			var knownTypeFields []v1alpha1.KnownTypeField
 			err := yaml.Unmarshal([]byte(v), &knownTypeFields)

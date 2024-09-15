@@ -31,11 +31,11 @@ const (
 	actionDiscoveryScriptFile = "discovery.lua"
 )
 
-type ResourceHealthOverrides map[string]appv1.ResourceOverride
+type ResourceHealthOverrides map[string]*appv1.ResourceOverride
 
 func (overrides ResourceHealthOverrides) GetResourceHealth(obj *unstructured.Unstructured) (*health.HealthStatus, error) {
 	luaVM := VM{
-		ResourceOverrides: overrides,
+		ResourceOverrides: overrides, // Directly use the existing map
 	}
 	script, useOpenLibs, err := luaVM.GetHealthScript(obj)
 	if err != nil {
@@ -44,7 +44,7 @@ func (overrides ResourceHealthOverrides) GetResourceHealth(obj *unstructured.Uns
 	if script == "" {
 		return nil, nil
 	}
-	// enable/disable the usage of lua standard library
+	// Enable/disable the usage of Lua standard library
 	luaVM.UseOpenLibs = useOpenLibs
 	result, err := luaVM.ExecuteHealthLua(obj, script)
 	if err != nil {

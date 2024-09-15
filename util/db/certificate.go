@@ -304,9 +304,13 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 	}
 
 	// Convert the slice of pointers to a slice of values
-	createdValues := make([]*appsv1.RepositoryCertificate, len(created))
+	createdValues := make([]appsv1.RepositoryCertificate, len(created))
 	for i, certPtr := range created {
-		createdValues[i] = certPtr
+		if certPtr != nil {
+			createdValues[i] = *certPtr // Dereference the pointer
+		} else {
+			return nil, fmt.Errorf("nil pointer encountered in created certificates")
+		}
 	}
 
 	return &appsv1.RepositoryCertificateList{Items: createdValues}, nil

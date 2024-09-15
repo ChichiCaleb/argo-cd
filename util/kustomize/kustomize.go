@@ -177,14 +177,12 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 		if len(opts.Replicas) > 0 {
 			args := []string{"edit", "set", "replicas"}
 			for _, replica := range opts.Replicas {
-				// Create a local copy of the replica to avoid copying locks
-				localReplica := *replica
-
-				count, err := localReplica.GetIntCount()
+				// No need to dereference if `replica` is not a pointer
+				count, err := replica.GetIntCount()
 				if err != nil {
 					return nil, nil, nil, err
 				}
-				arg := fmt.Sprintf("%s=%d", localReplica.Name, count)
+				arg := fmt.Sprintf("%s=%d", replica.Name, count)
 				args = append(args, arg)
 			}
 
