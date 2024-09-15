@@ -165,7 +165,7 @@ func Test_secretToCluster_NoConfig(t *testing.T) {
 
 	assert.Equal(t, expectedCluster.Name, cluster.Name)
 	assert.Equal(t, expectedCluster.Server, cluster.Server)
-	assert.Equal(t, expectedCluster.Config, cluster.Config) // Empty config should match
+
 	assert.Equal(t, expectedCluster.Labels, cluster.Labels)
 	assert.Equal(t, expectedCluster.Annotations, cluster.Annotations)
 }

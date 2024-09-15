@@ -117,7 +117,7 @@ func TestSimpleListGeneratorExternalNamespace(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -127,7 +127,7 @@ func TestSimpleListGeneratorExternalNamespace(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -143,14 +143,14 @@ func TestSimpleListGeneratorExternalNamespace(t *testing.T) {
 			appset.Spec.Template.Labels = map[string]string{
 				"label-key": "label-value",
 			}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// verify the ApplicationSet status conditions were set correctly
 		Expect(appsetfixture.ApplicationSetHasConditions("simple-list-generator-external", ExpectedConditions)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewMetadata}))
 }
 
 func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
@@ -244,7 +244,7 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppExternalNamespace2})).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace).
 		CreateNamespace(externalNamespace).Create(v1alpha1.ApplicationSet{
@@ -279,11 +279,11 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
-		Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+		Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppExternalNamespace2})).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace).
 		Then().
@@ -295,11 +295,11 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
-		Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+		Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppExternalNamespace2})).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace).
 		Then().
@@ -317,26 +317,26 @@ func TestSimpleListGeneratorExternalNamespaceNoConflict(t *testing.T) {
 			appset.Spec.Template.Labels = map[string]string{
 				"label-key": "label-value",
 			}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// verify the ApplicationSet status conditions were set correctly
 		Expect(appsetfixture.ApplicationSetHasConditions("simple-list-generator-external", ExpectedConditions)).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
-		Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+		Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppExternalNamespace2})).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace).
 		Then().
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 		When().
 		SwitchToExternalNamespace(utils.ArgoCDExternalNamespace2).
 		Then().
-		Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppExternalNamespace2})).
+		Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppExternalNamespace2})).
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppExternalNamespace2}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedAppExternalNamespace2}))
 }
 
 func TestSimpleListGenerator(t *testing.T) {
@@ -398,7 +398,7 @@ func TestSimpleListGenerator(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -408,7 +408,7 @@ func TestSimpleListGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -420,14 +420,14 @@ func TestSimpleListGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// verify the ApplicationSet status conditions were set correctly
 		Expect(appsetfixture.ApplicationSetHasConditions("simple-list-generator", ExpectedConditions)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewMetadata}))
 }
 
 func TestSimpleListGeneratorGoTemplate(t *testing.T) {
@@ -490,7 +490,7 @@ func TestSimpleListGeneratorGoTemplate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -500,7 +500,7 @@ func TestSimpleListGeneratorGoTemplate(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -512,14 +512,14 @@ func TestSimpleListGeneratorGoTemplate(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// verify the ApplicationSet status conditions were set correctly
 		Expect(appsetfixture.ApplicationSetHasConditions("simple-list-generator", ExpectedConditions)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewMetadata}))
 }
 
 func TestRenderHelmValuesObject(t *testing.T) {
@@ -591,10 +591,10 @@ func TestRenderHelmValuesObject(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedApp}))
 }
 
 func TestTemplatePatch(t *testing.T) {
@@ -692,7 +692,7 @@ func TestTemplatePatch(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -702,7 +702,7 @@ func TestTemplatePatch(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -714,14 +714,14 @@ func TestTemplatePatch(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// verify the ApplicationSet status conditions were set correctly
 		Expect(appsetfixture.ApplicationSetHasConditions("patch-template", ExpectedConditions)).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewMetadata}))
 }
 
 func TestUpdateHelmValuesObject(t *testing.T) {
@@ -803,10 +803,10 @@ func TestUpdateHelmValuesObject(t *testing.T) {
 			}
 		}).
 		Then().
-		Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+		Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 		When().
 		// Delete the ApplicationSet, and verify it deletes the Applications
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedApp}))
 }
 
 func TestSyncPolicyCreateUpdate(t *testing.T) {
@@ -872,7 +872,7 @@ func TestSyncPolicyCreateUpdate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -882,7 +882,7 @@ func TestSyncPolicyCreateUpdate(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template
 		// Update as well the policy
@@ -904,14 +904,14 @@ func TestSyncPolicyCreateUpdate(t *testing.T) {
 			appset.Spec.SyncPolicy = &argov1alpha1.ApplicationSetSyncPolicy{
 				ApplicationsSync: &applicationsSyncPolicy,
 			}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// Update the list and remove element
 		// As policy is create-update, app deletion must not be reflected
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Generators = []v1alpha1.ApplicationSetGenerator{}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// verify the ApplicationSet status conditions were set correctly
 		Expect(appsetfixture.ApplicationSetHasConditions("sync-policy-create-update", ExpectedConditions)).
@@ -920,7 +920,7 @@ func TestSyncPolicyCreateUpdate(t *testing.T) {
 		// As policy is create-update, AppSet controller will remove all generated applications's ownerReferences on delete AppSet
 		// So AppSet deletion will be reflected, but all the applications it generates will still exist
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata}))
+		Delete().Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata}))
 }
 
 func TestSyncPolicyCreateDelete(t *testing.T) {
@@ -982,7 +982,7 @@ func TestSyncPolicyCreateDelete(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -992,7 +992,7 @@ func TestSyncPolicyCreateDelete(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template
 		// Update as well the policy
@@ -1005,21 +1005,21 @@ func TestSyncPolicyCreateDelete(t *testing.T) {
 			appset.Spec.SyncPolicy = &argov1alpha1.ApplicationSetSyncPolicy{
 				ApplicationsSync: &applicationsSyncPolicy,
 			}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the list and remove element
 		// As policy is create-delete, app deletion must be reflected
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Generators = []v1alpha1.ApplicationSetGenerator{}
-		}).Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// verify the ApplicationSet status conditions were set correctly
 		Expect(appsetfixture.ApplicationSetHasConditions("sync-policy-create-delete", ExpectedConditions)).
 
 		// Delete the ApplicationSet
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewNamespace}))
 }
 
 func TestSyncPolicyCreateOnly(t *testing.T) {
@@ -1084,7 +1084,7 @@ func TestSyncPolicyCreateOnly(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -1094,7 +1094,7 @@ func TestSyncPolicyCreateOnly(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template
 		// Update as well the policy
@@ -1107,14 +1107,14 @@ func TestSyncPolicyCreateOnly(t *testing.T) {
 			appset.Spec.SyncPolicy = &argov1alpha1.ApplicationSetSyncPolicy{
 				ApplicationsSync: &applicationsSyncPolicy,
 			}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the list and remove element
 		// As policy is create-only, app deletion must not be reflected
 		When().
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Generators = []v1alpha1.ApplicationSetGenerator{}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// verify the ApplicationSet status conditions were set correctly
 		Expect(appsetfixture.ApplicationSetHasConditions("sync-policy-create-only", ExpectedConditions)).
@@ -1123,7 +1123,7 @@ func TestSyncPolicyCreateOnly(t *testing.T) {
 		// As policy is create-update, AppSet controller will remove all generated applications's ownerReferences on delete AppSet
 		// So AppSet deletion will be reflected, but all the applications it generates will still exist
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace}))
+		Delete().Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace}))
 }
 
 func TestSimpleGitDirectoryGenerator(t *testing.T) {
@@ -1153,14 +1153,14 @@ func TestSimpleGitDirectoryGenerator(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("kustomize-guestbook"),
 		generateExpectedApp("helm-guestbook"),
 		generateExpectedApp("ksonnet-guestbook"),
 	}
 
-	var expectedAppsNewNamespace []argov1alpha1.Application
-	var expectedAppsNewMetadata []argov1alpha1.Application
+	var expectedAppsNewNamespace []*argov1alpha1.Application
+	var expectedAppsNewMetadata []*argov1alpha1.Application
 
 	appsetfixture.Given(t).
 		When().
@@ -1263,14 +1263,14 @@ func TestSimpleGitDirectoryGeneratorGoTemplate(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("kustomize-guestbook"),
 		generateExpectedApp("helm-guestbook"),
 		generateExpectedApp("ksonnet-guestbook"),
 	}
 
-	var expectedAppsNewNamespace []argov1alpha1.Application
-	var expectedAppsNewMetadata []argov1alpha1.Application
+	var expectedAppsNewNamespace []*argov1alpha1.Application
+	var expectedAppsNewMetadata []*argov1alpha1.Application
 
 	appsetfixture.Given(t).
 		When().
@@ -1396,7 +1396,7 @@ func TestSimpleGitDirectoryGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("guestbook"),
 	}
 	project := "gpg"
@@ -1496,7 +1496,7 @@ func TestSimpleGitDirectoryGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("guestbook"),
 	}
 
@@ -1583,13 +1583,13 @@ func TestSimpleGitFilesGenerator(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("engineering-dev-guestbook"),
 		generateExpectedApp("engineering-prod-guestbook"),
 	}
 
-	var expectedAppsNewNamespace []argov1alpha1.Application
-	var expectedAppsNewMetadata []argov1alpha1.Application
+	var expectedAppsNewNamespace []*argov1alpha1.Application
+	var expectedAppsNewMetadata []*argov1alpha1.Application
 
 	appsetfixture.Given(t).
 		When().
@@ -1715,7 +1715,7 @@ func TestSimpleGitFilesGeneratorGPGEnabledUnsignedCommits(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("engineering-dev-guestbook"),
 		generateExpectedApp("engineering-prod-guestbook"),
 	}
@@ -1817,7 +1817,7 @@ func TestSimpleGitFilesGeneratorGPGEnabledWithoutKnownKeys(t *testing.T) {
 
 	str, _ := rand.RandString(1)
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("engineering-dev-guestbook"),
 		generateExpectedApp("engineering-prod-guestbook"),
 	}
@@ -1898,13 +1898,13 @@ func TestSimpleGitFilesGeneratorGoTemplate(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("engineering-dev-guestbook"),
 		generateExpectedApp("engineering-prod-guestbook"),
 	}
 
-	var expectedAppsNewNamespace []argov1alpha1.Application
-	var expectedAppsNewMetadata []argov1alpha1.Application
+	var expectedAppsNewNamespace []*argov1alpha1.Application
+	var expectedAppsNewMetadata []*argov1alpha1.Application
 
 	appsetfixture.Given(t).
 		When().
@@ -2378,7 +2378,7 @@ func TestSimpleSCMProviderGenerator(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp}))
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp}))
 }
 
 func TestSimpleSCMProviderGeneratorGoTemplate(t *testing.T) {
@@ -2454,7 +2454,7 @@ func TestSimpleSCMProviderGeneratorGoTemplate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp}))
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp}))
 }
 
 func TestSCMProviderGeneratorSCMProviderNotAllowed(t *testing.T) {
@@ -2524,7 +2524,7 @@ func TestSCMProviderGeneratorSCMProviderNotAllowed(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedApp})).
 		And(func() {
 			// app should be listed
 			output, err := fixture.RunCli("appset", "get", "scm-provider-generator-scm-provider-not-allowed")
@@ -2593,11 +2593,11 @@ func TestCustomApplicationFinalizers(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedApp}))
 }
 
 func TestCustomApplicationFinalizersGoTemplate(t *testing.T) {
@@ -2661,11 +2661,11 @@ func TestCustomApplicationFinalizersGoTemplate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedApp}))
 }
 
 func githubPullMockHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
@@ -2779,7 +2779,7 @@ func TestSimplePullRequestGenerator(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp}))
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp}))
 }
 
 func TestSimplePullRequestGeneratorGoTemplate(t *testing.T) {
@@ -2862,7 +2862,7 @@ func TestSimplePullRequestGeneratorGoTemplate(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp}))
+	}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp}))
 }
 
 func TestPullRequestGeneratorNotAllowedSCMProvider(t *testing.T) {
@@ -2940,7 +2940,7 @@ func TestPullRequestGeneratorNotAllowedSCMProvider(t *testing.T) {
 				},
 			},
 		},
-	}).Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedApp})).
+	}).Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedApp})).
 		And(func() {
 			// app should be listed
 			output, err := fixture.RunCli("appset", "get", "pull-request-generator-not-allowed-scm")
@@ -2977,11 +2977,11 @@ func TestGitGeneratorPrivateRepo(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("https-kustomize-base"),
 	}
 
-	var expectedAppsNewNamespace []argov1alpha1.Application
+	var expectedAppsNewNamespace []*argov1alpha1.Application
 
 	appsetfixture.Given(t).
 		When().
@@ -3053,11 +3053,11 @@ func TestGitGeneratorPrivateRepoGoTemplate(t *testing.T) {
 		}
 	}
 
-	expectedApps := []argov1alpha1.Application{
+	expectedApps := []*argov1alpha1.Application{
 		generateExpectedApp("https-kustomize-base"),
 	}
 
-	var expectedAppsNewNamespace []argov1alpha1.Application
+	var expectedAppsNewNamespace []*argov1alpha1.Application
 
 	appsetfixture.Given(t).
 		When().

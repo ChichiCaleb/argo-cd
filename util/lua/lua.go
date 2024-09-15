@@ -55,7 +55,7 @@ func (overrides ResourceHealthOverrides) GetResourceHealth(obj *unstructured.Uns
 
 // VM Defines a struct that implements the luaVM
 type VM struct {
-	ResourceOverrides map[string]appv1.ResourceOverride
+	ResourceOverrides map[string]*appv1.ResourceOverride
 	// UseOpenLibs flag to enable open libraries. Libraries are disabled by default while running, but enabled during testing to allow the use of print statements
 	UseOpenLibs bool
 }
@@ -134,26 +134,22 @@ func (vm VM) ExecuteHealthLua(obj *unstructured.Unstructured, script string) (*h
 
 // GetHealthScript attempts to read lua script from config and then filesystem for that resource
 func (vm VM) GetHealthScript(obj *unstructured.Unstructured) (string, bool, error) {
-	// first, search the gvk as is in the ResourceOverrides
 	key := GetConfigMapKey(obj.GroupVersionKind())
 
-	if script, ok := vm.ResourceOverrides[key]; ok && script.HealthLua != "" {
+	// Change ResourceOverrides to be map of pointers to ResourceOverride
+	if script, ok := vm.ResourceOverrides[key]; ok && script != nil && script.HealthLua != "" {
 		return script.HealthLua, script.UseOpenLibs, nil
 	}
 
-	// if not found as is, perhaps it matches wildcard entries in the configmap
 	wildcardKey := GetWildcardConfigMapKey(vm, obj.GroupVersionKind())
 
 	if wildcardKey != "" {
-		if wildcardScript, ok := vm.ResourceOverrides[wildcardKey]; ok && wildcardScript.HealthLua != "" {
+		if wildcardScript, ok := vm.ResourceOverrides[wildcardKey]; ok && wildcardScript != nil && wildcardScript.HealthLua != "" {
 			return wildcardScript.HealthLua, wildcardScript.UseOpenLibs, nil
 		}
 	}
 
-	// if not found in the ResourceOverrides at all, search it as is in the built-in scripts
-	// (as built-in scripts are files in folders, named after the GVK, currently there is no wildcard support for them)
 	builtInScript, err := vm.getPredefinedLuaScripts(key, healthScriptFile)
-	// standard libraries will be enabled for all built-in scripts
 	return builtInScript, true, err
 }
 
@@ -279,13 +275,16 @@ func (vm VM) ExecuteResourceActionDiscovery(obj *unstructured.Unstructured, scri
 	if len(scripts) == 0 {
 		return nil, fmt.Errorf("no action discovery script provided")
 	}
-	availableActionsMap := make(map[string]appv1.ResourceAction)
+
+	// Use map of pointers to ResourceAction to avoid copying mutex
+	availableActionsMap := make(map[string]*appv1.ResourceAction)
 
 	for _, script := range scripts {
 		l, err := vm.runLua(obj, script)
 		if err != nil {
 			return nil, err
 		}
+
 		returnValue := l.Get(-1)
 		if returnValue.Type() == lua.LTTable {
 			jsonBytes, err := luajson.Encode(returnValue)
@@ -295,39 +294,44 @@ func (vm VM) ExecuteResourceActionDiscovery(obj *unstructured.Unstructured, scri
 			if noAvailableActions(jsonBytes) {
 				continue
 			}
+
 			actionsMap := make(map[string]interface{})
 			err = json.Unmarshal(jsonBytes, &actionsMap)
 			if err != nil {
 				return nil, fmt.Errorf("error unmarshaling action table: %w", err)
 			}
+
 			for key, value := range actionsMap {
-				resourceAction := appv1.ResourceAction{Name: key, Disabled: isActionDisabled(value)}
 				if _, exist := availableActionsMap[key]; exist {
 					continue
 				}
+
+				resourceAction := &appv1.ResourceAction{Name: key, Disabled: isActionDisabled(value)}
 				if emptyResourceActionFromLua(value) {
 					availableActionsMap[key] = resourceAction
 					continue
 				}
+
 				resourceActionBytes, err := json.Marshal(value)
 				if err != nil {
 					return nil, fmt.Errorf("error marshaling resource action: %w", err)
 				}
 
-				err = json.Unmarshal(resourceActionBytes, &resourceAction)
+				err = json.Unmarshal(resourceActionBytes, resourceAction)
 				if err != nil {
 					return nil, fmt.Errorf("error unmarshaling resource action: %w", err)
 				}
+
 				availableActionsMap[key] = resourceAction
 			}
 		} else {
-			return nil, fmt.Errorf(incorrectReturnType, "table", returnValue.Type().String())
+			return nil, fmt.Errorf("incorrect return type: expected table, got %s", returnValue.Type().String())
 		}
 	}
 
 	availableActions := make([]appv1.ResourceAction, 0, len(availableActionsMap))
 	for _, action := range availableActionsMap {
-		availableActions = append(availableActions, action)
+		availableActions = append(availableActions, *action) // Dereference the pointer
 	}
 
 	return availableActions, nil
@@ -364,9 +368,9 @@ func (vm VM) GetResourceActionDiscovery(obj *unstructured.Unstructured) ([]strin
 	key := GetConfigMapKey(obj.GroupVersionKind())
 	var discoveryScripts []string
 
-	// Check if there are resource overrides for the given key
+	// Change ResourceOverrides to be map of pointers to ResourceOverride
 	override, ok := vm.ResourceOverrides[key]
-	if ok && override.Actions != "" {
+	if ok && override != nil && override.Actions != "" {
 		actions, err := override.GetActions()
 		if err != nil {
 			return nil, err
@@ -394,8 +398,10 @@ func (vm VM) GetResourceActionDiscovery(obj *unstructured.Unstructured) ([]strin
 // GetResourceAction attempts to read lua script from config and then filesystem for that resource
 func (vm VM) GetResourceAction(obj *unstructured.Unstructured, actionName string) (appv1.ResourceActionDefinition, error) {
 	key := GetConfigMapKey(obj.GroupVersionKind())
+
+	// Change ResourceOverrides to be map of pointers to ResourceOverride
 	override, ok := vm.ResourceOverrides[key]
-	if ok && override.Actions != "" {
+	if ok && override != nil && override.Actions != "" {
 		actions, err := override.GetActions()
 		if err != nil {
 			return appv1.ResourceActionDefinition{}, err

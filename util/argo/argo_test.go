@@ -475,8 +475,7 @@ func TestFormatAppConditions(t *testing.T) {
 	// Convert conditions to a slice of pointers
 	var conditionPtrs []*argoappv1.ApplicationCondition
 	for i := range conditions {
-		cond := conditions[i]
-		conditionPtrs = append(conditionPtrs, &cond)
+		conditionPtrs = append(conditionPtrs, &conditions[i])
 	}
 
 	t.Run("Single Condition", func(t *testing.T) {
@@ -514,8 +513,8 @@ func TestFilterByProjects(t *testing.T) {
 	// Convert apps to a slice of pointers
 	var appPtrs []*argoappv1.Application
 	for i := range apps {
-		app := apps[i]
-		appPtrs = append(appPtrs, &app)
+		// Directly append the pointer to the app
+		appPtrs = append(appPtrs, apps[i])
 	}
 
 	t.Run("No apps in single project", func(t *testing.T) {
@@ -595,8 +594,8 @@ func TestFilterByRepo(t *testing.T) {
 	// Convert apps to a slice of pointers
 	var appPtrs []*argoappv1.Application
 	for i := range apps {
-		app := apps[i]
-		appPtrs = append(appPtrs, &app)
+		// Append the pointer from the original slice
+		appPtrs = append(appPtrs, apps[i])
 	}
 
 	t.Run("Empty filter", func(t *testing.T) {
@@ -1335,11 +1334,13 @@ func Test_GetRefSources(t *testing.T) {
 			return &repo, nil // Return pointer to repo
 		}, []string{}, false)
 
+		// Ensure repo is a pointer to avoid copying
 		expectedRefSource := argoappv1.RefTargetRevisionMapping{
 			"$source-1_2": &argoappv1.RefTarget{
-				Repo: repo,
+				Repo: &repo, // Use a pointer to repo
 			},
 		}
+
 		require.NoError(t, err)
 		assert.Len(t, refSources, 1)
 		assert.Equal(t, expectedRefSource, refSources)

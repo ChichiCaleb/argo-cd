@@ -131,9 +131,10 @@ func TestLuaResourceActionsScript(t *testing.T) {
 				require.NoError(t, err)
 
 				// Convert test.Result to a map for efficient lookup
-				expectedResultsMap := make(map[string]appsv1.ResourceAction)
+				expectedResultsMap := make(map[string]*appsv1.ResourceAction)
 				for _, res := range test.Result {
-					expectedResultsMap[res.Name] = res
+					resCopy := res // Create a local copy to avoid copying the lock
+					expectedResultsMap[resCopy.Name] = &resCopy
 				}
 
 				for i := range result {
@@ -143,7 +144,7 @@ func TestLuaResourceActionsScript(t *testing.T) {
 						t.Errorf("Unexpected result: %v", res)
 					} else {
 						// Compare expected result with actual result
-						assert.Equal(t, expectedRes, res)
+						assert.Equal(t, expectedRes, &res)
 					}
 				}
 			})

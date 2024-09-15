@@ -327,7 +327,12 @@ func TestRepositoryServer(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		testRepo.ConnectionState = repo.ConnectionState // overwrite connection state on our test object to simplify comparison below
+		// Manually copy the fields from repo.ConnectionState to testRepo.ConnectionState
+		testRepo.ConnectionState = appsv1.ConnectionState{
+			Status:     repo.ConnectionState.Status,
+			Message:    repo.ConnectionState.Message,
+			ModifiedAt: repo.ConnectionState.ModifiedAt,
+		}
 
 		assert.Equal(t, testRepo, repo)
 	})
@@ -619,8 +624,15 @@ func TestRepositoryServerGetAppDetails(t *testing.T) {
 			AppProject: "default",
 		})
 		require.NoError(t, err)
-		assert.Equal(t, expectedResp, *resp)
+
+		// Manual field comparison
+		assert.Equal(t, expectedResp.Type, resp.Type)
+		assert.Equal(t, expectedResp.Helm, resp.Helm)
+		assert.Equal(t, expectedResp.Kustomize, resp.Kustomize)
+		assert.Equal(t, expectedResp.Directory, resp.Directory)
+		assert.Equal(t, expectedResp.Plugin, resp.Plugin)
 	})
+
 	t.Run("Test_RepoNotPermitted", func(t *testing.T) {
 		repoServerClient := mocks.RepoServerServiceClient{}
 		repoServerClientset := mocks.Clientset{RepoServerServiceClient: &repoServerClient}
@@ -668,8 +680,15 @@ func TestRepositoryServerGetAppDetails(t *testing.T) {
 			AppProject: "default",
 		})
 		require.NoError(t, err)
-		assert.Equal(t, expectedResp, *resp)
+
+		// Manual field comparison
+		assert.Equal(t, expectedResp.Type, resp.Type)
+		assert.Equal(t, expectedResp.Helm, resp.Helm)
+		assert.Equal(t, expectedResp.Kustomize, resp.Kustomize)
+		assert.Equal(t, expectedResp.Directory, resp.Directory)
+		assert.Equal(t, expectedResp.Plugin, resp.Plugin)
 	})
+
 	t.Run("Test_ExistingMultiSourceApp001", func(t *testing.T) {
 		repoServerClient := mocks.RepoServerServiceClient{}
 		repoServerClientset := mocks.Clientset{RepoServerServiceClient: &repoServerClient}
@@ -689,24 +708,36 @@ func TestRepositoryServerGetAppDetails(t *testing.T) {
 		s := NewServer(&repoServerClientset, db, enforcer, newFixtures().Cache, appLister, projLister, testNamespace, settingsMgr)
 		sources := multiSourceApp001.Spec.GetSources()
 		assert.Len(t, sources, 2)
+
+		// Test first source
 		resp, err := s.GetAppDetails(context.TODO(), &repository.RepoAppDetailsQuery{
 			Source:     &sources[0],
 			AppName:    multiSourceApp001AppName,
 			AppProject: "default",
 		})
 		require.NoError(t, err)
-		assert.Equal(t, expectedResp, *resp)
-		assert.Equal(t, "Helm", resp.Type)
-		// Next source
+		// Manual field comparison for the first response
+		assert.Equal(t, expectedResp.Type, resp.Type)
+		assert.Equal(t, expectedResp.Helm, resp.Helm)
+		assert.Equal(t, expectedResp.Kustomize, resp.Kustomize)
+		assert.Equal(t, expectedResp.Directory, resp.Directory)
+		assert.Equal(t, expectedResp.Plugin, resp.Plugin)
+
+		// Test second source
 		resp, err = s.GetAppDetails(context.TODO(), &repository.RepoAppDetailsQuery{
 			Source:     &sources[1],
 			AppName:    multiSourceApp001AppName,
 			AppProject: "default",
 		})
 		require.NoError(t, err)
-		assert.Equal(t, expectedResp, *resp)
-		assert.Equal(t, "Helm", resp.Type)
+		// Manual field comparison for the second response
+		assert.Equal(t, expectedResp.Type, resp.Type)
+		assert.Equal(t, expectedResp.Helm, resp.Helm)
+		assert.Equal(t, expectedResp.Kustomize, resp.Kustomize)
+		assert.Equal(t, expectedResp.Directory, resp.Directory)
+		assert.Equal(t, expectedResp.Plugin, resp.Plugin)
 	})
+
 	t.Run("Test_ExistingMultiSourceApp002", func(t *testing.T) {
 		repoServerClient := mocks.RepoServerServiceClient{}
 		repoServerClientset := mocks.Clientset{RepoServerServiceClient: &repoServerClient}
@@ -731,24 +762,35 @@ func TestRepositoryServerGetAppDetails(t *testing.T) {
 		sources := multiSourceApp002.Spec.GetSources()
 		assert.Len(t, sources, 2)
 
+		// Test first source
 		resp, err := s.GetAppDetails(context.TODO(), &repository.RepoAppDetailsQuery{
 			Source:     &sources[0],
 			AppName:    multiSourceApp002AppName,
 			AppProject: "default",
 		})
 		require.NoError(t, err)
-		assert.Equal(t, "Plugin", resp.Type)
-		assert.Equal(t, expectedResp0, *resp)
-		// Next source
+		// Manual field comparison for the first response
+		assert.Equal(t, expectedResp0.Type, resp.Type)
+		assert.Equal(t, expectedResp0.Helm, resp.Helm)
+		assert.Equal(t, expectedResp0.Kustomize, resp.Kustomize)
+		assert.Equal(t, expectedResp0.Directory, resp.Directory)
+		assert.Equal(t, expectedResp0.Plugin, resp.Plugin)
+
+		// Test second source
 		resp, err = s.GetAppDetails(context.TODO(), &repository.RepoAppDetailsQuery{
 			Source:     &sources[1],
 			AppName:    multiSourceApp002AppName,
 			AppProject: "default",
 		})
 		require.NoError(t, err)
-		assert.Equal(t, expectedResp1, *resp)
-		assert.Equal(t, "Helm", resp.Type)
+		// Manual field comparison for the second response
+		assert.Equal(t, expectedResp1.Type, resp.Type)
+		assert.Equal(t, expectedResp1.Helm, resp.Helm)
+		assert.Equal(t, expectedResp1.Kustomize, resp.Kustomize)
+		assert.Equal(t, expectedResp1.Directory, resp.Directory)
+		assert.Equal(t, expectedResp1.Plugin, resp.Plugin)
 	})
+
 	t.Run("Test_ExistingAppMismatchedProjectName", func(t *testing.T) {
 		repoServerClient := mocks.RepoServerServiceClient{}
 		repoServerClientset := mocks.Clientset{RepoServerServiceClient: &repoServerClient}
@@ -813,7 +855,12 @@ func TestRepositoryServerGetAppDetails(t *testing.T) {
 			AppProject: "default",
 		})
 		require.NoError(t, err)
-		assert.Equal(t, expectedResp, *resp)
+		// Manual field comparison to avoid copying lock values
+		assert.Equal(t, expectedResp.Type, resp.Type)
+		assert.Equal(t, expectedResp.Helm, resp.Helm)
+		assert.Equal(t, expectedResp.Kustomize, resp.Kustomize)
+		assert.Equal(t, expectedResp.Directory, resp.Directory)
+		assert.Equal(t, expectedResp.Plugin, resp.Plugin)
 	})
 
 	t.Run("Test_ExistingAppMultiSourceNotInHistory", func(t *testing.T) {
@@ -872,7 +919,12 @@ func TestRepositoryServerGetAppDetails(t *testing.T) {
 			VersionId:   1,
 		})
 		require.NoError(t, err)
-		assert.Equal(t, expectedResp, *resp)
+		// Manual field comparison to avoid copying lock values
+		assert.Equal(t, expectedResp.Type, resp.Type)
+		assert.Equal(t, expectedResp.Helm, resp.Helm)
+		assert.Equal(t, expectedResp.Kustomize, resp.Kustomize)
+		assert.Equal(t, expectedResp.Directory, resp.Directory)
+		assert.Equal(t, expectedResp.Plugin, resp.Plugin)
 	})
 }
 

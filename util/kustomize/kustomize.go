@@ -177,11 +177,14 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 		if len(opts.Replicas) > 0 {
 			args := []string{"edit", "set", "replicas"}
 			for _, replica := range opts.Replicas {
-				count, err := replica.GetIntCount()
+				// Create a local copy of the replica to avoid copying locks
+				localReplica := *replica
+
+				count, err := localReplica.GetIntCount()
 				if err != nil {
 					return nil, nil, nil, err
 				}
-				arg := fmt.Sprintf("%s=%d", replica.Name, count)
+				arg := fmt.Sprintf("%s=%d", localReplica.Name, count)
 				args = append(args, arg)
 			}
 
@@ -266,7 +269,8 @@ func (k *kustomize) Build(opts *v1alpha1.ApplicationSourceKustomize, kustomizeOp
 				// Convert opts.Patches to interface{} to append
 				untypedPatches := make([]interface{}, len(opts.Patches))
 				for i, patch := range opts.Patches {
-					untypedPatches[i] = patch // Ensure that 'patch' is of type that does not involve copylocks
+					// Ensure that 'patch' is a pointer
+					untypedPatches[i] = patch // Use 'patch' as a pointer to avoid copying
 				}
 				patches = append(patches, untypedPatches...)
 				kustomization["patches"] = patches

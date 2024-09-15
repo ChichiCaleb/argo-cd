@@ -110,7 +110,7 @@ func TestListMergeGenerator(t *testing.T) {
 			for _, expectedApp := range expectedApps {
 				newExpectedApp := expectedApp.DeepCopy()
 				newExpectedApp.Spec.Destination.Namespace = "guestbook2"
-				expectedAppsNewNamespace = append(expectedAppsNewNamespace, *newExpectedApp)
+				expectedAppsNewNamespace = append(expectedAppsNewNamespace, newExpectedApp)
 			}
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
@@ -124,7 +124,7 @@ func TestListMergeGenerator(t *testing.T) {
 				expectedAppNewMetadata := expectedApp.DeepCopy()
 				expectedAppNewMetadata.ObjectMeta.Annotations = map[string]string{"annotation-key": "annotation-value"}
 				expectedAppNewMetadata.ObjectMeta.Labels = map[string]string{"label-key": "label-value"}
-				expectedAppsNewMetadata = append(expectedAppsNewMetadata, *expectedAppNewMetadata)
+				expectedAppsNewMetadata = append(expectedAppsNewMetadata, expectedAppNewMetadata)
 			}
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
@@ -256,7 +256,7 @@ func TestClusterMergeGenerator(t *testing.T) {
 			for _, expectedApp := range expectedApps {
 				newExpectedApp := expectedApp.DeepCopy()
 				newExpectedApp.Spec.Destination.Namespace = "guestbook2"
-				expectedAppsNewNamespace = append(expectedAppsNewNamespace, *newExpectedApp)
+				expectedAppsNewNamespace = append(expectedAppsNewNamespace, newExpectedApp)
 			}
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
@@ -270,7 +270,7 @@ func TestClusterMergeGenerator(t *testing.T) {
 				expectedAppNewMetadata := expectedApp.DeepCopy()
 				expectedAppNewMetadata.ObjectMeta.Annotations = map[string]string{"annotation-key": "annotation-value"}
 				expectedAppNewMetadata.ObjectMeta.Labels = map[string]string{"label-key": "label-value"}
-				expectedAppsNewMetadata = append(expectedAppsNewMetadata, *expectedAppNewMetadata)
+				expectedAppsNewMetadata = append(expectedAppsNewMetadata, expectedAppNewMetadata)
 			}
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {

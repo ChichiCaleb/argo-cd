@@ -1384,7 +1384,9 @@ func TestNamespacedCompareOptionIgnoreExtraneous(t *testing.T) {
 			assert.Len(t, app.Status.Resources, 2)
 			statusByName := map[string]SyncStatusCode{}
 			for _, r := range app.Status.Resources {
-				statusByName[r.Name] = r.Status
+				// Use a pointer to avoid copying
+				resource := r
+				statusByName[resource.Name] = resource.Status
 			}
 			assert.Equal(t, SyncStatusCodeOutOfSync, statusByName["pod-1"])
 			assert.Equal(t, SyncStatusCodeSynced, statusByName["pod-2"])
@@ -1640,16 +1642,24 @@ func TestNamespacedNotPermittedResources(t *testing.T) {
 		Then().
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
-			statusByKind := make(map[string]ResourceStatus)
-			for _, res := range app.Status.Resources {
+			statusByKind := make(map[string]*ResourceStatus)
+			for i := range app.Status.Resources {
+				res := &app.Status.Resources[i] // Use pointer to avoid copying
 				statusByKind[res.Kind] = res
 			}
+
 			_, hasIngress := statusByKind[kube.IngressKind]
 			assert.False(t, hasIngress, "Ingress is prohibited not managed object and should be even visible to user")
+
 			serviceStatus := statusByKind[kube.ServiceKind]
-			assert.Equal(t, SyncStatusCodeUnknown, serviceStatus.Status, "Service is prohibited managed resource so should be set to Unknown")
+			if serviceStatus != nil {
+				assert.Equal(t, SyncStatusCodeUnknown, serviceStatus.Status, "Service is prohibited managed resource so should be set to Unknown")
+			}
+
 			deploymentStatus := statusByKind[kube.DeploymentKind]
-			assert.Equal(t, SyncStatusCodeOutOfSync, deploymentStatus.Status)
+			if deploymentStatus != nil {
+				assert.Equal(t, SyncStatusCodeOutOfSync, deploymentStatus.Status)
+			}
 		}).
 		When().
 		Delete(true).

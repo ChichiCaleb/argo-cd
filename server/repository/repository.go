@@ -89,10 +89,10 @@ func createRBACObject(project string, repo string) string {
 // Get the connection state for a given repository URL by connecting to the
 // repo and evaluate the results. Unless forceRefresh is set to true, the
 // result may be retrieved out of the cache.
-func (s *Server) getConnectionState(ctx context.Context, url string, project string, forceRefresh bool) appsv1.ConnectionState {
+func (s *Server) getConnectionState(ctx context.Context, url string, project string, forceRefresh bool) *appsv1.ConnectionState {
 	if !forceRefresh {
 		if connectionState, err := s.cache.GetRepoConnectionState(url, project); err == nil {
-			return connectionState
+			return &connectionState // Return pointer
 		}
 	}
 	now := metav1.Now()
@@ -114,11 +114,11 @@ func (s *Server) getConnectionState(ctx context.Context, url string, project str
 			connectionState.Message = fmt.Sprintf("Unable to connect to repository: %v", err)
 		}
 	}
-	err = s.cache.SetRepoConnectionState(url, project, &connectionState)
+	err = s.cache.SetRepoConnectionState(url, project, &connectionState) // Pass pointer
 	if err != nil {
 		log.Warnf("getConnectionState cache set error %s: %v", url, err)
 	}
-	return connectionState
+	return &connectionState // Return pointer
 }
 
 // List returns list of repositories
@@ -321,7 +321,7 @@ func (s *Server) GetAppDetails(ctx context.Context, q *repositorypkg.RepoAppDeta
 			return nil, errPermissionDenied
 		}
 		// verify caller is not making a request with arbitrary source values which were not in our history
-		if !isSourceInHistory(app, *q.Source, q.SourceIndex, q.VersionId) {
+		if !isSourceInHistory(app, q.Source, q.SourceIndex, q.VersionId) { // Pass q.Source as pointer
 			return nil, errPermissionDenied
 		}
 	}
@@ -444,8 +444,12 @@ func (s *Server) CreateRepository(ctx context.Context, q *repositorypkg.RepoCrea
 		}
 
 		existing.Type = text.FirstNonEmpty(existing.Type, "git")
-		// repository ConnectionState may differ, so make consistent before testing
-		existing.ConnectionState = r.ConnectionState
+
+		// Update individual fields of ConnectionState instead of copying the entire struct
+		existing.ConnectionState.Status = r.ConnectionState.Status
+		existing.ConnectionState.Message = r.ConnectionState.Message
+		existing.ConnectionState.ModifiedAt = r.ConnectionState.ModifiedAt
+
 		if reflect.DeepEqual(existing, r) {
 			repo, err = existing, nil
 		} else if q.Upsert {
@@ -625,13 +629,13 @@ func (s *Server) isRepoPermittedInProject(ctx context.Context, repo string, proj
 
 // isSourceInHistory checks if the supplied application source is either our current application
 // source, or was something which we synced to previously.
-func isSourceInHistory(app *v1alpha1.Application, source v1alpha1.ApplicationSource, index int32, versionId int32) bool {
+func isSourceInHistory(app *v1alpha1.Application, source *v1alpha1.ApplicationSource, index int32, versionId int32) bool {
 	// We have to check if the spec is within the source or sources split
 	// and then iterate over the historical
 	if app.Spec.HasMultipleSources() {
 		appSources := app.Spec.GetSources()
-		for _, s := range appSources {
-			if source.Equals(&s) {
+		for i := range appSources {
+			if source.Equals(&appSources[i]) {
 				return true
 			}
 		}
@@ -646,10 +650,11 @@ func isSourceInHistory(app *v1alpha1.Application, source v1alpha1.ApplicationSou
 	// compare with the supplied source.targetRevision in the request. This is because
 	// history[].source.targetRevision is ambiguous (e.g. HEAD), whereas
 	// history[].revision will contain the explicit SHA
-	// In case of multi source apps, we have to check the specific versionID because users
+	// In case of multi-source apps, we have to check the specific versionID because users
 	// could have removed/added new sources and we cannot check all the versions due to that
-	for _, h := range app.Status.History {
-		// multi source revision
+	for i := range app.Status.History {
+		h := &app.Status.History[i]
+		// multi-source revision
 		if len(h.Sources) > 0 {
 			if h.ID == int64(versionId) {
 				if h.Revisions == nil {
@@ -660,7 +665,7 @@ func isSourceInHistory(app *v1alpha1.Application, source v1alpha1.ApplicationSou
 					return true
 				}
 			}
-		} else { // single source revision
+		} else { // single-source revision
 			h.Source.TargetRevision = h.Revision
 			if source.Equals(&h.Source) {
 				return true

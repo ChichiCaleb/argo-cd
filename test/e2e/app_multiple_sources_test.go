@@ -14,19 +14,21 @@ import (
 )
 
 func TestMultiSourceAppCreation(t *testing.T) {
-	sources := []ApplicationSource{{
-		RepoURL: RepoURL(RepoURLTypeFile),
-		Path:    guestbookPath,
-	}, {
-		RepoURL: RepoURL(RepoURLTypeFile),
-		Path:    "two-nice-pods",
-	}}
+	sources := []*ApplicationSource{ // Use pointers to avoid copying structs
+		{
+			RepoURL: RepoURL(RepoURLTypeFile),
+			Path:    guestbookPath,
+		},
+		{
+			RepoURL: RepoURL(RepoURLTypeFile),
+			Path:    "two-nice-pods",
+		},
+	}
+
 	ctx := appFixture.Given(t)
 	ctx.
 		Sources(sources).
-		When().
-		CreateMultiSourceAppFromFile().
-		Then().
+		When().CreateMultiSourceAppFromFile().Then().
 		And(func(app *Application) {
 			assert.Equal(t, Name(), app.Name)
 			for i, source := range app.Spec.GetSources() {
@@ -49,7 +51,8 @@ func TestMultiSourceAppCreation(t *testing.T) {
 		Expect(appFixture.Success("")).
 		And(func(app *Application) {
 			statusByName := map[string]SyncStatusCode{}
-			for _, r := range app.Status.Resources {
+			for i := range app.Status.Resources {
+				r := &app.Status.Resources[i] // Use pointer to avoid copying
 				statusByName[r.Name] = r.Status
 			}
 			// check if the app has 3 resources, guestbook and 2 pods
@@ -61,27 +64,29 @@ func TestMultiSourceAppCreation(t *testing.T) {
 }
 
 func TestMultiSourceAppWithHelmExternalValueFiles(t *testing.T) {
-	sources := []ApplicationSource{{
-		RepoURL: RepoURL(RepoURLTypeFile),
-		Ref:     "values",
-	}, {
-		RepoURL:        "https://github.com/argoproj/argocd-example-apps.git",
-		TargetRevision: "HEAD",
-		Path:           "helm-guestbook",
-		Helm: &ApplicationSourceHelm{
-			ReleaseName: "helm-guestbook",
-			ValueFiles: []string{
-				"$values/multiple-source-values/values.yaml",
+	sources := []*ApplicationSource{ // Use pointers to avoid copying structs
+		{
+			RepoURL: RepoURL(RepoURLTypeFile),
+			Ref:     "values",
+		},
+		{
+			RepoURL:        "https://github.com/argoproj/argocd-example-apps.git",
+			TargetRevision: "HEAD",
+			Path:           "helm-guestbook",
+			Helm: &ApplicationSourceHelm{
+				ReleaseName: "helm-guestbook",
+				ValueFiles: []string{
+					"$values/multiple-source-values/values.yaml",
+				},
 			},
 		},
-	}}
+	}
 	fmt.Printf("sources: %v\n", sources)
+
 	ctx := appFixture.Given(t)
 	ctx.
 		Sources(sources).
-		When().
-		CreateMultiSourceAppFromFile().
-		Then().
+		When().CreateMultiSourceAppFromFile().Then().
 		And(func(app *Application) {
 			assert.Equal(t, Name(), app.Name)
 			for i, source := range app.Spec.GetSources() {
@@ -104,32 +109,36 @@ func TestMultiSourceAppWithHelmExternalValueFiles(t *testing.T) {
 		Expect(appFixture.Success("")).
 		And(func(app *Application) {
 			statusByName := map[string]SyncStatusCode{}
-			for _, r := range app.Status.Resources {
+			for i := range app.Status.Resources {
+				r := &app.Status.Resources[i] // Use pointer to avoid copying
 				statusByName[r.Name] = r.Status
 			}
-			// check if the app has 3 resources, guestbook and 2 pods
+			// check if the app has 1 resource, helm-guestbook
 			assert.Len(t, statusByName, 1)
 			assert.Equal(t, SyncStatusCodeSynced, statusByName["helm-guestbook"])
 		})
 }
 
 func TestMultiSourceAppWithSourceOverride(t *testing.T) {
-	sources := []ApplicationSource{{
-		RepoURL: RepoURL(RepoURLTypeFile),
-		Path:    guestbookPath,
-	}, {
-		RepoURL: RepoURL(RepoURLTypeFile),
-		Path:    "two-nice-pods",
-	}, {
-		RepoURL: RepoURL(RepoURLTypeFile),
-		Path:    "multiple-source-values",
-	}}
+	sources := []*ApplicationSource{ // Use pointers to avoid copying structs
+		{
+			RepoURL: RepoURL(RepoURLTypeFile),
+			Path:    guestbookPath,
+		},
+		{
+			RepoURL: RepoURL(RepoURLTypeFile),
+			Path:    "two-nice-pods",
+		},
+		{
+			RepoURL: RepoURL(RepoURLTypeFile),
+			Path:    "multiple-source-values",
+		},
+	}
+
 	ctx := appFixture.Given(t)
 	ctx.
 		Sources(sources).
-		When().
-		CreateMultiSourceAppFromFile().
-		Then().
+		When().CreateMultiSourceAppFromFile().Then().
 		And(func(app *Application) {
 			assert.Equal(t, Name(), app.Name)
 			for i, source := range app.Spec.GetSources() {
@@ -152,7 +161,8 @@ func TestMultiSourceAppWithSourceOverride(t *testing.T) {
 		Expect(appFixture.Success("")).
 		And(func(app *Application) {
 			statusByName := map[string]SyncStatusCode{}
-			for _, r := range app.Status.Resources {
+			for i := range app.Status.Resources {
+				r := &app.Status.Resources[i] // Use pointer to avoid copying
 				statusByName[r.Name] = r.Status
 			}
 			// check if the app has 3 resources, guestbook and 2 pods

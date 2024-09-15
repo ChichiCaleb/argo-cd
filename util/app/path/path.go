@@ -92,6 +92,7 @@ func CheckOutOfBoundsSymlinks(basePath string) error {
 }
 
 // GetAppRefreshPaths returns the list of paths that should trigger a refresh for an application
+// GetAppRefreshPaths returns the list of paths that should trigger a refresh for an application
 func GetAppRefreshPaths(app *v1alpha1.Application) []string {
 	var paths []string
 	if val, ok := app.Annotations[v1alpha1.AnnotationKeyManifestGeneratePaths]; ok && val != "" {
@@ -104,7 +105,7 @@ func GetAppRefreshPaths(app *v1alpha1.Application) []string {
 			} else {
 				for _, source := range app.Spec.GetSources() {
 					// Use pointer to avoid copying structs
-					src := source
+					src := source // src is now a pointer
 					paths = append(paths, filepath.Clean(filepath.Join(src.Path, item)))
 				}
 			}

@@ -251,7 +251,6 @@ type changeInfo struct {
 // HandleEvent handles webhook events for repo push events
 func (a *ArgoCDWebhookHandler) HandleEvent(payload interface{}) {
 	webURLs, revision, change, touchedHead, changedFiles := affectedRevisionInfo(payload)
-	// NOTE: the webURL does not include the .git extension
 	if len(webURLs) == 0 {
 		log.Info("Ignoring webhook event")
 		return
@@ -284,13 +283,12 @@ func (a *ArgoCDWebhookHandler) HandleEvent(payload interface{}) {
 		return
 	}
 
-	// Skip any application that is neither in the control plane's namespace
-	// nor in the list of enabled namespaces.
-	var filteredApps []*v1alpha1.Application // Use pointers to avoid copying
-	for _, app := range apps.Items {
-		app := app // Create a new variable to avoid capturing the loop variable
+	// Use pointers to avoid copying
+	var filteredApps []*v1alpha1.Application
+	for i := range apps.Items {
+		app := &apps.Items[i] // Use a pointer to the item
 		if app.Namespace == a.ns || glob.MatchStringInList(a.appNs, app.Namespace, glob.REGEXP) {
-			filteredApps = append(filteredApps, &app) // Append pointer to avoid copying
+			filteredApps = append(filteredApps, app)
 		}
 	}
 
@@ -301,9 +299,9 @@ func (a *ArgoCDWebhookHandler) HandleEvent(payload interface{}) {
 			continue
 		}
 		for _, app := range filteredApps {
-			for _, source := range app.Spec.GetSources() {
-				source := source // Create a new variable to avoid capturing the loop variable
-				if sourceRevisionHasChanged(&source, revision, touchedHead) && sourceUsesURL(&source, webURL, repoRegexp) {
+			for i := range app.Spec.GetSources() {
+				source := &app.Spec.GetSources()[i] // Use a pointer to the item
+				if sourceRevisionHasChanged(source, revision, touchedHead) && sourceUsesURL(source, webURL, repoRegexp) {
 					refreshPaths := path.GetAppRefreshPaths(app)
 					if path.AppFilesHaveChanged(refreshPaths, changedFiles) {
 						namespacedAppInterface := a.appClientset.ArgoprojV1alpha1().Applications(app.ObjectMeta.Namespace)
@@ -322,7 +320,6 @@ func (a *ArgoCDWebhookHandler) HandleEvent(payload interface{}) {
 				}
 			}
 		}
-
 	}
 }
 

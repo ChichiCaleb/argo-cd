@@ -25,12 +25,12 @@ func (a ArgocdRepositoryMock) GetRepoCredsBySecretName(ctx context.Context, secr
 func Test_repoAsCredentials_GetAuth(t *testing.T) {
 	tests := []struct {
 		name    string
-		repo    v1alpha1.RepoCreds
+		repo    *v1alpha1.RepoCreds
 		want    *github_app_auth.Authentication
 		wantErr bool
 	}{
 		{name: "missing", wantErr: true},
-		{name: "found", repo: v1alpha1.RepoCreds{
+		{name: "found", repo: &v1alpha1.RepoCreds{
 			GithubAppId:             123,
 			GithubAppInstallationId: 456,
 			GithubAppPrivateKey:     "private key",
@@ -41,10 +41,11 @@ func Test_repoAsCredentials_GetAuth(t *testing.T) {
 			PrivateKey:        "private key",
 		}, wantErr: false},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := mock.Mock{}
-			m.On("GetRepoCredsBySecretName", mock.Anything, mock.Anything).Return(&tt.repo, nil)
+			m.On("GetRepoCredsBySecretName", mock.Anything, mock.Anything).Return(tt.repo, nil)
 			creds := NewAuthCredentials(ArgocdRepositoryMock{mock: &m})
 
 			auth, err := creds.GetAuthSecret(context.Background(), "https://github.com/foo")

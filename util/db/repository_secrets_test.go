@@ -551,13 +551,15 @@ func TestSecretsRepositoryBackend_CreateRepoCreds(t *testing.T) {
 		settingsMgr:   settings.NewSettingsManager(context.TODO(), clientset, testNamespace),
 	}}
 
-	testCases := []struct {
+	type testCase struct {
 		name      string
-		repoCreds appsv1.RepoCreds
-	}{
+		repoCreds *appsv1.RepoCreds
+	}
+
+	testCases := []*testCase{
 		{
 			name: "minimal_https_fields",
-			repoCreds: appsv1.RepoCreds{
+			repoCreds: &appsv1.RepoCreds{
 				URL:       "git@github.com:argoproj",
 				Username:  "someUsername",
 				Password:  "somePassword",
@@ -566,7 +568,7 @@ func TestSecretsRepositoryBackend_CreateRepoCreds(t *testing.T) {
 		},
 		{
 			name: "with_proxy",
-			repoCreds: appsv1.RepoCreds{
+			repoCreds: &appsv1.RepoCreds{
 				URL:      "git@github.com:kubernetes",
 				Username: "anotherUsername",
 				Password: "anotherPassword",
@@ -575,7 +577,7 @@ func TestSecretsRepositoryBackend_CreateRepoCreds(t *testing.T) {
 		},
 		{
 			name: "with_noProxy",
-			repoCreds: appsv1.RepoCreds{
+			repoCreds: &appsv1.RepoCreds{
 				URL:      "git@github.com:proxy",
 				Username: "anotherUsername",
 				Password: "anotherPassword",
@@ -584,15 +586,15 @@ func TestSecretsRepositoryBackend_CreateRepoCreds(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			output, err := testee.CreateRepoCreds(context.TODO(), &testCase.repoCreds)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output, err := testee.CreateRepoCreds(context.TODO(), tc.repoCreds)
 			require.NoError(t, err)
-			assert.Same(t, &testCase.repoCreds, output)
+			assert.Same(t, tc.repoCreds, output)
 
 			secret, err := clientset.CoreV1().Secrets(testNamespace).Get(
 				context.TODO(),
-				RepoURLToSecretName(credSecretPrefix, testCase.repoCreds.URL, ""),
+				RepoURLToSecretName(credSecretPrefix, tc.repoCreds.URL, ""),
 				metav1.GetOptions{},
 			)
 			require.NoError(t, err)
@@ -602,31 +604,31 @@ func TestSecretsRepositoryBackend_CreateRepoCreds(t *testing.T) {
 			assert.Equal(t, common.LabelValueSecretTypeRepoCreds, secret.Labels[common.LabelKeySecretType])
 
 			// Compare each field individually to avoid copylocks issues
-			assert.Equal(t, testCase.repoCreds.URL, string(secret.Data["url"]))
-			assert.Equal(t, testCase.repoCreds.Username, string(secret.Data["username"]))
-			assert.Equal(t, testCase.repoCreds.Password, string(secret.Data["password"]))
+			assert.Equal(t, tc.repoCreds.URL, string(secret.Data["url"]))
+			assert.Equal(t, tc.repoCreds.Username, string(secret.Data["username"]))
+			assert.Equal(t, tc.repoCreds.Password, string(secret.Data["password"]))
 
 			if enableOCI, err := strconv.ParseBool(string(secret.Data["githubAppPrivateKey"])); err == nil {
-				assert.Equal(t, strconv.FormatBool(testCase.repoCreds.EnableOCI), enableOCI)
+				assert.Equal(t, strconv.FormatBool(tc.repoCreds.EnableOCI), enableOCI)
 			}
 
-			assert.Equal(t, testCase.repoCreds.SSHPrivateKey, string(secret.Data["sshPrivateKey"]))
-			assert.Equal(t, testCase.repoCreds.TLSClientCertData, string(secret.Data["tlsClientCertData"]))
-			assert.Equal(t, testCase.repoCreds.TLSClientCertKey, string(secret.Data["tlsClientCertKey"]))
-			assert.Equal(t, testCase.repoCreds.Type, string(secret.Data["type"]))
-			assert.Equal(t, testCase.repoCreds.GithubAppPrivateKey, string(secret.Data["githubAppPrivateKey"]))
+			assert.Equal(t, tc.repoCreds.SSHPrivateKey, string(secret.Data["sshPrivateKey"]))
+			assert.Equal(t, tc.repoCreds.TLSClientCertData, string(secret.Data["tlsClientCertData"]))
+			assert.Equal(t, tc.repoCreds.TLSClientCertKey, string(secret.Data["tlsClientCertKey"]))
+			assert.Equal(t, tc.repoCreds.Type, string(secret.Data["type"]))
+			assert.Equal(t, tc.repoCreds.GithubAppPrivateKey, string(secret.Data["githubAppPrivateKey"]))
 
 			if githubAppPrivateKey, err := strconv.ParseInt(string(secret.Data["githubAppPrivateKey"]), 10, 64); err == nil {
-				assert.Equal(t, testCase.repoCreds.GithubAppId, githubAppPrivateKey)
+				assert.Equal(t, tc.repoCreds.GithubAppId, githubAppPrivateKey)
 			}
 
 			if githubAppID, err := strconv.ParseInt(string(secret.Data["githubAppId"]), 10, 64); err == nil {
-				assert.Equal(t, testCase.repoCreds.GithubAppInstallationId, githubAppID)
+				assert.Equal(t, tc.repoCreds.GithubAppInstallationId, githubAppID)
 			}
 
-			assert.Equal(t, testCase.repoCreds.GitHubAppEnterpriseBaseURL, string(secret.Data["githubAppEnterpriseUrl"]))
-			assert.Equal(t, testCase.repoCreds.Proxy, string(secret.Data["proxy"]))
-			assert.Equal(t, testCase.repoCreds.NoProxy, string(secret.Data["noProxy"]))
+			assert.Equal(t, tc.repoCreds.GitHubAppEnterpriseBaseURL, string(secret.Data["githubAppEnterpriseUrl"]))
+			assert.Equal(t, tc.repoCreds.Proxy, string(secret.Data["proxy"]))
+			assert.Equal(t, tc.repoCreds.NoProxy, string(secret.Data["noProxy"]))
 		})
 	}
 }

@@ -3,11 +3,10 @@ package applicationsets
 import (
 	"context"
 	"fmt"
-	
+	"reflect"
 	"strings"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/argoproj/gitops-engine/pkg/diff"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -140,22 +139,31 @@ func pods(namespace string) (*corev1.PodList, error) {
 
 // getDiff returns a string containing a comparison result of two applications (for test output/debug purposes)
 func getDiff(orig, new v1alpha1.Application) (string, error) {
-	// Use cmp.Diff to get the difference, ignoring protoimpl.MessageState
-	diff := cmp.Diff(orig, new, cmpopts.IgnoreFields(v1alpha1.Application{}, "protoimpl.MessageState"))
-	if diff == "" {
-		return "", nil
+	bytes, _, err := diff.CreateTwoWayMergePatch(orig, new, orig)
+	if err != nil {
+		return "", err
 	}
-	return diff, nil
+
+	return string(bytes), nil
 }
 
-// getConditionDiff returns a string containing a comparison result of two slices of ApplicationSetCondition (for test output/debug purposes).
+// getConditionDiff returns a string containing a comparison result of two ApplicationSetCondition (for test output/debug purposes)
 func getConditionDiff(orig, new []v1alpha1.ApplicationSetCondition) (string, error) {
-	// Use cmp.Diff to get the difference between orig and new conditions, ignoring protoimpl.MessageState
-	diff := cmp.Diff(orig, new, cmpopts.IgnoreFields(v1alpha1.ApplicationSetCondition{}, "protoimpl.MessageState"))
-	if diff == "" {
-		return "", nil
+	if len(orig) != len(new) {
+		return fmt.Sprintf("mismatch between condition sizes: %v %v", len(orig), len(new)), nil
 	}
-	return diff, nil
+
+	var bytes []byte
+
+	for index := range orig {
+		b, _, err := diff.CreateTwoWayMergePatch(orig[index], new[index], orig[index])
+		if err != nil {
+			return "", err
+		}
+		bytes = append(bytes, b...)
+	}
+
+	return string(bytes), nil
 }
 
 // filterFields returns a copy of Application, but with unnecessary (for testing) fields removed
@@ -206,12 +214,12 @@ func filterConditionFields(input *[]v1alpha1.ApplicationSetCondition) *[]v1alpha
 	return &filteredConditions
 }
 
-// appsAreEqual compares two applications and uses opts for comparison.
-func appsAreEqual(app1, app2 v1alpha1.Application) bool {
-	return cmp.Equal(app1, app2, cmpopts.IgnoreFields(v1alpha1.Application{}, "protoimpl.MessageState"))
+// appsAreEqual returns true if the apps are equal, comparing only fields of interest
+func appsAreEqual(one v1alpha1.Application, two v1alpha1.Application) bool {
+	return reflect.DeepEqual(filterFields(one), filterFields(two))
 }
 
 // conditionsAreEqual returns true if the appset status conditions are equal, comparing only fields of interest
 func conditionsAreEqual(one, two *[]v1alpha1.ApplicationSetCondition) bool {
-	return cmp.Equal(filterConditionFields(one), filterConditionFields(two), cmpopts.IgnoreFields(v1alpha1.ApplicationSetCondition{}, "protoimpl.MessageState"))
+	return reflect.DeepEqual(filterConditionFields(one), filterConditionFields(two))
 }

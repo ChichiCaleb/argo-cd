@@ -483,7 +483,7 @@ func GetRefSources(ctx context.Context, sources []*argoappv1.ApplicationSource, 
 					revision = revisions[i]
 				}
 				refSources[refKey] = &argoappv1.RefTarget{
-					Repo:           *repo, // Copying the repository is necessary, but avoid copying the repo struct itself
+					Repo:           repo, // Use pointer to avoid copying the repository
 					TargetRevision: revision,
 					Chart:          source.Chart,
 				}
@@ -559,15 +559,14 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 
 	if spec.HasMultipleSources() {
 		for _, source := range spec.Sources {
-			// Pass pointer to validateSourcePermissions
-			condition := validateSourcePermissions(&source, spec.HasMultipleSources())
+			// Use a pointer to avoid copying the source struct
+			condition := validateSourcePermissions(source, spec.HasMultipleSources())
 			if len(condition) > 0 {
 				conditions = append(conditions, condition...)
 				return conditions, nil
 			}
 
-			// Pass value to IsSourcePermitted
-			if !proj.IsSourcePermitted(source) {
+			if !proj.IsSourcePermitted(&source) {
 				conditions = append(conditions, argoappv1.ApplicationCondition{
 					Type:    argoappv1.ApplicationConditionInvalidSpecError,
 					Message: fmt.Sprintf("application repo %s is not permitted in project '%s'", source.RepoURL, spec.Project),
@@ -576,13 +575,11 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 		}
 	} else {
 		source := spec.GetSource()
-		// Pass pointer to validateSourcePermissions
-		conditions = validateSourcePermissions(&source, spec.HasMultipleSources())
+		conditions = validateSourcePermissions(source, spec.HasMultipleSources())
 		if len(conditions) > 0 {
 			return conditions, nil
 		}
 
-		// Pass value to IsSourcePermitted
 		if !proj.IsSourcePermitted(source) {
 			conditions = append(conditions, argoappv1.ApplicationCondition{
 				Type:    argoappv1.ApplicationConditionInvalidSpecError,
@@ -601,7 +598,8 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 	}
 
 	if spec.Destination.Server != "" {
-		permitted, err := proj.IsDestinationPermitted(spec.Destination, func(project string) ([]*argoappv1.Cluster, error) {
+		// Use a pointer to avoid copying the spec.Destination struct
+		permitted, err := proj.IsDestinationPermitted(&spec.Destination, func(project string) ([]*argoappv1.Cluster, error) {
 			return db.GetProjectClusters(ctx, project)
 		})
 		if err != nil {
@@ -613,7 +611,7 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 				Message: fmt.Sprintf("application destination server '%s' and namespace '%s' do not match any of the allowed destinations in project '%s'", spec.Destination.Server, spec.Destination.Namespace, spec.Project),
 			})
 		}
-		// Ensure the k8s cluster the app is referencing is configured in Argo CD
+		// Ensure the k8s cluster the app is referencing, is configured in Argo CD
 		_, err = db.GetCluster(ctx, spec.Destination.Server)
 		if err != nil {
 			if errStatus, ok := status.FromError(err); ok && errStatus.Code() == codes.NotFound {
@@ -626,10 +624,7 @@ func ValidatePermissions(ctx context.Context, spec *argoappv1.ApplicationSpec, p
 			}
 		}
 	} else if spec.Destination.Server == "" {
-		conditions = append(conditions, argoappv1.ApplicationCondition{
-			Type:    argoappv1.ApplicationConditionInvalidSpecError,
-			Message: errDestinationMissing,
-		})
+		conditions = append(conditions, argoappv1.ApplicationCondition{Type: argoappv1.ApplicationConditionInvalidSpecError, Message: errDestinationMissing})
 	}
 	return conditions, nil
 }

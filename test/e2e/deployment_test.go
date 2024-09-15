@@ -325,14 +325,14 @@ func createNamespaceScopedUser(t *testing.T, username string, clusterScopedSecre
 	}
 
 	// Build the Argo CD Cluster Secret by using the service account token, and extracting needed values from kube config
-	clusterSecretConfigJSON := ClusterConfig{
+	clusterSecretConfigJSON := &ClusterConfig{ // Use pointer here
 		BearerToken: token,
 		TLSClientConfig: TLSClientConfig{
 			Insecure: true,
 		},
 	}
 
-	jsonStringBytes, err := json.Marshal(clusterSecretConfigJSON)
+	jsonStringBytes, err := json.Marshal(clusterSecretConfigJSON) // Pass pointer here
 	require.NoError(t, err)
 
 	_, apiURL, err := extractKubeConfigValues()

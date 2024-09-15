@@ -300,9 +300,11 @@ func Test_ListCertificate(t *testing.T) {
 	assert.NotNil(t, certList)
 	assert.Len(t, certList.Items, Test_NumSSHKnownHostsExpected)
 
-	// Extract values to avoid lock copying
-	sshCertificates := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
-	copy(sshCertificates, certList.Items)
+	sshCertificates := make([]*v1alpha1.RepositoryCertificate, len(certList.Items))
+	for i := range certList.Items {
+		sshCertificates[i] = &certList.Items[i] // Store pointers instead of copying structs
+	}
+
 	for idx, entry := range sshCertificates {
 		assert.Equal(t, entry.ServerName, Test_SSH_Hostname_Entries[idx])
 		assert.Equal(t, entry.CertSubType, Test_SSH_Subtypes[idx])
@@ -354,8 +356,10 @@ func Test_ListCertificate(t *testing.T) {
 	assert.Len(t, certList.Items, 4)
 
 	// Extract values to avoid lock copying
-	gitlabCertificates := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
-	copy(gitlabCertificates, certList.Items)
+	gitlabCertificates := make([]*v1alpha1.RepositoryCertificate, len(certList.Items))
+	for i := range certList.Items {
+		gitlabCertificates[i] = &certList.Items[i] // Store pointers to structs
+	}
 
 	for _, entry := range gitlabCertificates {
 		assert.Equal(t, "gitlab.com", entry.ServerName)
@@ -527,8 +531,11 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Len(t, certList.Items, 1)
 
 	// Extract values to avoid lock copying
-	validCerts := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
-	copy(validCerts, certList.Items)
+	validCerts := make([]*v1alpha1.RepositoryCertificate, len(certList.Items))
+	for i := range certList.Items {
+		validCerts[i] = &certList.Items[i] // Store pointers to structs
+	}
+
 	for _, entry := range validCerts {
 		assert.Equal(t, "foo.example.com", entry.ServerName)
 		assert.Equal(t, "https", entry.CertType)
@@ -557,8 +564,11 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Len(t, certList.Items, 1)
 
 	// Extract values to avoid lock copying
-	fooCerts := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
-	copy(fooCerts, certList.Items)
+	fooCerts := make([]*v1alpha1.RepositoryCertificate, len(certList.Items))
+	for i := range certList.Items {
+		fooCerts[i] = &certList.Items[i] // Store pointers to avoid copying structs
+	}
+
 	for _, entry := range fooCerts {
 		assert.Equal(t, "foo.example.com", entry.ServerName)
 		assert.Equal(t, "https", entry.CertType)
@@ -579,8 +589,11 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Len(t, certList.Items, 2)
 
 	// Extract values to avoid lock copying
-	barCerts := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
-	copy(barCerts, certList.Items)
+	barCerts := make([]*v1alpha1.RepositoryCertificate, len(certList.Items))
+	for i := range certList.Items {
+		barCerts[i] = &certList.Items[i] // Store pointers to structs
+	}
+
 	for _, entry := range barCerts {
 		assert.Equal(t, "bar.example.com", entry.ServerName)
 		assert.Equal(t, "https", entry.CertType)
@@ -637,8 +650,11 @@ func Test_CreateTLSCertificates(t *testing.T) {
 	assert.Len(t, certList.Items, 2)
 
 	// Extract values to avoid lock copying
-	upsertedCerts := make([]v1alpha1.RepositoryCertificate, len(certList.Items))
-	copy(upsertedCerts, certList.Items)
+	upsertedCerts := make([]*v1alpha1.RepositoryCertificate, len(certList.Items))
+	for i := range certList.Items {
+		upsertedCerts[i] = &certList.Items[i] // Store pointers to structs
+	}
+
 	for _, entry := range upsertedCerts {
 		assert.Equal(t, "foo.example.com", entry.ServerName)
 		assert.Equal(t, "https", entry.CertType)

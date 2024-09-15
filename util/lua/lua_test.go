@@ -297,7 +297,7 @@ func TestGetResourceActionNoPredefined(t *testing.T) {
 
 func TestGetResourceActionWithOverride(t *testing.T) {
 	testObj := StrToUnstructured(objJSON)
-	expectedAction := appv1.ResourceActionDefinition{
+	expectedAction := &appv1.ResourceActionDefinition{
 		Name:      "test",
 		ActionLua: "return obj",
 	}
@@ -307,7 +307,7 @@ func TestGetResourceActionWithOverride(t *testing.T) {
 			"argoproj.io/Rollout": {
 				Actions: string(grpc.MustMarshal(appv1.ResourceActions{
 					Definitions: []appv1.ResourceActionDefinition{
-						expectedAction,
+						*expectedAction, // Store as value in map
 					},
 				})),
 			},
@@ -400,7 +400,7 @@ func TestExecuteResourceActionDiscovery(t *testing.T) {
 	actions, err := vm.ExecuteResourceActionDiscovery(testObj, []string{validDiscoveryLua})
 	require.NoError(t, err)
 
-	expectedActions := []appv1.ResourceAction{
+	expectedActions := []*appv1.ResourceAction{
 		{
 			Name: "resume",
 		}, {
@@ -411,8 +411,19 @@ func TestExecuteResourceActionDiscovery(t *testing.T) {
 			}},
 		},
 	}
+
+	// Convert actions to a map for easier lookup
+	actionsMap := make(map[string]*appv1.ResourceAction)
+	for _, action := range actions {
+		actionsMap[action.Name] = &action
+	}
+
 	for _, expectedAction := range expectedActions {
-		assert.Contains(t, actions, expectedAction)
+		actualAction, found := actionsMap[expectedAction.Name]
+		assert.True(t, found, "Expected action not found: %s", expectedAction.Name)
+		if found {
+			assert.Equal(t, expectedAction, actualAction)
+		}
 	}
 }
 
@@ -421,7 +432,9 @@ func TestExecuteResourceActionDiscoveryWithDuplicationActions(t *testing.T) {
 	vm := VM{}
 	actions, err := vm.ExecuteResourceActionDiscovery(testObj, []string{validDiscoveryLua, additionalValidDiscoveryLua})
 	require.NoError(t, err)
-	expectedActions := []appv1.ResourceAction{
+
+	// Define expected actions as pointers to avoid copying issues
+	expectedActions := []*appv1.ResourceAction{
 		{
 			Name: "resume",
 		},
@@ -438,7 +451,7 @@ func TestExecuteResourceActionDiscoveryWithDuplicationActions(t *testing.T) {
 	}
 
 	// Convert expectedActions to a map for efficient lookup
-	expectedActionsMap := make(map[string]appv1.ResourceAction)
+	expectedActionsMap := make(map[string]*appv1.ResourceAction)
 	for _, action := range expectedActions {
 		expectedActionsMap[action.Name] = action
 	}

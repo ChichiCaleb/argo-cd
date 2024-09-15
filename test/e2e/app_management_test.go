@@ -1777,7 +1777,8 @@ func TestCompareOptionIgnoreExtraneous(t *testing.T) {
 		And(func(app *Application) {
 			assert.Len(t, app.Status.Resources, 2)
 			statusByName := map[string]SyncStatusCode{}
-			for _, r := range app.Status.Resources {
+			for i := range app.Status.Resources {
+				r := &app.Status.Resources[i] // Use pointer to avoid copying
 				statusByName[r.Name] = r.Status
 			}
 			assert.Equal(t, SyncStatusCodeOutOfSync, statusByName["pod-1"])
@@ -2055,8 +2056,9 @@ func TestNotPermittedResources(t *testing.T) {
 		Expect(appFixture.SyncStatusIs(SyncStatusCodeOutOfSync)).
 		And(func(app *Application) {
 			statusByKind := make(map[string]ResourceStatus)
-			for _, res := range app.Status.Resources {
-				statusByKind[res.Kind] = res
+			for i := range app.Status.Resources {
+				res := &app.Status.Resources[i] // Use pointer to avoid copying
+				statusByKind[res.Kind] = *res
 			}
 			_, hasIngress := statusByKind[kube.IngressKind]
 			assert.False(t, hasIngress, "Ingress is prohibited not managed object and should be even visible to user")

@@ -18,7 +18,6 @@ import (
 var tenSec = int64(10)
 
 func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
-	
 	externalNamespace := string(utils.ArgoCDExternalNamespace)
 
 	expectedApp := argov1alpha1.Application{
@@ -95,7 +94,7 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -105,7 +104,7 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -121,15 +120,14 @@ func TestSimpleClusterDecisionResourceGeneratorExternalNamespace(t *testing.T) {
 			appset.Spec.Template.Labels = map[string]string{
 				"label-key": "label-value",
 			}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewNamespace}))
 }
 
 func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
-	
 	expectedApp := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -202,7 +200,7 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedApp})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedApp})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
@@ -212,7 +210,7 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 		}).
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Spec.Destination.Namespace = "guestbook2"
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewNamespace})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewNamespace})).
 
 		// Update the metadata fields in the appset template, and make sure it propagates to the apps
 		When().
@@ -224,15 +222,14 @@ func TestSimpleClusterDecisionResourceGenerator(t *testing.T) {
 		Update(func(appset *v1alpha1.ApplicationSet) {
 			appset.Spec.Template.Annotations = map[string]string{"annotation-key": "annotation-value"}
 			appset.Spec.Template.Labels = map[string]string{"label-key": "label-value"}
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{*expectedAppNewMetadata})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{expectedAppNewMetadata})).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{*expectedAppNewNamespace}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{expectedAppNewNamespace}))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
-	
 	expectedAppTemplate := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -315,20 +312,19 @@ func TestSimpleClusterDecisionResourceGeneratorAddingCluster(t *testing.T) {
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppCluster1})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		CreateClusterSecret("my-secret2", "cluster2", "https://kubernetes.default.svc").
-		Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2})).
+		Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppCluster1, &expectedAppCluster2})).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedAppCluster1, &expectedAppCluster2}))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.T) {
-	
 	expectedAppTemplate := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -412,21 +408,20 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterSecret(t *testing.
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppCluster1, &expectedAppCluster2})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		DeleteClusterSecret("my-secret2").
-		Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1})).
-		Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2})).
+		Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppCluster1})).
+		Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedAppCluster2})).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedAppCluster1}))
 }
 
 func TestSimpleClusterDecisionResourceGeneratorDeletingClusterFromResource(t *testing.T) {
-	
 	expectedAppTemplate := argov1alpha1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       application.ApplicationKind,
@@ -517,15 +512,15 @@ func TestSimpleClusterDecisionResourceGeneratorDeletingClusterFromResource(t *te
 					},
 				},
 			},
-		}).Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1, expectedAppCluster2})).
+		}).Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppCluster1, &expectedAppCluster2})).
 
 		// Update the ApplicationSet template namespace, and verify it updates the Applications
 		When().
 		StatusUpdatePlacementDecision("my-placementdecision", clusterListSmall).
-		Then().Expect(appsetfixture.ApplicationsExist([]argov1alpha1.Application{expectedAppCluster1})).
-		Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster2})).
+		Then().Expect(appsetfixture.ApplicationsExist([]*argov1alpha1.Application{&expectedAppCluster1})).
+		Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedAppCluster2})).
 
 		// Delete the ApplicationSet, and verify it deletes the Applications
 		When().
-		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]argov1alpha1.Application{expectedAppCluster1}))
+		Delete().Then().Expect(appsetfixture.ApplicationsDoNotExist([]*argov1alpha1.Application{&expectedAppCluster1}))
 }

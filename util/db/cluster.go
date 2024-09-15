@@ -86,17 +86,17 @@ func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 		if cluster.Server == appv1.KubernetesInternalAPIServerAddr {
 			if inClusterEnabled {
 				hasInClusterCredentials = true
-				clusterList.Items = append(clusterList.Items, *cluster) // Dereference pointer to append
+				clusterList.Items = append(clusterList.Items, cluster) // Append pointer
 			}
 		} else {
-			clusterList.Items = append(clusterList.Items, *cluster) // Dereference pointer to append
+			clusterList.Items = append(clusterList.Items, cluster) // Append pointer
 		}
 	}
 
 	// If in-cluster credentials are enabled but none were found, append the local cluster
 	if inClusterEnabled && !hasInClusterCredentials {
 		localCluster := db.getLocalCluster()
-		clusterList.Items = append(clusterList.Items, *localCluster) // Dereference pointer to append
+		clusterList.Items = append(clusterList.Items, localCluster)
 	}
 
 	// Return the cluster list with pointers
@@ -443,7 +443,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 		Name:               string(s.Data["name"]),
 		Namespaces:         namespaces,
 		ClusterResources:   string(s.Data["clusterResources"]) == "true",
-		Config:             configData, // Now uses the correct type
+		Config:             &configData, // Use pointer to avoid copying lock value
 		RefreshRequestedAt: refreshRequestedAt,
 		Shard:              shard,
 		Project:            string(s.Data["project"]),

@@ -120,8 +120,11 @@ func (opts *IgnoreNormalizerOpts) getJQExecutionTimeout() time.Duration {
 // NewIgnoreNormalizer creates diff normalizer which removes ignored fields according to given application spec and resource overrides
 // NewIgnoreNormalizer creates diff normalizer which removes ignored fields according to given application spec and resource overrides
 func NewIgnoreNormalizer(ignore []v1alpha1.ResourceIgnoreDifferences, overrides map[string]v1alpha1.ResourceOverride, opts IgnoreNormalizerOpts) (diff.Normalizer, error) {
-	// Make a new slice for the ignore differences
-	ignore = append([]v1alpha1.ResourceIgnoreDifferences{}, ignore...)
+	// Make a new slice for the ignore differences (using pointers)
+	ignorePtrs := make([]*v1alpha1.ResourceIgnoreDifferences, len(ignore))
+	for i := range ignore {
+		ignorePtrs[i] = &ignore[i] // Use pointers to avoid copying lock values
+	}
 
 	// Process the overrides
 	for key, override := range overrides {
@@ -131,8 +134,8 @@ func NewIgnoreNormalizer(ignore []v1alpha1.ResourceIgnoreDifferences, overrides 
 			continue
 		}
 
-		// Create a new ResourceIgnoreDifferences from override
-		resourceIgnoreDifference := v1alpha1.ResourceIgnoreDifferences{
+		// Create a new ResourceIgnoreDifferences from override (using pointer)
+		resourceIgnoreDifference := &v1alpha1.ResourceIgnoreDifferences{
 			Group: group,
 			Kind:  kind,
 		}
@@ -148,13 +151,13 @@ func NewIgnoreNormalizer(ignore []v1alpha1.ResourceIgnoreDifferences, overrides 
 		}
 
 		if len(resourceIgnoreDifference.JSONPointers) > 0 || len(resourceIgnoreDifference.JQPathExpressions) > 0 {
-			ignore = append(ignore, resourceIgnoreDifference)
+			ignorePtrs = append(ignorePtrs, resourceIgnoreDifference) // Append pointer
 		}
 	}
 
-	// Create a slice for patches
+	// Create a slice for patches (using pointers)
 	patches := make([]normalizerPatch, 0)
-	for _, ignoreDiff := range ignore {
+	for _, ignoreDiff := range ignorePtrs {
 		for _, path := range ignoreDiff.JSONPointers {
 			patchData, err := json.Marshal([]map[string]string{{"op": "remove", "path": path}})
 			if err != nil {

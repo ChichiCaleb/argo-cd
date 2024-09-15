@@ -153,14 +153,13 @@ func TestLoginBadCredentials(t *testing.T) {
 	closer, sessionClient := ArgoCDClientset.NewSessionClientOrDie()
 	defer io.Close(closer)
 
-	requests := []session.SessionCreateRequest{{
-		Username: "user-does-not-exist", Password: "some-password",
-	}, {
-		Username: "admin", Password: "bad-password",
-	}}
+	requests := []*session.SessionCreateRequest{
+		{Username: "user-does-not-exist", Password: "some-password"},
+		{Username: "admin", Password: "bad-password"},
+	}
 
 	for _, r := range requests {
-		_, err := sessionClient.Create(context.Background(), &r)
+		_, err := sessionClient.Create(context.Background(), r)
 		require.Error(t, err)
 		errStatus, ok := status.FromError(err)
 		if !assert.True(t, ok) {

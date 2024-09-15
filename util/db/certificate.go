@@ -167,7 +167,9 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 	// This will hold the final list of certificates that have been created
 	created := make([]*appsv1.RepositoryCertificate, 0) // Use pointers
 
-	for _, certificate := range certificates.Items {
+	for i := range certificates.Items { // Use index to avoid copying
+		certificate := &certificates.Items[i] // Get a pointer to the certificate
+
 		if certificate.CertType == "https" && !certutil.IsValidHostname(certificate.ServerName, false) {
 			return nil, fmt.Errorf("Invalid hostname in request: %s", certificate.ServerName)
 		} else if certificate.CertType == "ssh" {
@@ -222,7 +224,7 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 
 			if newEntry || upserted {
 				certificate.CertInfo = certutil.SSHFingerprintSHA256(rawKeyData)
-				created = append(created, &certificate) // Use pointer
+				created = append(created, certificate) // Use pointer
 				saveSSHData = true
 			}
 		} else if certificate.CertType == "https" {
@@ -302,9 +304,9 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 	}
 
 	// Convert the slice of pointers to a slice of values
-	createdValues := make([]appsv1.RepositoryCertificate, len(created))
+	createdValues := make([]*appsv1.RepositoryCertificate, len(created))
 	for i, certPtr := range created {
-		createdValues[i] = *certPtr
+		createdValues[i] = certPtr
 	}
 
 	return &appsv1.RepositoryCertificateList{Items: createdValues}, nil

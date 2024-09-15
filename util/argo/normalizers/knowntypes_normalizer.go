@@ -51,11 +51,13 @@ func NewKnownTypesNormalizer(overrides map[string]v1alpha1.ResourceOverride) (*k
 
 		gk := schema.GroupKind{Group: group, Kind: kind}
 
-		// Use a local variable to avoid copying lock values
-		knownTypeFields := make([]v1alpha1.KnownTypeField, len(override.KnownTypeFields))
-		copy(knownTypeFields, override.KnownTypeFields)
+		// Use pointers to avoid copying lock values
+		knownTypeFieldPtrs := make([]*v1alpha1.KnownTypeField, len(override.KnownTypeFields))
+		for i := range override.KnownTypeFields {
+			knownTypeFieldPtrs[i] = &override.KnownTypeFields[i]
+		}
 
-		for _, f := range knownTypeFields {
+		for _, f := range knownTypeFieldPtrs { // Iterate over pointers
 			if err := normalizer.addKnownField(gk, f.Field, f.Type); err != nil {
 				log.Warnf("Failed to configure known field normalizer: %v", err)
 			}

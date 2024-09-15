@@ -875,21 +875,23 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]*v1a
 		return nil, fmt.Errorf("failed to get resource overrides: %w", err)
 	}
 
-	// No need to convert to another map of pointers, it's already a map of pointers
 	for k, v := range resourceOverrides {
 		if v == nil {
 			continue
 		}
 
-		resourceUpdates := v.IgnoreResourceUpdates
+		resourceUpdates := &v.IgnoreResourceUpdates // Use pointer to avoid copying
+
 		if compareOptions.IgnoreDifferencesOnResourceUpdates {
 			resourceUpdates.JQPathExpressions = append(resourceUpdates.JQPathExpressions, v.IgnoreDifferences.JQPathExpressions...)
 			resourceUpdates.JSONPointers = append(resourceUpdates.JSONPointers, v.IgnoreDifferences.JSONPointers...)
 			resourceUpdates.ManagedFieldsManagers = append(resourceUpdates.ManagedFieldsManagers, v.IgnoreDifferences.ManagedFieldsManagers...)
 		}
-		// Set the IgnoreDifferences because these are the overrides used by Normalizers
-		v.IgnoreDifferences = resourceUpdates
+
+		// Update the fields directly on the map element
+		v.IgnoreDifferences = *resourceUpdates // Use dereferencing to update
 		v.IgnoreResourceUpdates = v1alpha1.OverrideIgnoreDiff{}
+
 		resourceOverrides[k] = v
 	}
 
@@ -897,7 +899,6 @@ func (mgr *SettingsManager) GetIgnoreResourceUpdatesOverrides() (map[string]*v1a
 		log.Info("Using diffing customizations to ignore resource updates")
 	}
 
-	// Pass the pointer map directly (no need to create another one)
 	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/resourceVersion")
 	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/generation")
 	addIgnoreDiffItemOverrideToGK(resourceOverrides, "*/*", "/metadata/managedFields")
@@ -939,8 +940,8 @@ func (mgr *SettingsManager) GetResourceOverrides() (map[string]*v1alpha1.Resourc
 
 	// Convert the raw map to a map of pointers
 	for key, val := range rawResourceOverrides {
-		v := val // Create a new variable to hold the value for each iteration
-		resourceOverrides[key] = &v
+		valCopy := val // Create a copy of val for each iteration to avoid copying the lock
+		resourceOverrides[key] = &valCopy
 	}
 
 	err = mgr.appendResourceOverridesFromSplitKeys(argoCDCM.Data, resourceOverrides)
@@ -1051,15 +1052,15 @@ func (mgr *SettingsManager) appendResourceOverridesFromSplitKeys(cmData map[stri
 		case "actions":
 			overrideVal.Actions = v
 		case "ignoreDifferences":
-			overrideIgnoreDiff := v1alpha1.OverrideIgnoreDiff{}
-			err := yaml.Unmarshal([]byte(v), &overrideIgnoreDiff)
+			overrideIgnoreDiff := &v1alpha1.OverrideIgnoreDiff{}
+			err := yaml.Unmarshal([]byte(v), overrideIgnoreDiff)
 			if err != nil {
 				return err
 			}
 			overrideVal.IgnoreDifferences = overrideIgnoreDiff
 		case "ignoreResourceUpdates":
-			overrideIgnoreUpdate := v1alpha1.OverrideIgnoreDiff{}
-			err := yaml.Unmarshal([]byte(v), &overrideIgnoreUpdate)
+			overrideIgnoreUpdate := &v1alpha1.OverrideIgnoreDiff{}
+			err := yaml.Unmarshal([]byte(v), overrideIgnoreUpdate)
 			if err != nil {
 				return err
 			}

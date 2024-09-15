@@ -39,12 +39,12 @@ func TestNormalize(t *testing.T) {
 
 	t.Run("will normalize resources removing the fields owned by managers", func(t *testing.T) {
 		// given
-		ignore := v1alpha1.ResourceIgnoreDifferences{
+		ignore := &v1alpha1.ResourceIgnoreDifferences{
 			Group:                 "*",
 			Kind:                  "*",
 			ManagedFieldsManagers: []string{"revision-history-manager"},
 		}
-		ignores := []v1alpha1.ResourceIgnoreDifferences{ignore} // Change to slice of values
+		ignores := []*v1alpha1.ResourceIgnoreDifferences{ignore} // Use a slice of pointers
 		f := setup(t, ignores)
 
 		// when

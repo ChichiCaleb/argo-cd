@@ -39,7 +39,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		gk := "apps/Deployment"
 		override := getOverride(gk)
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "", "")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, override)
 		expectedManagedFields := append(override[gk].IgnoreDifferences.ManagedFieldsManagers, ignoreDiff.ManagedFieldsManagers...)
 		expectedJSONPointers := append(override[gk].IgnoreDifferences.JSONPointers, ignoreDiff.JSONPointers...)
@@ -61,7 +62,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		gk := "*/*"
 		override := getOverride(gk)
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "", "")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, override)
 		expectedManagedFields := append(override[gk].IgnoreDifferences.ManagedFieldsManagers, ignoreDiff.ManagedFieldsManagers...)
 		expectedJSONPointers := append(override[gk].IgnoreDifferences.JSONPointers, ignoreDiff.JSONPointers...)
@@ -81,7 +83,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 	t.Run("will return ignore diffs from application resource", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -98,7 +101,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 	t.Run("will return ignore diffs from application resource with no app name and namespace configured", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "", "")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -115,7 +119,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 	t.Run("will return ignore diffs for all resources from group", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "*", "", "")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -132,7 +137,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 	t.Run("will return ignore diffs for all resources", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("*", "*", "", "")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -149,7 +155,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 	t.Run("no ignore diffs if namespace do not match", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -163,7 +170,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 	t.Run("no ignore diffs if name do not match", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -177,7 +185,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 	t.Run("no ignore diffs if resource do not match", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -191,7 +200,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 	t.Run("no ignore diffs if group do not match", func(t *testing.T) {
 		// given
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "app-name", "default")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, nil)
 
 		// when
@@ -207,7 +217,8 @@ func TestIgnoreDiffConfig_HasIgnoreDifference(t *testing.T) {
 		gk := "apps/Deployment"
 		override := getOverride(gk)
 		ignoreDiff := getIgnoreDiff("apps", "Deployment", "specific-app", "specific-namespace")
-		ignoreDiffs := []v1alpha1.ResourceIgnoreDifferences{ignoreDiff}
+		ignoreDiffPtr := &ignoreDiff // Use a pointer to avoid copying the struct
+		ignoreDiffs := []*v1alpha1.ResourceIgnoreDifferences{ignoreDiffPtr}
 		ignoreConfig := diff.NewIgnoreDiffConfig(ignoreDiffs, override)
 		expectedManagedFields := append(override[gk].IgnoreDifferences.ManagedFieldsManagers, ignoreDiff.ManagedFieldsManagers...)
 		expectedJSONPointers := append(override[gk].IgnoreDifferences.JSONPointers, ignoreDiff.JSONPointers...)
