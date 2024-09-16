@@ -12,15 +12,19 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/runtime/protoimpl"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type ErrApplicationNotAllowedToUseProject struct {
-	application string
-	namespace   string
-	project     string
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	application   string
+	namespace     string
+	project       string
 }
 
 func NewErrApplicationNotAllowedToUseProject(application, namespace, project string) error {
@@ -38,9 +42,12 @@ func (err *ErrApplicationNotAllowedToUseProject) Error() string {
 // AppProjectList is list of AppProject resources
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type AppProjectList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []AppProject `json:"items" protobuf:"bytes,2,rep,name=items"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.TypeMeta `json:",inline"`
+	*metav1.ListMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
+	Items            []*AppProject `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // AppProject provides a logical grouping of applications, providing controls for:
@@ -54,16 +61,22 @@ type AppProjectList struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:resource:path=appprojects,shortName=appproj;appprojs
 type AppProject struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
-	Spec              AppProjectSpec   `json:"spec" protobuf:"bytes,2,opt,name=spec"`
-	Status            AppProjectStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+	state              protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache          protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields      protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.TypeMeta   `json:",inline"`
+	*metav1.ObjectMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
+	Spec               *AppProjectSpec   `json:"spec" protobuf:"bytes,2,opt,name=spec"`
+	Status             *AppProjectStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
 // AppProjectStatus contains status information for AppProject CRs
 type AppProjectStatus struct {
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// JWTTokensByRole contains a list of JWT tokens issued for a given role
-	JWTTokensByRole map[string]JWTTokens `json:"jwtTokensByRole,omitempty" protobuf:"bytes,1,opt,name=jwtTokensByRole"`
+	JWTTokensByRole map[string]*JWTTokens `json:"jwtTokensByRole,omitempty" protobuf:"bytes,1,opt,name=jwtTokensByRole"`
 }
 
 // GetRoleByName returns the role in a project by the name with its index

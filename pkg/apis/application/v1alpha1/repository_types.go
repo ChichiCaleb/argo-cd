@@ -10,11 +10,15 @@ import (
 	"github.com/argoproj/argo-cd/v2/util/helm"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/runtime/protoimpl"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // RepoCreds holds the definition for repository credentials
 type RepoCreds struct {
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// URL is the URL to which these credentials match
 	URL string `json:"url" protobuf:"bytes,1,opt,name=url"`
 	// Username for authenticating at the repo server
@@ -51,6 +55,9 @@ type RepoCreds struct {
 
 // Repository is a repository holding application configurations
 type Repository struct {
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Repo contains the URL to the remote repository
 	Repo string `json:"repo" protobuf:"bytes,1,opt,name=repo"`
 	// Username contains the user name used for authenticating at the remote repository
@@ -60,7 +67,7 @@ type Repository struct {
 	// SSHPrivateKey contains the PEM data for authenticating at the repo server. Only used with Git repos.
 	SSHPrivateKey string `json:"sshPrivateKey,omitempty" protobuf:"bytes,4,opt,name=sshPrivateKey"`
 	// ConnectionState contains information about the current state of connection to the repository server
-	ConnectionState ConnectionState `json:"connectionState,omitempty" protobuf:"bytes,5,opt,name=connectionState"`
+	ConnectionState *ConnectionState `json:"connectionState,omitempty" protobuf:"bytes,5,opt,name=connectionState"`
 	// InsecureIgnoreHostKey should not be used anymore, Insecure is favoured
 	// Used only for Git repos
 	InsecureIgnoreHostKey bool `json:"insecureIgnoreHostKey,omitempty" protobuf:"bytes,6,opt,name=insecureIgnoreHostKey"`
@@ -300,18 +307,27 @@ func (r Repositories) Filter(predicate func(r *Repository) bool) Repositories {
 
 // RepositoryList is a collection of Repositories.
 type RepositoryList struct {
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           Repositories `json:"items" protobuf:"bytes,2,rep,name=items"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items            Repositories `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // RepositoryList is a collection of Repositories.
 type RepoCredsList struct {
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []RepoCreds `json:"items" protobuf:"bytes,2,rep,name=items"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items            []*RepoCreds `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // A RepositoryCertificate is either SSH known hosts entry or TLS certificate
 type RepositoryCertificate struct {
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// ServerName specifies the DNS name of the server this certificate is intended for
 	ServerName string `json:"serverName" protobuf:"bytes,1,opt,name=serverName"`
 	// CertType specifies the type of the certificate - currently one of "https" or "ssh"
@@ -326,13 +342,19 @@ type RepositoryCertificate struct {
 
 // RepositoryCertificateList is a collection of RepositoryCertificates
 type RepositoryCertificateList struct {
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	// List of certificates to be processed
-	Items []RepositoryCertificate `json:"items" protobuf:"bytes,2,rep,name=items"`
+	Items []*RepositoryCertificate `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // GnuPGPublicKey is a representation of a GnuPG public key
 type GnuPGPublicKey struct {
+	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// KeyID specifies the key ID, in hexadecimal string format
 	KeyID string `json:"keyID" protobuf:"bytes,1,opt,name=keyID"`
 	// Fingerprint is the fingerprint of the key
@@ -349,6 +371,9 @@ type GnuPGPublicKey struct {
 
 // GnuPGPublicKeyList is a collection of GnuPGPublicKey objects
 type GnuPGPublicKeyList struct {
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []GnuPGPublicKey `json:"items" protobuf:"bytes,2,rep,name=items"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items            []*GnuPGPublicKey `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
