@@ -55,13 +55,13 @@ type ConfigMapKeyRef struct {
 // +kubebuilder:resource:path=applicationsets,shortName=appset;appsets
 // +kubebuilder:subresource:status
 type ApplicationSet struct {
-	state             protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
-	sizeCache         protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields     protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
-	Spec              ApplicationSetSpec   `json:"spec" protobuf:"bytes,2,opt,name=spec"`
-	Status            ApplicationSetStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+	state              protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache          protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields      protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.TypeMeta   `json:",inline"`
+	*metav1.ObjectMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
+	Spec               *ApplicationSetSpec   `json:"spec" protobuf:"bytes,2,opt,name=spec"`
+	Status             *ApplicationSetStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
 // RBACName formats fully qualified application name for RBAC check.
@@ -75,8 +75,8 @@ type ApplicationSetSpec struct {
 	sizeCache         protoimpl.SizeCache         `json:"-"` // Ignore this field in JSON
 	unknownFields     protoimpl.UnknownFields     `json:"-"` // Ignore this field in JSON
 	GoTemplate        bool                        `json:"goTemplate,omitempty" protobuf:"bytes,1,name=goTemplate"`
-	Generators        []ApplicationSetGenerator   `json:"generators" protobuf:"bytes,2,name=generators"`
-	Template          ApplicationSetTemplate      `json:"template" protobuf:"bytes,3,name=template"`
+	Generators        []*ApplicationSetGenerator  `json:"generators" protobuf:"bytes,2,name=generators"`
+	Template          *ApplicationSetTemplate     `json:"template" protobuf:"bytes,3,name=template"`
 	SyncPolicy        *ApplicationSetSyncPolicy   `json:"syncPolicy,omitempty" protobuf:"bytes,4,name=syncPolicy"`
 	Strategy          *ApplicationSetStrategy     `json:"strategy,omitempty" protobuf:"bytes,5,opt,name=strategy"`
 	PreservedFields   *ApplicationPreservedFields `json:"preservedFields,omitempty" protobuf:"bytes,6,opt,name=preservedFields"`
@@ -84,7 +84,7 @@ type ApplicationSetSpec struct {
 	// ApplyNestedSelectors enables selectors defined within the generators of two level-nested matrix or merge generators
 	ApplyNestedSelectors         bool                            `json:"applyNestedSelectors,omitempty" protobuf:"bytes,8,name=applyNestedSelectors"`
 	IgnoreApplicationDifferences ApplicationSetIgnoreDifferences `json:"ignoreApplicationDifferences,omitempty" protobuf:"bytes,9,name=ignoreApplicationDifferences"`
-	TemplatePatch                *string                         `json:"templatePatch,omitempty" protobuf:"bytes,10,name=templatePatch"`
+	TemplatePatch                string                          `json:"templatePatch,omitempty" protobuf:"bytes,10,name=templatePatch"`
 }
 
 type ApplicationPreservedFields struct {
@@ -105,18 +105,18 @@ type ApplicationSetStrategy struct {
 	// RollingUpdate *ApplicationSetRolloutStrategy `json:"rollingUpdate,omitempty" protobuf:"bytes,3,opt,name=rollingUpdate"`
 }
 type ApplicationSetRolloutStrategy struct {
-	state         protoimpl.MessageState      `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache         `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields     `json:"-"` // Ignore this field in JSON
-	Steps         []ApplicationSetRolloutStep `json:"steps,omitempty" protobuf:"bytes,1,opt,name=steps"`
+	state         protoimpl.MessageState       `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache          `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields      `json:"-"` // Ignore this field in JSON
+	Steps         []*ApplicationSetRolloutStep `json:"steps,omitempty" protobuf:"bytes,1,opt,name=steps"`
 }
 
 type ApplicationSetRolloutStep struct {
-	state            protoimpl.MessageState       `json:"-"` // Ignore this field in JSON
-	sizeCache        protoimpl.SizeCache          `json:"-"` // Ignore this field in JSON
-	unknownFields    protoimpl.UnknownFields      `json:"-"` // Ignore this field in JSON
-	MatchExpressions []ApplicationMatchExpression `json:"matchExpressions,omitempty" protobuf:"bytes,1,opt,name=matchExpressions"`
-	MaxUpdate        *intstr.IntOrString          `json:"maxUpdate,omitempty" protobuf:"bytes,2,opt,name=maxUpdate"`
+	state            protoimpl.MessageState        `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache           `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields       `json:"-"` // Ignore this field in JSON
+	MatchExpressions []*ApplicationMatchExpression `json:"matchExpressions,omitempty" protobuf:"bytes,1,opt,name=matchExpressions"`
+	MaxUpdate        *intstr.IntOrString           `json:"maxUpdate,omitempty" protobuf:"bytes,2,opt,name=maxUpdate"`
 }
 
 type ApplicationMatchExpression struct {
@@ -168,7 +168,7 @@ type ApplicationSetSyncPolicy struct {
 
 // ApplicationSetIgnoreDifferences configures how the ApplicationSet controller will ignore differences in live
 // applications when applying changes from generated applications.
-type ApplicationSetIgnoreDifferences []ApplicationSetResourceIgnoreDifferences
+type ApplicationSetIgnoreDifferences []*ApplicationSetResourceIgnoreDifferences
 
 func (a ApplicationSetIgnoreDifferences) ToApplicationIgnoreDifferences() []ResourceIgnoreDifferences {
 	var result []ResourceIgnoreDifferences
@@ -204,11 +204,11 @@ func (a *ApplicationSetResourceIgnoreDifferences) ToApplicationResourceIgnoreDif
 
 // ApplicationSetTemplate represents argocd ApplicationSpec
 type ApplicationSetTemplate struct {
-	state                      protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
-	sizeCache                  protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields              protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	ApplicationSetTemplateMeta `json:"metadata" protobuf:"bytes,1,name=metadata"`
-	Spec                       ApplicationSpec `json:"spec" protobuf:"bytes,2,name=spec"`
+	state                       protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache                   protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields               protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*ApplicationSetTemplateMeta `json:"metadata" protobuf:"bytes,1,name=metadata"`
+	Spec                        *ApplicationSpec `json:"spec" protobuf:"bytes,2,name=spec"`
 }
 
 // ApplicationSetTemplateMeta represents the Argo CD application fields that may
@@ -291,7 +291,7 @@ type ApplicationSetTerminalGenerator struct {
 	Selector *metav1.LabelSelector `json:"selector,omitempty" protobuf:"bytes,8,name=selector"`
 }
 
-type ApplicationSetTerminalGenerators []ApplicationSetTerminalGenerator
+type ApplicationSetTerminalGenerators []*ApplicationSetTerminalGenerator
 
 // toApplicationSetNestedGenerators converts a terminal generator (a generator which cannot be a combination-type
 // generator) to a "nested" generator. The conversion is for convenience, allowing generator g to be used where a nested
@@ -319,19 +319,19 @@ type ListGenerator struct {
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// +kubebuilder:validation:Optional
-	Elements     []apiextensionsv1.JSON `json:"elements" protobuf:"bytes,1,name=elements"`
-	Template     ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,2,name=template"`
-	ElementsYaml string                 `json:"elementsYaml,omitempty" protobuf:"bytes,3,opt,name=elementsYaml"`
+	Elements     []*apiextensionsv1.JSON `json:"elements" protobuf:"bytes,1,name=elements"`
+	Template     *ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,2,name=template"`
+	ElementsYaml string                  `json:"elementsYaml,omitempty" protobuf:"bytes,3,opt,name=elementsYaml"`
 }
 
 // MatrixGenerator generates the cartesian product of two sets of parameters. The parameters are defined by two nested
 // generators.
 type MatrixGenerator struct {
-	state         protoimpl.MessageState          `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache             `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields         `json:"-"` // Ignore this field in JSON
-	Generators    []ApplicationSetNestedGenerator `json:"generators" protobuf:"bytes,1,name=generators"`
-	Template      ApplicationSetTemplate          `json:"template,omitempty" protobuf:"bytes,2,name=template"`
+	state         protoimpl.MessageState           `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache              `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields          `json:"-"` // Ignore this field in JSON
+	Generators    []*ApplicationSetNestedGenerator `json:"generators" protobuf:"bytes,1,name=generators"`
+	Template      *ApplicationSetTemplate          `json:"template,omitempty" protobuf:"bytes,2,name=template"`
 }
 
 // NestedMatrixGenerator is a MatrixGenerator nested under another combination-type generator (MatrixGenerator or
@@ -384,12 +384,12 @@ func (g NestedMatrixGenerator) ToMatrixGenerator() *MatrixGenerator {
 // MergeGenerator supports template overriding. If a MergeGenerator is one of multiple top-level generators, its
 // template will be merged with the top-level generator before the parameters are applied.
 type MergeGenerator struct {
-	state         protoimpl.MessageState          `json:"-"` // Ignore this field in JSON
-	sizeCache     protoimpl.SizeCache             `json:"-"` // Ignore this field in JSON
-	unknownFields protoimpl.UnknownFields         `json:"-"` // Ignore this field in JSON
-	Generators    []ApplicationSetNestedGenerator `json:"generators" protobuf:"bytes,1,name=generators"`
-	MergeKeys     []string                        `json:"mergeKeys" protobuf:"bytes,2,name=mergeKeys"`
-	Template      ApplicationSetTemplate          `json:"template,omitempty" protobuf:"bytes,3,name=template"`
+	state         protoimpl.MessageState           `json:"-"` // Ignore this field in JSON
+	sizeCache     protoimpl.SizeCache              `json:"-"` // Ignore this field in JSON
+	unknownFields protoimpl.UnknownFields          `json:"-"` // Ignore this field in JSON
+	Generators    []*ApplicationSetNestedGenerator `json:"generators" protobuf:"bytes,1,name=generators"`
+	MergeKeys     []string                         `json:"mergeKeys" protobuf:"bytes,2,name=mergeKeys"`
+	Template      *ApplicationSetTemplate          `json:"template,omitempty" protobuf:"bytes,3,name=template"`
 }
 
 // NestedMergeGenerator is a MergeGenerator nested under another combination-type generator (MatrixGenerator or
@@ -441,8 +441,8 @@ type ClusterGenerator struct {
 	// Selector defines a label selector to match against all clusters registered with ArgoCD.
 	// Clusters today are stored as Kubernetes Secrets, thus the Secret labels will be used
 	// for matching the selector.
-	Selector metav1.LabelSelector   `json:"selector,omitempty" protobuf:"bytes,1,name=selector"`
-	Template ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,2,name=template"`
+	Selector *metav1.LabelSelector   `json:"selector,omitempty" protobuf:"bytes,1,name=selector"`
+	Template *ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,2,name=template"`
 
 	// Values contains key/value pairs which are passed directly as parameters to the template
 	Values map[string]string `json:"values,omitempty" protobuf:"bytes,3,name=values"`
@@ -457,27 +457,27 @@ type DuckTypeGenerator struct {
 	//              this includes apiVersion(group/version), kind, matchKey and validation settings
 	// Name is the resource name of the kind, group and version, defined in the ConfigMapRef
 	// RequeueAfterSeconds is how long before the duckType will be rechecked for a change
-	ConfigMapRef        string               `json:"configMapRef" protobuf:"bytes,1,name=configMapRef"`
-	Name                string               `json:"name,omitempty" protobuf:"bytes,2,name=name"`
-	RequeueAfterSeconds *int64               `json:"requeueAfterSeconds,omitempty" protobuf:"bytes,3,name=requeueAfterSeconds"`
-	LabelSelector       metav1.LabelSelector `json:"labelSelector,omitempty" protobuf:"bytes,4,name=labelSelector"`
+	ConfigMapRef        string                `json:"configMapRef" protobuf:"bytes,1,name=configMapRef"`
+	Name                string                `json:"name,omitempty" protobuf:"bytes,2,name=name"`
+	RequeueAfterSeconds int64                 `json:"requeueAfterSeconds,omitempty" protobuf:"bytes,3,name=requeueAfterSeconds"`
+	LabelSelector       *metav1.LabelSelector `json:"labelSelector,omitempty" protobuf:"bytes,4,name=labelSelector"`
 
-	Template ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,5,name=template"`
+	Template *ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,5,name=template"`
 	// Values contains key/value pairs which are passed directly as parameters to the template
 	Values map[string]string `json:"values,omitempty" protobuf:"bytes,6,name=values"`
 }
 
 type GitGenerator struct {
-	state               protoimpl.MessageState      `json:"-"` // Ignore this field in JSON
-	sizeCache           protoimpl.SizeCache         `json:"-"` // Ignore this field in JSON
-	unknownFields       protoimpl.UnknownFields     `json:"-"` // Ignore this field in JSON
-	RepoURL             string                      `json:"repoURL" protobuf:"bytes,1,name=repoURL"`
-	Directories         []GitDirectoryGeneratorItem `json:"directories,omitempty" protobuf:"bytes,2,name=directories"`
-	Files               []GitFileGeneratorItem      `json:"files,omitempty" protobuf:"bytes,3,name=files"`
-	Revision            string                      `json:"revision" protobuf:"bytes,4,name=revision"`
-	RequeueAfterSeconds *int64                      `json:"requeueAfterSeconds,omitempty" protobuf:"bytes,5,name=requeueAfterSeconds"`
-	Template            ApplicationSetTemplate      `json:"template,omitempty" protobuf:"bytes,6,name=template"`
-	PathParamPrefix     string                      `json:"pathParamPrefix,omitempty" protobuf:"bytes,7,name=pathParamPrefix"`
+	state               protoimpl.MessageState       `json:"-"` // Ignore this field in JSON
+	sizeCache           protoimpl.SizeCache          `json:"-"` // Ignore this field in JSON
+	unknownFields       protoimpl.UnknownFields      `json:"-"` // Ignore this field in JSON
+	RepoURL             string                       `json:"repoURL" protobuf:"bytes,1,name=repoURL"`
+	Directories         []*GitDirectoryGeneratorItem `json:"directories,omitempty" protobuf:"bytes,2,name=directories"`
+	Files               []*GitFileGeneratorItem      `json:"files,omitempty" protobuf:"bytes,3,name=files"`
+	Revision            string                       `json:"revision" protobuf:"bytes,4,name=revision"`
+	RequeueAfterSeconds int64                        `json:"requeueAfterSeconds,omitempty" protobuf:"bytes,5,name=requeueAfterSeconds"`
+	Template            *ApplicationSetTemplate      `json:"template,omitempty" protobuf:"bytes,6,name=template"`
+	PathParamPrefix     string                       `json:"pathParamPrefix,omitempty" protobuf:"bytes,7,name=pathParamPrefix"`
 
 	// Values contains key/value pairs which are passed directly as parameters to the template
 	Values map[string]string `json:"values,omitempty" protobuf:"bytes,8,name=values"`
@@ -511,13 +511,13 @@ type SCMProviderGenerator struct {
 	Gitea           *SCMProviderGeneratorGitea           `json:"gitea,omitempty" protobuf:"bytes,5,opt,name=gitea"`
 	AzureDevOps     *SCMProviderGeneratorAzureDevOps     `json:"azureDevOps,omitempty" protobuf:"bytes,6,opt,name=azureDevOps"`
 	// Filters for which repos should be considered.
-	Filters []SCMProviderGeneratorFilter `json:"filters,omitempty" protobuf:"bytes,7,rep,name=filters"`
+	Filters []*SCMProviderGeneratorFilter `json:"filters,omitempty" protobuf:"bytes,7,rep,name=filters"`
 	// Which protocol to use for the SCM URL. Default is provider-specific but ssh if possible. Not all providers
 	// necessarily support all protocols.
 	CloneProtocol string `json:"cloneProtocol,omitempty" protobuf:"bytes,8,opt,name=cloneProtocol"`
 	// Standard parameters.
-	RequeueAfterSeconds *int64                 `json:"requeueAfterSeconds,omitempty" protobuf:"varint,9,opt,name=requeueAfterSeconds"`
-	Template            ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,10,opt,name=template"`
+	RequeueAfterSeconds *int64                  `json:"requeueAfterSeconds,omitempty" protobuf:"varint,9,opt,name=requeueAfterSeconds"`
+	Template            *ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,10,opt,name=template"`
 
 	// Values contains key/value pairs which are passed directly as parameters to the template
 	Values        map[string]string                  `json:"values,omitempty" protobuf:"bytes,11,name=values"`
@@ -592,7 +592,7 @@ type SCMProviderGeneratorGitlab struct {
 	// Skips validating the SCM provider's TLS certificate - useful for self-signed certificates.; default: false
 	Insecure bool `json:"insecure,omitempty" protobuf:"varint,6,opt,name=insecure"`
 	// When recursing through subgroups, also include shared Projects (true) or scan only the subgroups under same path (false).  Defaults to "true"
-	IncludeSharedProjects *bool `json:"includeSharedProjects,omitempty" protobuf:"varint,7,opt,name=includeSharedProjects"`
+	IncludeSharedProjects bool `json:"includeSharedProjects,omitempty" protobuf:"varint,7,opt,name=includeSharedProjects"`
 	// Filter repos list based on Gitlab Topic.
 	Topic string `json:"topic,omitempty" protobuf:"bytes,8,opt,name=topic"`
 	// ConfigMap key holding the trusted certificates
@@ -689,15 +689,15 @@ type SCMProviderGeneratorFilter struct {
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// A regex for repo names.
-	RepositoryMatch *string `json:"repositoryMatch,omitempty" protobuf:"bytes,1,opt,name=repositoryMatch"`
+	RepositoryMatch string `json:"repositoryMatch,omitempty" protobuf:"bytes,1,opt,name=repositoryMatch"`
 	// An array of paths, all of which must exist.
 	PathsExist []string `json:"pathsExist,omitempty" protobuf:"bytes,2,rep,name=pathsExist"`
 	// An array of paths, all of which must not exist.
 	PathsDoNotExist []string `json:"pathsDoNotExist,omitempty" protobuf:"bytes,3,rep,name=pathsDoNotExist"`
 	// A regex which must match at least one label.
-	LabelMatch *string `json:"labelMatch,omitempty" protobuf:"bytes,4,opt,name=labelMatch"`
+	LabelMatch string `json:"labelMatch,omitempty" protobuf:"bytes,4,opt,name=labelMatch"`
 	// A regex which must match the branch name.
-	BranchMatch *string `json:"branchMatch,omitempty" protobuf:"bytes,5,opt,name=branchMatch"`
+	BranchMatch string `json:"branchMatch,omitempty" protobuf:"bytes,5,opt,name=branchMatch"`
 }
 
 // PullRequestGenerator defines a generator that scrapes a PullRequest API to find candidate pull requests.
@@ -711,10 +711,10 @@ type PullRequestGenerator struct {
 	Gitea           *PullRequestGeneratorGitea           `json:"gitea,omitempty" protobuf:"bytes,3,opt,name=gitea"`
 	BitbucketServer *PullRequestGeneratorBitbucketServer `json:"bitbucketServer,omitempty" protobuf:"bytes,4,opt,name=bitbucketServer"`
 	// Filters for which pull requests should be considered.
-	Filters []PullRequestGeneratorFilter `json:"filters,omitempty" protobuf:"bytes,5,rep,name=filters"`
+	Filters []*PullRequestGeneratorFilter `json:"filters,omitempty" protobuf:"bytes,5,rep,name=filters"`
 	// Standard parameters.
-	RequeueAfterSeconds *int64                         `json:"requeueAfterSeconds,omitempty" protobuf:"varint,6,opt,name=requeueAfterSeconds"`
-	Template            ApplicationSetTemplate         `json:"template,omitempty" protobuf:"bytes,7,opt,name=template"`
+	RequeueAfterSeconds int64                          `json:"requeueAfterSeconds,omitempty" protobuf:"varint,6,opt,name=requeueAfterSeconds"`
+	Template            *ApplicationSetTemplate        `json:"template,omitempty" protobuf:"bytes,7,opt,name=template"`
 	Bitbucket           *PullRequestGeneratorBitbucket `json:"bitbucket,omitempty" protobuf:"bytes,8,opt,name=bitbucket"`
 	// Additional provider to use and config for it.
 	AzureDevOps *PullRequestGeneratorAzureDevOps `json:"azuredevops,omitempty" protobuf:"bytes,9,opt,name=azuredevops"`
@@ -893,8 +893,8 @@ type PullRequestGeneratorFilter struct {
 	state             protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache         protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields     protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	BranchMatch       *string                 `json:"branchMatch,omitempty" protobuf:"bytes,1,opt,name=branchMatch"`
-	TargetBranchMatch *string                 `json:"targetBranchMatch,omitempty" protobuf:"bytes,2,opt,name=targetBranchMatch"`
+	BranchMatch       string                  `json:"branchMatch,omitempty" protobuf:"bytes,1,opt,name=branchMatch"`
+	TargetBranchMatch string                  `json:"targetBranchMatch,omitempty" protobuf:"bytes,2,opt,name=targetBranchMatch"`
 }
 
 type PluginConfigMapRef struct {
@@ -905,7 +905,7 @@ type PluginConfigMapRef struct {
 	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
 }
 
-type PluginParameters map[string]apiextensionsv1.JSON
+type PluginParameters map[string]*apiextensionsv1.JSON
 
 type PluginInput struct {
 	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
@@ -921,11 +921,11 @@ type PluginGenerator struct {
 	state         protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	ConfigMapRef  PluginConfigMapRef      `json:"configMapRef" protobuf:"bytes,1,name=configMapRef"`
-	Input         PluginInput             `json:"input,omitempty" protobuf:"bytes,2,name=input"`
+	ConfigMapRef  *PluginConfigMapRef     `json:"configMapRef" protobuf:"bytes,1,name=configMapRef"`
+	Input         *PluginInput            `json:"input,omitempty" protobuf:"bytes,2,name=input"`
 	// RequeueAfterSeconds determines how long the ApplicationSet controller will wait before reconciling the ApplicationSet again.
-	RequeueAfterSeconds *int64                 `json:"requeueAfterSeconds,omitempty" protobuf:"varint,3,opt,name=requeueAfterSeconds"`
-	Template            ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,4,name=template"`
+	RequeueAfterSeconds int64                   `json:"requeueAfterSeconds,omitempty" protobuf:"varint,3,opt,name=requeueAfterSeconds"`
+	Template            *ApplicationSetTemplate `json:"template,omitempty" protobuf:"bytes,4,name=template"`
 
 	// Values contains key/value pairs which are passed directly as parameters to the template. These values will not be
 	// sent as parameters to the plugin.
@@ -939,10 +939,10 @@ type ApplicationSetStatus struct {
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Conditions        []ApplicationSetCondition         `json:"conditions,omitempty" protobuf:"bytes,1,name=conditions"`
-	ApplicationStatus []ApplicationSetApplicationStatus `json:"applicationStatus,omitempty" protobuf:"bytes,2,name=applicationStatus"`
+	Conditions        []*ApplicationSetCondition         `json:"conditions,omitempty" protobuf:"bytes,1,name=conditions"`
+	ApplicationStatus []*ApplicationSetApplicationStatus `json:"applicationStatus,omitempty" protobuf:"bytes,2,name=applicationStatus"`
 	// Resources is a list of Applications resources managed by this application set.
-	Resources []ResourceStatus `json:"resources,omitempty" protobuf:"bytes,3,opt,name=resources"`
+	Resources []*ResourceStatus `json:"resources,omitempty" protobuf:"bytes,3,opt,name=resources"`
 }
 
 // ApplicationSetCondition contains details about an applicationset condition, which is usually an error or warning
@@ -1031,12 +1031,12 @@ type ApplicationSetApplicationStatus struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 type ApplicationSetList struct {
-	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
-	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []ApplicationSet `json:"items" protobuf:"bytes,2,rep,name=items"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.TypeMeta `json:",inline"`
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items            []*ApplicationSet `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // ApplicationSetTree holds nodes which belongs to the application
@@ -1046,7 +1046,7 @@ type ApplicationSetTree struct {
 	sizeCache     protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
 	unknownFields protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
 	// Nodes contains list of nodes which are directly managed by the applicationset
-	Nodes []ResourceNode `json:"nodes,omitempty" protobuf:"bytes,1,rep,name=nodes"`
+	Nodes []*ResourceNode `json:"nodes,omitempty" protobuf:"bytes,1,rep,name=nodes"`
 }
 
 // Normalize sorts applicationset tree nodes. The persistent order allows to

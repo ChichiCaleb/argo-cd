@@ -67,7 +67,7 @@ type Repository struct {
 	// SSHPrivateKey contains the PEM data for authenticating at the repo server. Only used with Git repos.
 	SSHPrivateKey string `json:"sshPrivateKey,omitempty" protobuf:"bytes,4,opt,name=sshPrivateKey"`
 	// ConnectionState contains information about the current state of connection to the repository server
-	ConnectionState ConnectionState `json:"connectionState,omitempty" protobuf:"bytes,5,opt,name=connectionState"`
+	ConnectionState *ConnectionState `json:"connectionState,omitempty" protobuf:"bytes,5,opt,name=connectionState"`
 	// InsecureIgnoreHostKey should not be used anymore, Insecure is favoured
 	// Used only for Git repos
 	InsecureIgnoreHostKey bool `json:"insecureIgnoreHostKey,omitempty" protobuf:"bytes,6,opt,name=insecureIgnoreHostKey"`
@@ -307,20 +307,20 @@ func (r Repositories) Filter(predicate func(r *Repository) bool) Repositories {
 
 // RepositoryList is a collection of Repositories.
 type RepositoryList struct {
-	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
-	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           Repositories `json:"items" protobuf:"bytes,2,rep,name=items"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items            Repositories `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // RepositoryList is a collection of Repositories.
 type RepoCredsList struct {
-	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
-	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []RepoCreds `json:"items" protobuf:"bytes,2,rep,name=items"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items            []*RepoCreds `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // A RepositoryCertificate is either SSH known hosts entry or TLS certificate
@@ -342,12 +342,12 @@ type RepositoryCertificate struct {
 
 // RepositoryCertificateList is a collection of RepositoryCertificates
 type RepositoryCertificateList struct {
-	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
-	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	// List of certificates to be processed
-	Items []RepositoryCertificate `json:"items" protobuf:"bytes,2,rep,name=items"`
+	Items []*RepositoryCertificate `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // GnuPGPublicKey is a representation of a GnuPG public key
@@ -371,9 +371,9 @@ type GnuPGPublicKey struct {
 
 // GnuPGPublicKeyList is a collection of GnuPGPublicKey objects
 type GnuPGPublicKeyList struct {
-	state           protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
-	sizeCache       protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
-	unknownFields   protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []GnuPGPublicKey `json:"items" protobuf:"bytes,2,rep,name=items"`
+	state            protoimpl.MessageState  `json:"-"` // Ignore this field in JSON
+	sizeCache        protoimpl.SizeCache     `json:"-"` // Ignore this field in JSON
+	unknownFields    protoimpl.UnknownFields `json:"-"` // Ignore this field in JSON
+	*metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items            []*GnuPGPublicKey `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
