@@ -392,7 +392,7 @@ func clusterToSecret(c *appv1.Cluster, secret *apiv1.Secret) error {
 
 // SecretToCluster converts a secret into a Cluster object
 func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
-	var configData  *appv1.ClusterConfig 
+	var configData  appv1.ClusterConfig 
 
 	if len(s.Data["config"]) > 0 {
 		err := json.Unmarshal(s.Data["config"], &configData) // Unmarshal directly into appv1.ClusterConfig
@@ -445,7 +445,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 		Name:               string(s.Data["name"]),
 		Namespaces:         namespaces,
 		ClusterResources:   string(s.Data["clusterResources"]) == "true",
-		Config:             configData,
+		Config:             &configData,
 		RefreshRequestedAt: refreshRequestedAt,
 		Shard:              shard,
 		Project:            string(s.Data["project"]),
