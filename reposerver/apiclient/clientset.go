@@ -82,16 +82,20 @@ func NewConnection(address string, timeoutSeconds int, tlsConfig *TLSConfigurati
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	// nolint:staticcheck
-	conn, err := grpc.Dial(address, opts...)
+	// Replace grpc.Dial with grpc.NewClient
+	conn, err := grpc.NewClient(address, opts...)
 	if err != nil {
-		log.Errorf("Unable to connect to repository service with address %s", address)
+		log.Errorf("Unable to create a new gRPC client for address %s", address)
 		return nil, err
 	}
+
+	// Establish the connection immediately
+	conn.Connect()
+
 	return conn, nil
 }
 
-// NewRepoServerClientset creates new instance of repo server Clientset
+// NewRepoServerClientset creates a new instance of repo server Clientset
 func NewRepoServerClientset(address string, timeoutSeconds int, tlsConfig TLSConfiguration) Clientset {
 	return &clientSet{address: address, timeoutSeconds: timeoutSeconds, tlsConfig: tlsConfig}
 }
