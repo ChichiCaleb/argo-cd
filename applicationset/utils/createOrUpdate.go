@@ -66,8 +66,11 @@ func CreateOrUpdate(ctx context.Context, logCtx *log.Entry, c client.Client, ign
 	}
 
 	// Normalize to avoid diffing on unimportant differences.
-	normalizedLive.Spec = *argo.NormalizeApplicationSpec(&normalizedLive.Spec)
-	obj.Spec = *argo.NormalizeApplicationSpec(&obj.Spec)
+	normalizedSpec := argo.NormalizeApplicationSpec(&normalizedLive.Spec)
+    objSpec := argo.NormalizeApplicationSpec(&obj.Spec)
+
+	normalizedLive.Spec = *normalizedSpec
+	obj.Spec = *objSpec
 
 	equality := conversion.EqualitiesOrDie(
 		func(a, b resource.Quantity) bool {

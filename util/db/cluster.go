@@ -16,7 +16,7 @@ import (
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/utils/ptr"
+
 
 	"github.com/argoproj/argo-cd/v2/common"
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -403,13 +403,15 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 		}
 	}
 
-	var shard *int64
+	var shard int64 // Changed from *int64 to int64
 	if shardStr := s.Data["shard"]; shardStr != nil {
 		if val, err := strconv.Atoi(string(shardStr)); err != nil {
 			log.Warnf("Error while parsing shard in cluster secret '%s': %v", s.Name, err)
 		} else {
-			shard = ptr.To(int64(val))
+			shard = int64(val) // Directly assign the value
 		}
+	} else {
+		shard = 0 // Set a default value if shardStr is nil
 	}
 
 	// copy labels and annotations excluding system ones
@@ -434,7 +436,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 		ClusterResources:   string(s.Data["clusterResources"]) == "true",
 		Config:             &config,
 		RefreshRequestedAt: refreshRequestedAt,
-		Shard:              shard, // Use shard directly as it is already a pointer
+		Shard:              shard, // Directly assign the int64 value
 		Project:            string(s.Data["project"]),
 		Labels:             labels,
 		Annotations:        annotations,

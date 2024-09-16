@@ -302,7 +302,7 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 				// We append the certificate for every PEM entry in the request, so the
 				// caller knows that we processed each single item.
 				for _, entry := range pemCreated {
-					created = append(created, appsv1.RepositoryCertificate{
+					created = append(created, &appsv1.RepositoryCertificate{
 						ServerName: certificate.ServerName,
 						CertType:   "https",
 						CertData:   []byte(entry),
@@ -310,6 +310,7 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 				}
 				saveTLSData = true
 			}
+			
 		} else {
 			// Invalid/unknown certificate type
 			return nil, fmt.Errorf("Unknown certificate type: %s", certificate.CertType)

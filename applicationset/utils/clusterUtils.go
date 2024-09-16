@@ -17,7 +17,7 @@ import (
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/utils/ptr"
+
 )
 
 // The contents of this file are from
@@ -35,12 +35,15 @@ import (
 
 var (
 	localCluster = appv1.Cluster{
-		Name:            "in-cluster",
-		Server:          appv1.KubernetesInternalAPIServerAddr,
-		ConnectionState: appv1.ConnectionState{Status: appv1.ConnectionStatusSuccessful},
+		Name:   "in-cluster",
+		Server: appv1.KubernetesInternalAPIServerAddr,
+		ConnectionState: &appv1.ConnectionState{ // Change to pointer
+			Status: appv1.ConnectionStatusSuccessful,
+		},
 	}
 	initLocalCluster sync.Once
 )
+
 
 const (
 	ArgoCDSecretTypeLabel   = "argocd.argoproj.io/secret-type"
@@ -104,17 +107,16 @@ func ListClusters(ctx context.Context, clientset kubernetes.Interface, namespace
 	clusterSecrets := clusterSecretsList.Items
 
 	clusterList := appv1.ClusterList{
-		Items: make([]appv1.Cluster, len(clusterSecrets)),
+		Items: make([]*appv1.Cluster, len(clusterSecrets)), // Use pointers here
 	}
 	hasInClusterCredentials := false
 	for i, clusterSecret := range clusterSecrets {
-		// This line has changed from the original Argo CD code: now receives an error, and handles it
 		cluster, err := secretToCluster(&clusterSecret)
 		if err != nil || cluster == nil {
 			return nil, fmt.Errorf("unable to convert cluster secret to cluster object '%s': %w", clusterSecret.Name, err)
 		}
 
-		clusterList.Items[i] = *cluster
+		clusterList.Items[i] = cluster // Assign pointer here
 		if cluster.Server == appv1.KubernetesInternalAPIServerAddr {
 			hasInClusterCredentials = true
 		}
@@ -122,11 +124,12 @@ func ListClusters(ctx context.Context, clientset kubernetes.Interface, namespace
 	if !hasInClusterCredentials {
 		localCluster := getLocalCluster(clientset)
 		if localCluster != nil {
-			clusterList.Items = append(clusterList.Items, *localCluster)
+			clusterList.Items = append(clusterList.Items, localCluster) // Append pointer here
 		}
 	}
 	return &clusterList, nil
 }
+
 
 func getLocalCluster(clientset kubernetes.Interface) *appv1.Cluster {
 	initLocalCluster.Do(func() {
@@ -135,10 +138,12 @@ func getLocalCluster(clientset kubernetes.Interface) *appv1.Cluster {
 			// nolint:staticcheck
 			localCluster.ServerVersion = fmt.Sprintf("%s.%s", info.Major, info.Minor)
 			// nolint:staticcheck
-			localCluster.ConnectionState = appv1.ConnectionState{Status: appv1.ConnectionStatusSuccessful}
+			localCluster.ConnectionState = &appv1.ConnectionState{ // Use pointer here
+				Status: appv1.ConnectionStatusSuccessful,
+			}
 		} else {
 			// nolint:staticcheck
-			localCluster.ConnectionState = appv1.ConnectionState{
+			localCluster.ConnectionState = &appv1.ConnectionState{ // Use pointer here
 				Status:  appv1.ConnectionStatusFailed,
 				Message: err.Error(),
 			}
@@ -147,7 +152,7 @@ func getLocalCluster(clientset kubernetes.Interface) *appv1.Cluster {
 	cluster := localCluster.DeepCopy()
 	now := metav1.Now()
 	// nolint:staticcheck
-	cluster.ConnectionState.ModifiedAt = &now
+	cluster.ConnectionState.ModifiedAt = &now // Assign pointer to ModifiedAt
 	return cluster
 }
 
@@ -167,6 +172,7 @@ func secretToCluster(s *corev1.Secret) (*appv1.Cluster, error) {
 			namespaces = append(namespaces, ns)
 		}
 	}
+
 	var refreshRequestedAt *metav1.Time
 	if v, found := s.Annotations[appv1.AnnotationKeyRefresh]; found {
 		requestedAt, err := time.Parse(time.RFC3339, v)
@@ -176,22 +182,26 @@ func secretToCluster(s *corev1.Secret) (*appv1.Cluster, error) {
 			refreshRequestedAt = &metav1.Time{Time: requestedAt}
 		}
 	}
-	var shard *int64
+
+	var shard int64
 	if shardStr := s.Data["shard"]; shardStr != nil {
 		if val, err := strconv.Atoi(string(shardStr)); err != nil {
 			log.Warnf("Error while parsing shard in cluster secret '%s': %v", s.Name, err)
 		} else {
-			shard = ptr.To(int64(val))
+			shard = int64(val)
 		}
 	}
+
 	cluster := appv1.Cluster{
 		ID:                 string(s.UID),
 		Server:             strings.TrimRight(string(s.Data["server"]), "/"),
 		Name:               string(s.Data["name"]),
 		Namespaces:         namespaces,
-		Config:             config,
+		Config:             &config, // Pass a pointer to config
 		RefreshRequestedAt: refreshRequestedAt,
-		Shard:              shard,
+		Shard:              shard, 
 	}
+
 	return &cluster, nil
 }
+
