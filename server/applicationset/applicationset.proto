@@ -72,10 +72,13 @@ service ApplicationSetService {
 	}
 
 	// Generate generates
+	// change endpoint to "/api/v1/applicationsets/generate" to avoid grpc v2 duplicate endpoint error
 	rpc Generate (ApplicationSetGenerateRequest) returns (ApplicationSetGenerateResponse) {
 		option (google.api.http) = {
-			post: "/api/v1/applicationsets"
+			post: "/api/v1/applicationsets/generate"
 			body: "*"
+			
+					
 		};
 	}
 
@@ -85,10 +88,12 @@ service ApplicationSetService {
 	}
 
 	//Create creates an applicationset
+	// change endpoint to "/api/v1/applicationsets/create" to avoid grpc v2 duplicate endpoint error
 	rpc Create (ApplicationSetCreateRequest) returns (github.com.argoproj.argo_cd.v2.pkg.apis.application.v1alpha1.ApplicationSet) {
 		option (google.api.http) = {
-			post: "/api/v1/applicationsets"
+			post: "/api/v1/applicationsets/create"
 			body: "applicationset"
+			
 		};
 	}
 
