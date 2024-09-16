@@ -62,7 +62,7 @@ func (db *db) ListRepoCertificates(ctx context.Context, selector *CertificateLis
 		selector = &CertificateListSelector{}
 	}
 
-	certificates := make([]appsv1.RepositoryCertificate, 0)
+	certificates := make([]*appsv1.RepositoryCertificate, 0)
 
 	// Get all SSH known host entries
 	if selector.CertType == "" || selector.CertType == "*" || selector.CertType == "ssh" {
@@ -73,7 +73,7 @@ func (db *db) ListRepoCertificates(ctx context.Context, selector *CertificateLis
 
 		for _, entry := range sshKnownHosts {
 			if certutil.MatchHostName(entry.Host, selector.HostNamePattern) && (selector.CertSubType == "" || selector.CertSubType == "*" || selector.CertSubType == entry.SubType) {
-				certificates = append(certificates, appsv1.RepositoryCertificate{
+				certificates = append(certificates, &appsv1.RepositoryCertificate{
 					ServerName:  entry.Host,
 					CertType:    "ssh",
 					CertSubType: entry.SubType,
@@ -105,7 +105,7 @@ func (db *db) ListRepoCertificates(ctx context.Context, selector *CertificateLis
 						certInfo = x509Data.Subject.String()
 						certSubType = x509Data.PublicKeyAlgorithm.String()
 					}
-					certificates = append(certificates, appsv1.RepositoryCertificate{
+					certificates = append(certificates, &appsv1.RepositoryCertificate{
 						ServerName:  entry.Subject,
 						CertType:    "https",
 						CertSubType: strings.ToLower(certSubType),
@@ -120,6 +120,7 @@ func (db *db) ListRepoCertificates(ctx context.Context, selector *CertificateLis
 		Items: certificates,
 	}, nil
 }
+
 
 // Get a single certificate from the datastore
 func (db *db) GetRepoCertificate(ctx context.Context, serverType string, serverName string) (*appsv1.RepositoryCertificate, error) {
@@ -165,7 +166,7 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 	}
 
 	// This will hold the final list of certificates that have been created
-	created := make([]appsv1.RepositoryCertificate, 0)
+	created := make([]*appsv1.RepositoryCertificate, 0)
 
 	// Each request can contain multiple certificates of different types, so we
 	// make sure to handle each request accordingly.
@@ -236,12 +237,13 @@ func (db *db) CreateRepoCertificate(ctx context.Context, certificates *appsv1.Re
 
 			// If we created a new entry, or if we upserted an existing one, we need
 			// to save the data and notify the consumer about the operation.
-			if newEntry || upserted {
-				certificate.CertInfo = certutil.SSHFingerprintSHA256(rawKeyData)
-				created = append(created, certificate)
-				saveSSHData = true
-			}
-		} else if certificate.CertType == "https" {
+			
+				if newEntry || upserted {
+					certificate.CertInfo = certutil.SSHFingerprintSHA256(rawKeyData)
+					created = append(created, certificate)
+					saveSSHData = true
+				}
+			} else if certificate.CertType == "https" {
 			var tlsCertificate *TLSCertificate = nil
 			newEntry := true
 			upserted := false
@@ -342,7 +344,7 @@ func (db *db) RemoveRepoCertificates(ctx context.Context, selector *CertificateL
 	)
 
 	removed := &appsv1.RepositoryCertificateList{
-		Items: make([]appsv1.RepositoryCertificate, 0),
+		Items: make([]*appsv1.RepositoryCertificate, 0), // Slice of pointers
 	}
 
 	if selector.CertType == "" || selector.CertType == "ssh" || selector.CertType == "*" {
@@ -354,7 +356,7 @@ func (db *db) RemoveRepoCertificates(ctx context.Context, selector *CertificateL
 
 		for _, entry := range knownHostsOld {
 			if matchSSHKnownHostsEntry(entry, selector) {
-				removed.Items = append(removed.Items, appsv1.RepositoryCertificate{
+				removed.Items = append(removed.Items, &appsv1.RepositoryCertificate{ // Use & to pass a pointer
 					ServerName:  entry.Host,
 					CertType:    "ssh",
 					CertSubType: entry.SubType,
@@ -364,6 +366,7 @@ func (db *db) RemoveRepoCertificates(ctx context.Context, selector *CertificateL
 				knownHostsNew = append(knownHostsNew, entry)
 			}
 		}
+		
 	}
 
 	if selector.CertType == "" || selector.CertType == "*" || selector.CertType == "https" || selector.CertType == "tls" {
@@ -386,13 +389,13 @@ func (db *db) RemoveRepoCertificates(ctx context.Context, selector *CertificateL
 				}
 				if len(pemCertificates) > 0 {
 					for _, pem := range pemCertificates {
-						removed.Items = append(removed.Items, appsv1.RepositoryCertificate{
+						removed.Items = append(removed.Items, &appsv1.RepositoryCertificate{ // Use & to pass a pointer
 							ServerName: entry.Subject,
 							CertType:   "https",
 							CertData:   []byte(pem),
 						})
 					}
-				}
+				} 
 			} else {
 				tlsCertificatesNew = append(tlsCertificatesNew, entry)
 			}

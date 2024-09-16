@@ -54,7 +54,9 @@ func (l *legacyRepositoryBackend) ListRepositories(ctx context.Context, repoType
 			if err != nil {
 				if r != nil && errors.IsCredentialsConfigurationError(err) {
 					modifiedTime := metav1.Now()
-					r.ConnectionState = appsv1.ConnectionState{
+					
+					// Create a new ConnectionState and assign it to r.ConnectionState
+					r.ConnectionState = &appsv1.ConnectionState{
 						Status:     appsv1.ConnectionStatusFailed,
 						Message:    "Configuration error - please check the server logs",
 						ModifiedAt: &modifiedTime,
@@ -64,12 +66,18 @@ func (l *legacyRepositoryBackend) ListRepositories(ctx context.Context, repoType
 				} else {
 					return nil, err
 				}
+			} else {
+				// Ensure r.ConnectionState is initialized before appending
+				if r.ConnectionState == nil {
+					r.ConnectionState = &appsv1.ConnectionState{}
+				}
 			}
 			repos = append(repos, r)
 		}
 	}
 	return repos, nil
 }
+
 
 func (l *legacyRepositoryBackend) UpdateRepository(ctx context.Context, r *appsv1.Repository) (*appsv1.Repository, error) {
 	repos, err := l.db.settingsMgr.GetRepositories()

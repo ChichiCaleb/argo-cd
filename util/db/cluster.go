@@ -26,12 +26,15 @@ import (
 
 var (
 	localCluster = appv1.Cluster{
-		Name:            "in-cluster",
-		Server:          appv1.KubernetesInternalAPIServerAddr,
-		ConnectionState: appv1.ConnectionState{Status: appv1.ConnectionStatusSuccessful},
+		Name:   "in-cluster",
+		Server: appv1.KubernetesInternalAPIServerAddr,
+		ConnectionState: &appv1.ConnectionState{ // Use & to pass a pointer
+			Status: appv1.ConnectionStatusSuccessful,
+		},
 	}
 	initLocalCluster sync.Once
 )
+
 
 func (db *db) getLocalCluster() *appv1.Cluster {
 	initLocalCluster.Do(func() {
@@ -40,10 +43,12 @@ func (db *db) getLocalCluster() *appv1.Cluster {
 			// nolint:staticcheck
 			localCluster.ServerVersion = fmt.Sprintf("%s.%s", info.Major, info.Minor)
 			// nolint:staticcheck
-			localCluster.ConnectionState = appv1.ConnectionState{Status: appv1.ConnectionStatusSuccessful}
+			localCluster.ConnectionState = &appv1.ConnectionState{ // Use & to pass a pointer
+				Status: appv1.ConnectionStatusSuccessful,
+			}
 		} else {
 			// nolint:staticcheck
-			localCluster.ConnectionState = appv1.ConnectionState{
+			localCluster.ConnectionState = &appv1.ConnectionState{ // Use & to pass a pointer
 				Status:  appv1.ConnectionStatusFailed,
 				Message: err.Error(),
 			}
@@ -56,6 +61,7 @@ func (db *db) getLocalCluster() *appv1.Cluster {
 	return cluster
 }
 
+
 // ListClusters returns list of clusters
 func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 	clusterSecrets, err := db.listSecretsByType(common.LabelValueSecretTypeCluster)
@@ -63,7 +69,7 @@ func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 		return nil, err
 	}
 	clusterList := appv1.ClusterList{
-		Items: make([]appv1.Cluster, 0),
+		Items: make([]*appv1.Cluster, 0),  // Use []*appv1.Cluster
 	}
 	settings, err := db.settingsMgr.GetSettings()
 	if err != nil {
@@ -80,17 +86,18 @@ func (db *db) ListClusters(ctx context.Context) (*appv1.ClusterList, error) {
 		if cluster.Server == appv1.KubernetesInternalAPIServerAddr {
 			if inClusterEnabled {
 				hasInClusterCredentials = true
-				clusterList.Items = append(clusterList.Items, *cluster)
+				clusterList.Items = append(clusterList.Items, cluster)  // Append cluster as pointer
 			}
 		} else {
-			clusterList.Items = append(clusterList.Items, *cluster)
+			clusterList.Items = append(clusterList.Items, cluster)  // Append cluster as pointer
 		}
 	}
 	if inClusterEnabled && !hasInClusterCredentials {
-		clusterList.Items = append(clusterList.Items, *db.getLocalCluster())
+		clusterList.Items = append(clusterList.Items, db.getLocalCluster())  // Use pointer to db.getLocalCluster()
 	}
 	return &clusterList, nil
 }
+
 
 // CreateCluster creates a cluster
 func (db *db) CreateCluster(ctx context.Context, c *appv1.Cluster) (*appv1.Cluster, error) {
@@ -338,8 +345,8 @@ func clusterToSecret(c *appv1.Cluster, secret *apiv1.Secret) error {
 		return err
 	}
 	data["config"] = configBytes
-	if c.Shard != nil {
-		data["shard"] = []byte(strconv.Itoa(int(*c.Shard)))
+	if c.Shard != -1 {  // Use a sentinel value for Shard
+		data["shard"] = []byte(strconv.Itoa(int(c.Shard)))
 	}
 	if c.ClusterResources {
 		data["clusterResources"] = []byte("true")
@@ -368,6 +375,7 @@ func clusterToSecret(c *appv1.Cluster, secret *apiv1.Secret) error {
 	return nil
 }
 
+
 // SecretToCluster converts a secret into a Cluster object
 func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 	var config appv1.ClusterConfig
@@ -384,6 +392,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 			namespaces = append(namespaces, ns)
 		}
 	}
+
 	var refreshRequestedAt *metav1.Time
 	if v, found := s.Annotations[appv1.AnnotationKeyRefresh]; found {
 		requestedAt, err := time.Parse(time.RFC3339, v)
@@ -393,6 +402,7 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 			refreshRequestedAt = &metav1.Time{Time: requestedAt}
 		}
 	}
+
 	var shard *int64
 	if shardStr := s.Data["shard"]; shardStr != nil {
 		if val, err := strconv.Atoi(string(shardStr)); err != nil {
@@ -422,9 +432,9 @@ func SecretToCluster(s *apiv1.Secret) (*appv1.Cluster, error) {
 		Name:               string(s.Data["name"]),
 		Namespaces:         namespaces,
 		ClusterResources:   string(s.Data["clusterResources"]) == "true",
-		Config:             config,
+		Config:             &config,
 		RefreshRequestedAt: refreshRequestedAt,
-		Shard:              shard,
+		Shard:              shard, // Use shard directly as it is already a pointer
 		Project:            string(s.Data["project"]),
 		Labels:             labels,
 		Annotations:        annotations,

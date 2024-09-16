@@ -112,7 +112,9 @@ func (s *secretsRepositoryBackend) ListRepositories(ctx context.Context, repoTyp
 		if err != nil {
 			if r != nil {
 				modifiedTime := metav1.Now()
-				r.ConnectionState = appsv1.ConnectionState{
+				
+				// Create a new ConnectionState and assign it to r.ConnectionState
+				r.ConnectionState = &appsv1.ConnectionState{
 					Status:     appsv1.ConnectionStatusFailed,
 					Message:    "Configuration error - please check the server logs",
 					ModifiedAt: &modifiedTime,
@@ -121,6 +123,11 @@ func (s *secretsRepositoryBackend) ListRepositories(ctx context.Context, repoTyp
 				log.Warnf("Error while parsing repository secret '%s': %v", secret.Name, err)
 			} else {
 				return nil, err
+			}
+		} else {
+			// Ensure r.ConnectionState is initialized before appending
+			if r.ConnectionState == nil {
+				r.ConnectionState = &appsv1.ConnectionState{}
 			}
 		}
 
@@ -131,6 +138,7 @@ func (s *secretsRepositoryBackend) ListRepositories(ctx context.Context, repoTyp
 
 	return repos, nil
 }
+
 
 func (s *secretsRepositoryBackend) UpdateRepository(ctx context.Context, repository *appsv1.Repository) (*appsv1.Repository, error) {
 	repositorySecret, err := s.getRepositorySecret(repository.Repo, repository.Project, false)
