@@ -81,12 +81,20 @@ CONTAINER_GID=$(shell id -g)
 # Set SUDO to sudo to run privileged commands with sudo
 SUDO?=
 
+# Define a variable for the network option based on the CODESPACE environment variable
+ifeq ($(CODESPACE),true)
+    NETWORK_OPTION = --network host
+else
+    NETWORK_OPTION =
+endif
+
+
 # Runs any command in the argocd-test-utils container in server mode
 # Server mode container will start with uid 0 and drop privileges during runtime
 define run-in-test-server
 	$(SUDO) $(DOCKER) run --rm -it \
 		--name argocd-test-server \
-		-u $(CONTAINER_UID):$(CONTAINER_GID) \
+		-u $(if $(CODESPACE),root,$(CONTAINER_UID):$(CONTAINER_GID)) \
 		-e USER_ID=$(CONTAINER_UID) \
 		-e HOME=/home/user \
 		-e GOPATH=/go \
@@ -110,15 +118,17 @@ define run-in-test-server
 		-p 4000:4000 \
 		-p 5000:5000 \
 		$(PODMAN_ARGS) \
+		$(NETWORK_OPTION) \
 		$(TEST_TOOLS_PREFIX)$(TEST_TOOLS_IMAGE):$(TEST_TOOLS_TAG) \
 		bash -c "$(1)"
 endef
+
 
 # Runs any command in the argocd-test-utils container in client mode
 define run-in-test-client
 	$(SUDO) $(DOCKER) run --rm -it \
 	  --name argocd-test-client \
-		-u $(CONTAINER_UID):$(CONTAINER_GID) \
+		-u $(if $(CODESPACE),root,$(CONTAINER_UID):$(CONTAINER_GID)) \
 		-e HOME=/home/user \
 		-e GOPATH=/go \
 		-e ARGOCD_E2E_K3S=$(ARGOCD_E2E_K3S) \
@@ -132,6 +142,7 @@ define run-in-test-client
 		-v /tmp:/tmp${VOLUME_MOUNT} \
 		-w ${DOCKER_WORKDIR} \
 		$(PODMAN_ARGS) \
+		$(NETWORK_OPTION) \
 		$(TEST_TOOLS_PREFIX)$(TEST_TOOLS_IMAGE):$(TEST_TOOLS_TAG) \
 		bash -c "$(1)"
 endef
