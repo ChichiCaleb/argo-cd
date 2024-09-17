@@ -105,6 +105,17 @@ func (svc *argoCDService) GetAppDetails(ctx context.Context, app *v1alpha1.Appli
 	if err != nil {
 		return nil, err
 	}
+
+	// Convert []*HelmParameter to []HelmParameter
+	var helmParameterOverrides []v1alpha1.HelmParameter
+	if appSource.Helm.Parameters != nil {
+		for _, param := range appSource.Helm.Parameters {
+			if param != nil {
+				helmParameterOverrides = append(helmParameterOverrides, *param)
+			}
+		}
+	}
+
 	var has *shared.CustomHelmAppSpec
 	if appDetail.Helm != nil {
 		has = &shared.CustomHelmAppSpec{
@@ -115,9 +126,10 @@ func (svc *argoCDService) GetAppDetails(ctx context.Context, app *v1alpha1.Appli
 				Values:         appDetail.Helm.Values,
 				FileParameters: appDetail.Helm.FileParameters,
 			},
-			HelmParameterOverrides: appSource.Helm.Parameters,
+			HelmParameterOverrides: helmParameterOverrides,
 		}
 	}
+
 	return &shared.AppDetail{
 		Type:      appDetail.Type,
 		Helm:      has,
@@ -125,6 +137,7 @@ func (svc *argoCDService) GetAppDetails(ctx context.Context, app *v1alpha1.Appli
 		Directory: appDetail.Directory,
 	}, nil
 }
+
 
 func (svc *argoCDService) Close() {
 	svc.dispose()

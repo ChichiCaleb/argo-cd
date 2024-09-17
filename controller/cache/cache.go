@@ -254,19 +254,43 @@ func asResourceNode(r *clustercache.Resource) appv1.ResourceNode {
 	if err != nil {
 		gv = schema.GroupVersion{}
 	}
-	parentRefs := make([]appv1.ResourceRef, len(r.OwnerRefs))
+
+	// Convert OwnerRefs to ResourceRef pointers
+	parentRefs := make([]*appv1.ResourceRef, len(r.OwnerRefs))
 	for i, ownerRef := range r.OwnerRefs {
 		ownerGvk := schema.FromAPIVersionAndKind(ownerRef.APIVersion, ownerRef.Kind)
 		ownerKey := kube.NewResourceKey(ownerGvk.Group, ownerRef.Kind, r.Ref.Namespace, ownerRef.Name)
-		parentRefs[i] = appv1.ResourceRef{Name: ownerRef.Name, Kind: ownerKey.Kind, Namespace: r.Ref.Namespace, Group: ownerKey.Group, UID: string(ownerRef.UID)}
+		parentRefs[i] = &appv1.ResourceRef{
+			Name:      ownerRef.Name,
+			Kind:      ownerKey.Kind,
+			Namespace: r.Ref.Namespace,
+			Group:     ownerKey.Group,
+			UID:       string(ownerRef.UID),
+		}
 	}
+
 	var resHealth *appv1.HealthStatus
 	resourceInfo := resInfo(r)
 	if resourceInfo.Health != nil {
-		resHealth = &appv1.HealthStatus{Status: resourceInfo.Health.Status, Message: resourceInfo.Health.Message}
+		resHealth = &appv1.HealthStatus{
+			Status:  resourceInfo.Health.Status,
+			Message: resourceInfo.Health.Message,
+		}
 	}
+
+	// Convert Info and Images slices to slices of pointers
+	var infoRefs []*appv1.InfoItem
+	for _, item := range resourceInfo.Info {
+		infoRefs = append(infoRefs, &item)
+	}
+
+	var imageRefs []*appv1.Image
+	for _, img := range resourceInfo.Images {
+		imageRefs = append(imageRefs, &img)
+	}
+
 	return appv1.ResourceNode{
-		ResourceRef: appv1.ResourceRef{
+		ResourceRef: &appv1.ResourceRef{
 			UID:       string(r.Ref.UID),
 			Name:      r.Ref.Name,
 			Group:     gv.Group,
@@ -275,10 +299,10 @@ func asResourceNode(r *clustercache.Resource) appv1.ResourceNode {
 			Namespace: r.Ref.Namespace,
 		},
 		ParentRefs:      parentRefs,
-		Info:            resourceInfo.Info,
+		Info:            infoRefs,
 		ResourceVersion: r.ResourceVersion,
 		NetworkingInfo:  resourceInfo.NetworkingInfo,
-		Images:          resourceInfo.Images,
+		Images:          imageRefs,
 		Health:          resHealth,
 		CreatedAt:       r.CreationTimestamp,
 	}
@@ -711,7 +735,7 @@ func (c *liveStateCache) isClusterHasApps(apps []interface{}, cluster *appv1.Clu
 		if !ok {
 			continue
 		}
-		err := argo.ValidateDestination(context.Background(), &app.Spec.Destination, c.db)
+		err := argo.ValidateDestination(context.Background(), app.Spec.Destination, c.db)
 		if err != nil {
 			continue
 		}

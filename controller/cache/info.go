@@ -90,9 +90,12 @@ func getIngress(un *unstructured.Unstructured) []v1.LoadBalancerIngress {
 
 func populateServiceInfo(un *unstructured.Unstructured, res *ResourceInfo) {
 	targetLabels, _, _ := unstructured.NestedStringMap(un.Object, "spec", "selector")
-	ingress := make([]v1.LoadBalancerIngress, 0)
+	ingress := make([]*v1.LoadBalancerIngress, 0) // Create a slice of pointers
 	if serviceType, ok, err := unstructured.NestedString(un.Object, "spec", "type"); ok && err == nil && serviceType == string(v1.ServiceTypeLoadBalancer) {
-		ingress = getIngress(un)
+		ingressList := getIngress(un)
+		for _, i := range ingressList {
+			ingress = append(ingress, &i) // Convert each element to a pointer
+		}
 	}
 
 	var urls []string
@@ -100,8 +103,10 @@ func populateServiceInfo(un *unstructured.Unstructured, res *ResourceInfo) {
 		urls = res.NetworkingInfo.ExternalURLs
 	}
 
+	// Set the NetworkingInfo with a slice of pointers for Ingress
 	res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{TargetLabels: targetLabels, Ingress: ingress, ExternalURLs: urls}
 }
+
 
 func getServiceName(backend map[string]interface{}, gvk schema.GroupVersionKind) (string, error) {
 	switch gvk.Group {
@@ -121,161 +126,170 @@ func getServiceName(backend map[string]interface{}, gvk schema.GroupVersionKind)
 }
 
 func populateIngressInfo(un *unstructured.Unstructured, res *ResourceInfo) {
-	ingress := getIngress(un)
-	targetsMap := make(map[v1alpha1.ResourceRef]bool)
-	gvk := un.GroupVersionKind()
-	if backend, ok, err := unstructured.NestedMap(un.Object, "spec", "backend"); ok && err == nil {
-		if serviceName, err := getServiceName(backend, gvk); err == nil {
-			targetsMap[v1alpha1.ResourceRef{
-				Group:     "",
-				Kind:      kube.ServiceKind,
-				Namespace: un.GetNamespace(),
-				Name:      serviceName,
-			}] = true
-		}
-	}
-	urlsSet := make(map[string]bool)
-	if rules, ok, err := unstructured.NestedSlice(un.Object, "spec", "rules"); ok && err == nil {
-		for i := range rules {
-			rule, ok := rules[i].(map[string]interface{})
-			if !ok {
-				continue
-			}
-			host := rule["host"]
-			if host == nil || host == "" {
-				for i := range ingress {
-					host = text.FirstNonEmpty(ingress[i].Hostname, ingress[i].IP)
-					if host != "" {
-						break
-					}
-				}
-			}
-			paths, ok, err := unstructured.NestedSlice(rule, "http", "paths")
-			if !ok || err != nil {
-				continue
-			}
-			for i := range paths {
-				path, ok := paths[i].(map[string]interface{})
-				if !ok {
-					continue
-				}
+    ingress := getIngress(un)
+    ingressPtr := make([]*v1.LoadBalancerIngress, len(ingress))
+    for i := range ingress {
+        ingressPtr[i] = &ingress[i]
+    }
 
-				if backend, ok, err := unstructured.NestedMap(path, "backend"); ok && err == nil {
-					if serviceName, err := getServiceName(backend, gvk); err == nil {
-						targetsMap[v1alpha1.ResourceRef{
-							Group:     "",
-							Kind:      kube.ServiceKind,
-							Namespace: un.GetNamespace(),
-							Name:      serviceName,
-						}] = true
-					}
-				}
+    targetsMap := make(map[string]bool)
+    gvk := un.GroupVersionKind()
+    if backend, ok, err := unstructured.NestedMap(un.Object, "spec", "backend"); ok && err == nil {
+        if serviceName, err := getServiceName(backend, gvk); err == nil {
+            key := fmt.Sprintf("%s/%s/%s/%s", "", kube.ServiceKind, un.GetNamespace(), serviceName)
+            targetsMap[key] = true
+        }
+    }
+    urlsSet := make(map[string]bool)
+    if rules, ok, err := unstructured.NestedSlice(un.Object, "spec", "rules"); ok && err == nil {
+        for i := range rules {
+            rule, ok := rules[i].(map[string]interface{})
+            if !ok {
+                continue
+            }
+            host := rule["host"]
+            if host == nil || host == "" {
+                for i := range ingress {
+                    host = text.FirstNonEmpty(ingress[i].Hostname, ingress[i].IP)
+                    if host != "" {
+                        break
+                    }
+                }
+            }
+            paths, ok, err := unstructured.NestedSlice(rule, "http", "paths")
+            if !ok || err != nil {
+                continue
+            }
+            for i := range paths {
+                path, ok := paths[i].(map[string]interface{})
+                if !ok {
+                    continue
+                }
 
-				if host == nil || host == "" {
-					continue
-				}
-				stringPort := "http"
-				if tls, ok, err := unstructured.NestedSlice(un.Object, "spec", "tls"); ok && err == nil {
-					for i := range tls {
-						tlsline, ok := tls[i].(map[string]interface{})
-						secretName := tlsline["secretName"]
-						if ok && secretName != nil {
-							stringPort = "https"
-						}
-						tlshost := tlsline["host"]
-						if tlshost == host {
-							stringPort = "https"
-							continue
-						}
-						if hosts := tlsline["hosts"]; hosts != nil {
-							tlshosts, ok := tlsline["hosts"].(map[string]interface{})
-							if ok {
-								for j := range tlshosts {
-									if tlshosts[j] == host {
-										stringPort = "https"
-									}
-								}
-							}
-						}
-					}
-				}
+                if backend, ok, err := unstructured.NestedMap(path, "backend"); ok && err == nil {
+                    if serviceName, err := getServiceName(backend, gvk); err == nil {
+                        key := fmt.Sprintf("%s/%s/%s/%s", "", kube.ServiceKind, un.GetNamespace(), serviceName)
+                        targetsMap[key] = true
+                    }
+                }
 
-				externalURL := fmt.Sprintf("%s://%s", stringPort, host)
+                if host == nil || host == "" {
+                    continue
+                }
+                stringPort := "http"
+                if tls, ok, err := unstructured.NestedSlice(un.Object, "spec", "tls"); ok && err == nil {
+                    for i := range tls {
+                        tlsline, ok := tls[i].(map[string]interface{})
+                        secretName := tlsline["secretName"]
+                        if ok && secretName != nil {
+                            stringPort = "https"
+                        }
+                        tlshost := tlsline["host"]
+                        if tlshost == host {
+                            stringPort = "https"
+                            continue
+                        }
+                        if hosts := tlsline["hosts"]; hosts != nil {
+                            tlshosts, ok := tlsline["hosts"].([]interface{})
+                            if ok {
+                                for j := range tlshosts {
+                                    if tlshosts[j] == host {
+                                        stringPort = "https"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
-				subPath := ""
-				if nestedPath, ok, err := unstructured.NestedString(path, "path"); ok && err == nil {
-					subPath = strings.TrimSuffix(nestedPath, "*")
-				}
-				externalURL += subPath
-				urlsSet[externalURL] = true
-			}
-		}
-	}
-	targets := make([]v1alpha1.ResourceRef, 0)
-	for target := range targetsMap {
-		targets = append(targets, target)
-	}
+                externalURL := fmt.Sprintf("%s://%s", stringPort, host)
 
-	var urls []string
-	if res.NetworkingInfo != nil {
-		urls = res.NetworkingInfo.ExternalURLs
-	}
-	for url := range urlsSet {
-		urls = append(urls, url)
-	}
-	res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{TargetRefs: targets, Ingress: ingress, ExternalURLs: urls}
+                subPath := ""
+                if nestedPath, ok, err := unstructured.NestedString(path, "path"); ok && err == nil {
+                    subPath = strings.TrimSuffix(nestedPath, "*")
+                }
+                externalURL += subPath
+                urlsSet[externalURL] = true
+            }
+        }
+    }
+
+    targets := make([]*v1alpha1.ResourceRef, 0)
+    for key := range targetsMap {
+        parts := strings.Split(key, "/")
+        targets = append(targets, &v1alpha1.ResourceRef{
+            Group:     parts[0],
+            Kind:      parts[1],
+            Namespace: parts[2],
+            Name:      parts[3],
+        })
+    }
+
+    var urls []string
+    if res.NetworkingInfo != nil {
+        urls = res.NetworkingInfo.ExternalURLs
+    }
+    for url := range urlsSet {
+        urls = append(urls, url)
+    }
+
+    res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{TargetRefs: targets, Ingress: ingressPtr, ExternalURLs: urls}
 }
 
+
 func populateIstioVirtualServiceInfo(un *unstructured.Unstructured, res *ResourceInfo) {
-	targetsMap := make(map[v1alpha1.ResourceRef]bool)
+    targetsMap := make(map[string]bool)
 
-	if rules, ok, err := unstructured.NestedSlice(un.Object, "spec", "http"); ok && err == nil {
-		for i := range rules {
-			rule, ok := rules[i].(map[string]interface{})
-			if !ok {
-				continue
-			}
-			routes, ok, err := unstructured.NestedSlice(rule, "route")
-			if !ok || err != nil {
-				continue
-			}
-			for i := range routes {
-				route, ok := routes[i].(map[string]interface{})
-				if !ok {
-					continue
-				}
+    if rules, ok, err := unstructured.NestedSlice(un.Object, "spec", "http"); ok && err == nil {
+        for i := range rules {
+            rule, ok := rules[i].(map[string]interface{})
+            if !ok {
+                continue
+            }
+            routes, ok, err := unstructured.NestedSlice(rule, "route")
+            if !ok || err != nil {
+                continue
+            }
+            for i := range routes {
+                route, ok := routes[i].(map[string]interface{})
+                if !ok {
+                    continue
+                }
 
-				if hostName, ok, err := unstructured.NestedString(route, "destination", "host"); ok && err == nil {
-					hostSplits := strings.Split(hostName, ".")
-					serviceName := hostSplits[0]
+                if hostName, ok, err := unstructured.NestedString(route, "destination", "host"); ok && err == nil {
+                    hostSplits := strings.Split(hostName, ".")
+                    serviceName := hostSplits[0]
 
-					var namespace string
-					if len(hostSplits) >= 2 {
-						namespace = hostSplits[1]
-					} else {
-						namespace = un.GetNamespace()
-					}
+                    var namespace string
+                    if len(hostSplits) >= 2 {
+                        namespace = hostSplits[1]
+                    } else {
+                        namespace = un.GetNamespace()
+                    }
 
-					targetsMap[v1alpha1.ResourceRef{
-						Kind:      kube.ServiceKind,
-						Name:      serviceName,
-						Namespace: namespace,
-					}] = true
-				}
-			}
-		}
-	}
-	targets := make([]v1alpha1.ResourceRef, 0)
-	for target := range targetsMap {
-		targets = append(targets, target)
-	}
+                    key := fmt.Sprintf("%s/%s/%s", kube.ServiceKind, namespace, serviceName)
+                    targetsMap[key] = true
+                }
+            }
+        }
+    }
 
-	var urls []string
-	if res.NetworkingInfo != nil {
-		urls = res.NetworkingInfo.ExternalURLs
-	}
+    targets := make([]*v1alpha1.ResourceRef, 0, len(targetsMap))
+    for key := range targetsMap {
+        parts := strings.Split(key, "/")
+        targets = append(targets, &v1alpha1.ResourceRef{
+            Kind:      parts[0],
+            Namespace: parts[1],
+            Name:      parts[2],
+        })
+    }
 
-	res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{TargetRefs: targets, ExternalURLs: urls}
+    var urls []string
+    if res.NetworkingInfo != nil {
+        urls = res.NetworkingInfo.ExternalURLs
+    }
+
+    res.NetworkingInfo = &v1alpha1.ResourceNetworkingInfo{TargetRefs: targets, ExternalURLs: urls}
 }
 
 func populatePodInfo(un *unstructured.Unstructured, res *ResourceInfo) {

@@ -14,17 +14,17 @@ func compileFilters(filters []argoprojiov1alpha1.SCMProviderGeneratorFilter) ([]
 	for _, filter := range filters {
 		outFilter := &Filter{}
 		var err error
-		if filter.RepositoryMatch != nil {
-			outFilter.RepositoryMatch, err = regexp.Compile(*filter.RepositoryMatch)
+		if filter.RepositoryMatch != "" {
+			outFilter.RepositoryMatch, err = regexp.Compile(filter.RepositoryMatch)
 			if err != nil {
-				return nil, fmt.Errorf("error compiling RepositoryMatch regexp %q: %w", *filter.RepositoryMatch, err)
+				return nil, fmt.Errorf("error compiling RepositoryMatch regexp %q: %w", filter.RepositoryMatch, err)
 			}
 			outFilter.FilterType = FilterTypeRepo
 		}
-		if filter.LabelMatch != nil {
-			outFilter.LabelMatch, err = regexp.Compile(*filter.LabelMatch)
+		if filter.LabelMatch != "" {
+			outFilter.LabelMatch, err = regexp.Compile(filter.LabelMatch)
 			if err != nil {
-				return nil, fmt.Errorf("error compiling LabelMatch regexp %q: %w", *filter.LabelMatch, err)
+				return nil, fmt.Errorf("error compiling LabelMatch regexp %q: %w", filter.LabelMatch, err)
 			}
 			outFilter.FilterType = FilterTypeRepo
 		}
@@ -36,10 +36,10 @@ func compileFilters(filters []argoprojiov1alpha1.SCMProviderGeneratorFilter) ([]
 			outFilter.PathsDoNotExist = filter.PathsDoNotExist
 			outFilter.FilterType = FilterTypeBranch
 		}
-		if filter.BranchMatch != nil {
-			outFilter.BranchMatch, err = regexp.Compile(*filter.BranchMatch)
+		if filter.BranchMatch != "" {
+			outFilter.BranchMatch, err = regexp.Compile(filter.BranchMatch)
 			if err != nil {
-				return nil, fmt.Errorf("error compiling BranchMatch regexp %q: %w", *filter.BranchMatch, err)
+				return nil, fmt.Errorf("error compiling BranchMatch regexp %q: %w", filter.BranchMatch, err)
 			}
 			outFilter.FilterType = FilterTypeBranch
 		}
@@ -47,6 +47,7 @@ func compileFilters(filters []argoprojiov1alpha1.SCMProviderGeneratorFilter) ([]
 	}
 	return outFilters, nil
 }
+
 
 func matchFilter(ctx context.Context, provider SCMProviderService, repo *Repository, filter *Filter) (bool, error) {
 	if filter.RepositoryMatch != nil && !filter.RepositoryMatch.MatchString(repo.Repository) {
